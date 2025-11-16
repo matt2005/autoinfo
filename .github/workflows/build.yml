@@ -22,7 +22,7 @@ jobs:
       uses: jurplel/install-qt-action@v3
       with:
         version: ${{ matrix.qt-version }}
-        modules: 'qtwebsockets'
+        modules: 'qtwebsockets qtmultimedia qtpositioning qtconnectivity'
     
     - name: Install Dependencies
       run: |
@@ -32,7 +32,10 @@ jobs:
           cmake \
           ninja-build \
           qt6-base-dev \
-          qt6-websockets-dev
+          qt6-websockets-dev \
+          qt6-multimedia-dev \
+          libqt6positioning6-dev \
+          qt6-connectivity-dev
     
     - name: Configure CMake
       run: |
