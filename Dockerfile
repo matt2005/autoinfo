@@ -13,6 +13,7 @@ RUN apt-get update && apt-get install -y \
     wget \
     curl \
     pkg-config \
+    clang-format \
     libgl1-mesa-dev \
     libglu1-mesa-dev \
     libxkbcommon-dev \
