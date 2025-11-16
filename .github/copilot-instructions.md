@@ -150,6 +150,7 @@ The project will have a additional extension to support AndroidAuto using AASDK,
 - Use caching strategies to improve performance for frequently accessed data.
 - Save fix summaries and other documentation files in markdown format and save in to the docs/fix_summaries folder.
 - use lowercase filenames with underscores for fix summary files, e.g., touch_fix_summary.md.
+- use lf for all files
 - For new files do not use the existing header information, instead use the following template:
 []: # ```plaintext
 []: #  * Project: OpenAuto

@@ -38,25 +38,53 @@ Write-Host ""
 $PROJECT_DIR = Split-Path -Parent $PSCommandPath
 Write-Host "Project directory: $PROJECT_DIR"
 
-# Check if Docker is installed
-if (-not (Get-Command docker -ErrorAction SilentlyContinue)) {
-    Write-Host "Error: Docker is not installed" -ForegroundColor Red
+# Detect container runtime (Docker or Podman)
+$CONTAINER_RUNTIME = $null
+if (Get-Command docker -ErrorAction SilentlyContinue) {
+    # Check if Docker daemon is running
+    try {
+        $null = docker ps 2>&1
+        if ($LASTEXITCODE -eq 0) {
+            $CONTAINER_RUNTIME = "docker"
+            Write-Host "Using Docker" -ForegroundColor Cyan
+        }
+    } catch {}
+}
+
+if (-not $CONTAINER_RUNTIME -and (Get-Command podman -ErrorAction SilentlyContinue)) {
+    # Check if Podman is available
+    try {
+        $null = podman ps 2>&1
+        if ($LASTEXITCODE -eq 0) {
+            $CONTAINER_RUNTIME = "podman"
+            Write-Host "Using Podman" -ForegroundColor Cyan
+        }
+    } catch {}
+}
+
+if (-not $CONTAINER_RUNTIME) {
+    Write-Host "Error: Neither Docker nor Podman is available or running." -ForegroundColor Red
+    Write-Host "Please install Docker Desktop or Podman and ensure it is running." -ForegroundColor Yellow
     exit 1
 }
 
 # Build Docker image
-Write-Host "Building Docker image..." -ForegroundColor Yellow
-docker build -t $IMAGE_NAME $PROJECT_DIR
+Write-Host "Building container image..." -ForegroundColor Yellow
+& $CONTAINER_RUNTIME build -t $IMAGE_NAME $PROJECT_DIR
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "Error: Failed to build container image" -ForegroundColor Red
+    exit 1
+}
 
 # Create build directory if it doesn't exist
 $null = New-Item -ItemType Directory -Force -Path "$PROJECT_DIR\build"
 
-# Remove old container if exists
-docker rm -f $CONTAINER_NAME 2>$null
+# Remove old container if exists (silently ignore if it doesn't exist)
+& $CONTAINER_RUNTIME rm -f $CONTAINER_NAME 2>&1 | Out-Null
 
 # Run build in container
 Write-Host "Running build in container..." -ForegroundColor Yellow
-docker run --rm `
+& $CONTAINER_RUNTIME run --rm `
     --name $CONTAINER_NAME `
     -v "${PROJECT_DIR}:/src" `
     -w /src `
@@ -83,6 +111,11 @@ docker run --rm `
         echo 'Build completed successfully!'
         ls -lh build/
 "@
+
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "Error: Build failed" -ForegroundColor Red
+    exit 1
+}
 
 Write-Host "=== Build Complete ===" -ForegroundColor Green
 Write-Host "Binaries are in: $PROJECT_DIR\build"

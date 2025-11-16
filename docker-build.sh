@@ -42,25 +42,33 @@ echo ""
 PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 echo "Project directory: ${PROJECT_DIR}"
 
-# Check if Docker is installed
-if ! command -v docker &> /dev/null; then
-    echo -e "${RED}Error: Docker is not installed${NC}"
+# Detect container runtime (Docker or Podman)
+CONTAINER_RUNTIME=""
+if command -v docker &> /dev/null && docker ps &> /dev/null; then
+    CONTAINER_RUNTIME="docker"
+    echo -e "${GREEN}Using Docker${NC}"
+elif command -v podman &> /dev/null; then
+    CONTAINER_RUNTIME="podman"
+    echo -e "${GREEN}Using Podman${NC}"
+else
+    echo -e "${RED}Error: Neither Docker nor Podman is available or running${NC}"
+    echo -e "${YELLOW}Please install Docker or Podman and ensure it is running${NC}"
     exit 1
 fi
 
-# Build Docker image
-echo -e "${YELLOW}Building Docker image...${NC}"
-docker build -t "${IMAGE_NAME}" "${PROJECT_DIR}"
+# Build container image
+echo -e "${YELLOW}Building container image...${NC}"
+${CONTAINER_RUNTIME} build -t "${IMAGE_NAME}" "${PROJECT_DIR}"
 
 # Create build directory if it doesn't exist
 mkdir -p "${PROJECT_DIR}/build"
 
 # Remove old container if exists
-docker rm -f "${CONTAINER_NAME}" 2>/dev/null || true
+${CONTAINER_RUNTIME} rm -f "${CONTAINER_NAME}" 2>/dev/null || true
 
 # Run build in container
 echo -e "${YELLOW}Running build in container...${NC}"
-docker run --rm \
+${CONTAINER_RUNTIME} run --rm \
     --name "${CONTAINER_NAME}" \
     -v "${PROJECT_DIR}:/src" \
     -w /src \

@@ -46,17 +46,15 @@ RUN apt-get update && apt-get install -y \
 # Install Qt6
 RUN apt-get update && apt-get install -y \
     qt6-base-dev \
-    qt6-websockets-dev \
-    qt6-webengine-dev \
-    qt6-declarative-dev \
-    qt6-multimedia-dev \
+    qt6-base-dev-tools \
     libqt6core6 \
     libqt6gui6 \
     libqt6widgets6 \
     libqt6network6 \
-    libqt6websockets6 \
+    libqt6websockets6-dev \
     libqt6quick6 \
     libqt6qml6 \
+    qt6-declarative-dev \
     qml6-module-qtquick \
     qml6-module-qtquick-controls \
     qml6-module-qtquick-layouts \
