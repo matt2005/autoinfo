@@ -7,6 +7,10 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
+# Ensure all targets (including static libs) are built with position-independent code
+# This avoids linker errors when linking static libraries into shared objects (.so)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
 # Find Qt6 packages
 find_package(Qt6 REQUIRED COMPONENTS Core Gui Quick Widgets WebSockets Network)
 
