@@ -89,28 +89,7 @@ Write-Host "Running build in container..." -ForegroundColor Yellow
     -v "${PROJECT_DIR}:/src" `
     -w /src `
     $IMAGE_NAME `
-    bash -c @"
-        set -e
-        echo 'Configuring CMake...'
-        cmake -B build \
-            -DCMAKE_BUILD_TYPE=$BuildType \
-            -DBUILD_TESTS=$BuildTests \
-            -DBUILD_EXTENSIONS=ON \
-            -G Ninja
-        
-        echo 'Building project...'
-        cmake --build build --config $BuildType --parallel `$(nproc)
-        
-        if [ '$BuildTests' = 'ON' ]; then
-            echo 'Running tests...'
-            cd build
-            ctest --output-on-failure
-            cd ..
-        fi
-        
-        echo 'Build completed successfully!'
-        ls -lh build/
-"@
+    bash /src/build.sh $BuildType $BuildTests
 
 if ($LASTEXITCODE -ne 0) {
     Write-Host "Error: Build failed" -ForegroundColor Red

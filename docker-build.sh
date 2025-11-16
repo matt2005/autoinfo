@@ -73,28 +73,7 @@ ${CONTAINER_RUNTIME} run --rm \
     -v "${PROJECT_DIR}:/src" \
     -w /src \
     "${IMAGE_NAME}" \
-    bash -c "
-        set -e
-        echo 'Configuring CMake...'
-        cmake -B build \
-            -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
-            -DBUILD_TESTS=${BUILD_TESTS} \
-            -DBUILD_EXTENSIONS=ON \
-            -G Ninja
-        
-        echo 'Building project...'
-        cmake --build build --config ${BUILD_TYPE} --parallel \$(nproc)
-        
-        if [ '${BUILD_TESTS}' = 'ON' ]; then
-            echo 'Running tests...'
-            cd build
-            ctest --output-on-failure
-            cd ..
-        fi
-        
-        echo 'Build completed successfully!'
-        ls -lh build/
-    "
+    bash /src/build.sh "${BUILD_TYPE}" "${BUILD_TESTS}"
 
 echo -e "${GREEN}=== Build Complete ===${NC}"
 echo "Binaries are in: ${PROJECT_DIR}/build"
