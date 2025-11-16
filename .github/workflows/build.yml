@@ -65,20 +65,64 @@ jobs:
   build-raspberry-pi:
     runs-on: ubuntu-latest
     
+    strategy:
+      matrix:
+        arch: [armhf, arm64]
+        build-type: [Release, Debug]
+    
     steps:
     - uses: actions/checkout@v3
     
-    - name: Set up Cross-Compilation
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y \
-          crossbuild-essential-armhf \
-          qemu-user-static
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v3
+      with:
+        platforms: arm,arm64
     
-    - name: Build for Raspberry Pi
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+    
+    - name: Build for ${{ matrix.arch }}
       run: |
-        echo "Cross-compilation setup for Raspberry Pi"
-        # TODO: Implement cross-compilation
+        # Map architecture names
+        PLATFORM="linux/${{ matrix.arch }}"
+        if [ "${{ matrix.arch }}" = "armhf" ]; then
+          PLATFORM="linux/arm/v7"
+        fi
+        
+        # Build using Docker with QEMU emulation
+        docker buildx build \
+          --platform ${PLATFORM} \
+          --build-arg BUILD_TYPE=${{ matrix.build-type }} \
+          --build-arg TARGET_ARCH=${{ matrix.arch }} \
+          --tag crankshaft-reborn-${{ matrix.arch }}:${{ matrix.build-type }} \
+          --load \
+          -f Dockerfile.rpi \
+          .
+    
+    - name: Extract Binaries
+      run: |
+        # Create output directory
+        mkdir -p build-output
+        
+        # Extract built binaries from container
+        CONTAINER_ID=$(docker create crankshaft-reborn-${{ matrix.arch }}:${{ matrix.build-type }})
+        docker cp ${CONTAINER_ID}:/output/. ./build-output/
+        docker rm ${CONTAINER_ID}
+        
+        # List what was built
+        echo "Built files:"
+        ls -lh build-output/
+    
+    - name: Upload Artifacts
+      if: matrix.build-type == 'Release'
+      uses: actions/upload-artifact@v4
+      with:
+        name: crankshaft-reborn-${{ matrix.arch }}-${{ matrix.build-type }}
+        path: |
+          build-output/CrankshaftReborn
+          build-output/libCrankshaftCore.a
+          build-output/libCrankshaftExtensions.a
+          build-output/*.so*
     
   code-quality:
     runs-on: ubuntu-latest
