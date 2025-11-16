@@ -67,6 +67,11 @@ The easiest way to build Crankshaft Reborn is using Docker, which provides a con
 
 # Build in Debug mode
 ./docker-build.sh Debug OFF
+
+# Build for Raspberry Pi (cross-compilation with QEMU)
+./docker-build-rpi.sh armhf release    # Raspberry Pi 3 (32-bit)
+./docker-build-rpi.sh arm64 release    # Raspberry Pi 4/5 (64-bit)
+./docker-build-rpi.sh all release      # Build for all architectures
 ```
 
 #### Windows (PowerShell)
@@ -80,12 +85,33 @@ The easiest way to build Crankshaft Reborn is using Docker, which provides a con
 
 # Build in Debug mode
 .\docker-build.ps1 -BuildType Debug -BuildTests OFF
+
+# Build for Raspberry Pi (cross-compilation with QEMU)
+.\docker-build-rpi.ps1 armhf release    # Raspberry Pi 3 (32-bit)
+.\docker-build-rpi.ps1 arm64 release    # Raspberry Pi 4/5 (64-bit)
+.\docker-build-rpi.ps1 all release      # Build for all architectures
 ```
 
 The Docker build will:
 1. Build a Docker image with all required dependencies
 2. Compile the project inside the container
-3. Output binaries to the `build/` directory on your host machine
+3. Output binaries to the `build/` directory (or `build-output-{arch}/` for Raspberry Pi builds) on your host machine
+
+#### Raspberry Pi Cross-Compilation
+
+The Raspberry Pi build uses Docker with QEMU emulation to natively compile ARM binaries:
+
+- **armhf**: ARMv7 32-bit for Raspberry Pi 3 and compatible devices
+- **arm64**: ARM64 64-bit for Raspberry Pi 4, 5, and newer devices
+
+Requirements:
+- Docker with Buildx support, or Podman
+- QEMU user-mode emulation (automatically set up by the build script)
+
+The build script (`docker-build-rpi.sh` / `docker-build-rpi.ps1`) will:
+1. Set up QEMU for ARM emulation
+2. Build using native ARM compilation in an emulated environment
+3. Extract binaries to `build-output-{arch}/` directory
 
 ### Native Linux Build
 
