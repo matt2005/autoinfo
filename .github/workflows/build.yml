@@ -31,6 +31,7 @@ jobs:
           build-essential \
           cmake \
           ninja-build \
+          dpkg-dev \
           qt6-base-dev \
           qt6-websockets-dev \
           qt6-multimedia-dev \
@@ -48,6 +49,12 @@ jobs:
     - name: Build
       run: cmake --build build --config ${{ matrix.build-type }}
     
+    - name: Package DEB
+      if: matrix.build-type == 'Release'
+      working-directory: build
+      run: |
+        cpack -G DEB
+
     - name: Run Tests
       working-directory: build
       run: ctest -C ${{ matrix.build-type }} --output-on-failure
@@ -61,6 +68,7 @@ jobs:
           build/CrankshaftReborn
           build/libCrankshaftCore.a
           build/libCrankshaftExtensions.a
+          build/*.deb
 
   build-raspberry-pi:
     runs-on: ubuntu-latest
@@ -123,6 +131,7 @@ jobs:
           build-output/libCrankshaftCore.a
           build-output/libCrankshaftExtensions.a
           build-output/*.so*
+          build-output/*.deb
     
   code-quality:
     runs-on: ubuntu-latest

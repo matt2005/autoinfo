@@ -90,4 +90,15 @@ set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Automotive infotainment system")
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE")
 set(CPACK_RESOURCE_FILE_README "${CMAKE_SOURCE_DIR}/README.md")
 
+# Debian package settings
+set(CPACK_GENERATOR "DEB")
+set(CPACK_DEBIAN_PACKAGE_MAINTAINER "OpenCarDev Team")
+set(CPACK_DEBIAN_PACKAGE_SECTION "utils")
+set(CPACK_DEBIAN_PACKAGE_PRIORITY "optional")
+set(CPACK_DEBIAN_PACKAGE_HOMEPAGE "https://github.com/matt2005/autoinfo")
+# Enable automatic runtime dependency detection via dpkg-shlibdeps
+set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
+# Include architecture and version in filename
+set(CPACK_DEBIAN_FILE_NAME DEB-DEFAULT)
+
 include(CPack)

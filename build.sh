@@ -25,6 +25,7 @@ set -e
 BUILD_TYPE="${1:-Release}"
 BUILD_TESTS="${2:-OFF}"
 BUILD_DIR="${3:-build}"
+PACKAGE_DEB="${4:-OFF}"
 
 # Colors for output
 RED='\033[0;31m'
@@ -71,7 +72,19 @@ if [ "${BUILD_TESTS}" = "ON" ]; then
     cd ..
 fi
 
+# Package as .deb if requested
+if [ "${PACKAGE_DEB}" = "ON" ]; then
+    echo ""
+    echo -e "${YELLOW}Packaging DEB with CPack...${NC}"
+    (cd "${BUILD_DIR}" && cpack -G DEB)
+fi
+
 echo ""
 echo -e "${GREEN}=== Build Complete ===${NC}"
 echo -e "${BLUE}Binaries are in: ${BUILD_DIR}/${NC}"
 ls -lh "${BUILD_DIR}/"
+
+if [ "${PACKAGE_DEB}" = "ON" ]; then
+    echo -e "${BLUE}Generated DEB packages:${NC}"
+    ls -lh "${BUILD_DIR}"/*.deb || true
+fi
