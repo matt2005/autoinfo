@@ -29,9 +29,11 @@ include_directories(
 # Core library
 add_subdirectory(src/core)
 
-# Extensions
+# Extensions framework
 if(BUILD_EXTENSIONS)
     add_subdirectory(src/extensions)
+    # Build actual extension implementations
+    add_subdirectory(extensions)
 endif()
 
 # Main application
