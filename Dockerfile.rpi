@@ -70,16 +70,10 @@ RUN chmod +x build.sh
 
 # Build the project
 RUN ./build.sh ${BUILD_TYPE} && \
-    # Copy binaries to output
-    if [ "${BUILD_TYPE}" = "debug" ]; then \
-        cp -r build-debug/CrankshaftReborn /output/ || true; \
-        cp -r build-debug/*.a /output/ || true; \
-        cp -r build-debug/*.so* /output/ || true; \
-    else \
-        cp -r build-release/CrankshaftReborn /output/ || true; \
-        cp -r build-release/*.a /output/ || true; \
-        cp -r build-release/*.so* /output/ || true; \
-    fi
+    # Copy binaries to output (build.sh uses 'build' dir by default)
+    (cp -r build/CrankshaftReborn /output/ || true) && \
+    (cp -r build/*.a /output/ || true) && \
+    (cp -r build/*.so* /output/ || true)
 
 # Default command
 CMD ["bash", "-c", "echo 'Crankshaft Reborn Raspberry Pi build container ready. Binaries are in /output/'"]
