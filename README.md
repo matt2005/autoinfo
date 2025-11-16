@@ -52,7 +52,44 @@ Crankshaft Reborn is a modular, open-source infotainment platform that provides 
 
 ## Building
 
-### Linux
+### Docker Build (Recommended)
+
+The easiest way to build Crankshaft Reborn is using Docker, which provides a consistent build environment:
+
+#### Linux/macOS
+
+```bash
+# Build with default settings (Release mode)
+./docker-build.sh
+
+# Build with tests enabled
+./docker-build.sh Release ON
+
+# Build in Debug mode
+./docker-build.sh Debug OFF
+```
+
+#### Windows (PowerShell)
+
+```powershell
+# Build with default settings (Release mode)
+.\docker-build.ps1
+
+# Build with tests enabled
+.\docker-build.ps1 -BuildType Release -BuildTests ON
+
+# Build in Debug mode
+.\docker-build.ps1 -BuildType Debug -BuildTests OFF
+```
+
+The Docker build will:
+1. Build a Docker image with all required dependencies
+2. Compile the project inside the container
+3. Output binaries to the `build/` directory on your host machine
+
+### Native Linux Build
+
+If you prefer to build directly on your system:
 
 ```bash
 # Install dependencies (Debian/Ubuntu/Raspberry Pi OS)

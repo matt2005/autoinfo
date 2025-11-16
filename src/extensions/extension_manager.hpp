@@ -64,10 +64,17 @@ signals:
 
 private:
     struct ExtensionInfo {
-        std::unique_ptr<Extension> extension;
+        std::shared_ptr<Extension> extension;
         ExtensionManifest manifest;
         QString path;
         bool is_running;
+        
+        // Make the struct copyable
+        ExtensionInfo() : extension(nullptr), is_running(false) {}
+        ExtensionInfo(const ExtensionInfo&) = default;
+        ExtensionInfo& operator=(const ExtensionInfo&) = default;
+        ExtensionInfo(ExtensionInfo&&) = default;
+        ExtensionInfo& operator=(ExtensionInfo&&) = default;
     };
     
     bool validateManifest(const ExtensionManifest& manifest);

@@ -1,0 +1,92 @@
+#!/bin/bash
+
+#
+# Project: OpenAuto
+# This file is part of openauto project.
+# Copyright (C) 2025 OpenCarDev Team
+#
+#  openauto is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation; either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  openauto is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with openauto. If not, see <http://www.gnu.org/licenses/>.
+#
+
+set -e
+
+# Configuration
+IMAGE_NAME="crankshaft-reborn-builder"
+CONTAINER_NAME="crankshaft-build"
+BUILD_TYPE="${1:-Release}"
+BUILD_TESTS="${2:-OFF}"
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
+
+echo -e "${GREEN}=== Crankshaft Reborn Docker Build ===${NC}"
+echo "Build Type: ${BUILD_TYPE}"
+echo "Build Tests: ${BUILD_TESTS}"
+echo ""
+
+# Get the script directory (project root)
+PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+echo "Project directory: ${PROJECT_DIR}"
+
+# Check if Docker is installed
+if ! command -v docker &> /dev/null; then
+    echo -e "${RED}Error: Docker is not installed${NC}"
+    exit 1
+fi
+
+# Build Docker image
+echo -e "${YELLOW}Building Docker image...${NC}"
+docker build -t "${IMAGE_NAME}" "${PROJECT_DIR}"
+
+# Create build directory if it doesn't exist
+mkdir -p "${PROJECT_DIR}/build"
+
+# Remove old container if exists
+docker rm -f "${CONTAINER_NAME}" 2>/dev/null || true
+
+# Run build in container
+echo -e "${YELLOW}Running build in container...${NC}"
+docker run --rm \
+    --name "${CONTAINER_NAME}" \
+    -v "${PROJECT_DIR}:/src" \
+    -w /src \
+    "${IMAGE_NAME}" \
+    bash -c "
+        set -e
+        echo 'Configuring CMake...'
+        cmake -B build \
+            -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
+            -DBUILD_TESTS=${BUILD_TESTS} \
+            -DBUILD_EXTENSIONS=ON \
+            -G Ninja
+        
+        echo 'Building project...'
+        cmake --build build --config ${BUILD_TYPE} --parallel \$(nproc)
+        
+        if [ '${BUILD_TESTS}' = 'ON' ]; then
+            echo 'Running tests...'
+            cd build
+            ctest --output-on-failure
+            cd ..
+        fi
+        
+        echo 'Build completed successfully!'
+        ls -lh build/
+    "
+
+echo -e "${GREEN}=== Build Complete ===${NC}"
+echo "Binaries are in: ${PROJECT_DIR}/build"
