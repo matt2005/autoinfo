@@ -11,6 +11,11 @@ set(CMAKE_AUTOUIC ON)
 # This avoids linker errors when linking static libraries into shared objects (.so)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
+# Use Debian-friendly install prefix by default
+if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+    set(CMAKE_INSTALL_PREFIX "/usr" CACHE PATH "" FORCE)
+endif()
+
 # Find Qt6 packages
 find_package(Qt6 REQUIRED COMPONENTS Core Gui Quick Widgets WebSockets Network)
 
@@ -102,3 +107,19 @@ set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
 set(CPACK_DEBIAN_FILE_NAME DEB-DEFAULT)
 
 include(CPack)
+
+# CPack / DEB packaging configuration
+set(CPACK_GENERATOR "DEB")
+set(CPACK_PACKAGE_NAME "crankshaft-reborn")
+set(CPACK_PACKAGE_CONTACT "OpenCarDev Team <maintainers@opencardev.org>")
+set(CPACK_PACKAGE_VENDOR "OpenCarDev Team")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Automotive infotainment system with extension framework")
+set(CPACK_DEBIAN_PACKAGE_SECTION "utils")
+set(CPACK_DEBIAN_PACKAGE_PRIORITY "optional")
+set(CPACK_DEBIAN_FILE_NAME DEB-DEFAULT)
+# Let dpkg-shlibdeps compute runtime dependencies from linked shared libs
+set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
+# Include license/readme files
+set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE")
+set(CPACK_RESOURCE_FILE_README "${CMAKE_SOURCE_DIR}/README.md")
+

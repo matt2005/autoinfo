@@ -42,7 +42,7 @@ RUN apt-get update && apt-get install -y \
     dpkg-dev \
     # Qt6 development packages
     qt6-base-dev \
-    qt6-websockets-dev \
+    dpkg-dev \
     qt6-multimedia-dev \
     qt6-positioning-dev \
     qt6-connectivity-dev \
