@@ -1,0 +1,32 @@
+{
+  "id": "bluetooth",
+  "name": "Bluetooth Manager",
+  "version": "1.0.0",
+  "description": "Bluetooth connectivity for hands-free calling and audio streaming",
+  "author": "OpenCarDev Team",
+  "type": "service",
+  "dependencies": [],
+  "platforms": ["linux"],
+  "entry_point": "bluetooth.so",
+  "config_schema": "config_schema.json",
+  "requirements": {
+    "min_core_version": "1.0.0",
+    "required_permissions": [
+      "bluetooth",
+      "contacts",
+      "phone"
+    ]
+  },
+  "metadata": {
+    "category": "connectivity",
+    "icon": "assets/icon.png",
+    "features": [
+      "hands_free_calling",
+      "audio_streaming",
+      "contact_sync",
+      "multiple_device_support",
+      "auto_connect"
+    ],
+    "protocols": ["A2DP", "HFP", "PBAP", "AVRCP"]
+  }
+}

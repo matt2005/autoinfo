@@ -1,0 +1,101 @@
+name: Build and Test
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        qt-version: ['6.5.3']
+        build-type: [Release, Debug]
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v3
+      with:
+        version: ${{ matrix.qt-version }}
+        modules: 'qtwebsockets'
+    
+    - name: Install Dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          build-essential \
+          cmake \
+          ninja-build \
+          qt6-base-dev \
+          qt6-websockets-dev
+    
+    - name: Configure CMake
+      run: |
+        cmake -B build \
+          -DCMAKE_BUILD_TYPE=${{ matrix.build-type }} \
+          -DBUILD_TESTS=ON \
+          -DBUILD_EXTENSIONS=ON \
+          -G Ninja
+    
+    - name: Build
+      run: cmake --build build --config ${{ matrix.build-type }}
+    
+    - name: Run Tests
+      working-directory: build
+      run: ctest -C ${{ matrix.build-type }} --output-on-failure
+    
+    - name: Upload Artifacts
+      if: matrix.build-type == 'Release'
+      uses: actions/upload-artifact@v3
+      with:
+        name: crankshaft-reborn-linux-${{ matrix.qt-version }}
+        path: |
+          build/CrankshaftReborn
+          build/libCrankshaftCore.a
+          build/libCrankshaftExtensions.a
+
+  build-raspberry-pi:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Cross-Compilation
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          crossbuild-essential-armhf \
+          qemu-user-static
+    
+    - name: Build for Raspberry Pi
+      run: |
+        echo "Cross-compilation setup for Raspberry Pi"
+        # TODO: Implement cross-compilation
+    
+  code-quality:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Install Dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          clang-format \
+          cppcheck
+    
+    - name: Check Code Formatting
+      run: |
+        find src -name '*.cpp' -o -name '*.hpp' | xargs clang-format --dry-run --Werror || true
+    
+    - name: Run Cppcheck
+      run: |
+        cppcheck --enable=all --inconclusive --std=c++17 \
+          --suppress=missingIncludeSystem \
+          src/ || true

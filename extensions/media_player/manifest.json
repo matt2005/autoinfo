@@ -1,0 +1,32 @@
+{
+  "id": "media_player",
+  "name": "Media Player",
+  "version": "1.0.0",
+  "description": "Full-featured media player for audio and video playback",
+  "author": "OpenCarDev Team",
+  "type": "ui",
+  "dependencies": [],
+  "platforms": ["linux", "all"],
+  "entry_point": "media_player.so",
+  "config_schema": "config_schema.json",
+  "requirements": {
+    "min_core_version": "1.0.0",
+    "required_permissions": [
+      "audio",
+      "filesystem",
+      "network"
+    ]
+  },
+  "metadata": {
+    "category": "multimedia",
+    "icon": "assets/icon.png",
+    "supported_formats": ["mp3", "flac", "wav", "ogg", "aac", "mp4", "mkv", "avi"],
+    "features": [
+      "playlist_management",
+      "equaliser",
+      "bluetooth_audio",
+      "radio",
+      "streaming"
+    ]
+  }
+}

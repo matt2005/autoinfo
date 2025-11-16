@@ -1,0 +1,32 @@
+{
+  "id": "navigation",
+  "name": "Navigation",
+  "version": "1.0.0",
+  "description": "GPS navigation with real-time traffic and route planning",
+  "author": "OpenCarDev Team",
+  "type": "ui",
+  "dependencies": [],
+  "platforms": ["linux", "all"],
+  "entry_point": "navigation.so",
+  "config_schema": "config_schema.json",
+  "requirements": {
+    "min_core_version": "1.0.0",
+    "required_permissions": [
+      "location",
+      "network",
+      "filesystem"
+    ]
+  },
+  "metadata": {
+    "category": "navigation",
+    "icon": "assets/icon.png",
+    "features": [
+      "turn_by_turn_navigation",
+      "traffic_updates",
+      "points_of_interest",
+      "offline_maps",
+      "voice_guidance"
+    ],
+    "map_providers": ["openstreetmap", "mapbox"]
+  }
+}
