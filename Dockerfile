@@ -43,10 +43,6 @@ RUN apt-get update && apt-get install -y \
     file \
     # Qt6 development packages
     qt6-base-dev \
-    libqt6core6 \
-    libqt6gui6 \
-    libqt6widgets6 \
-    qt6-base-dev \
     qt6-declarative-dev \
     qt6-websockets-dev \
     qt6-multimedia-dev \
