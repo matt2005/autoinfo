@@ -76,6 +76,7 @@ jobs:
     strategy:
       matrix:
         arch: [armhf, arm64]
+        debian-version: [bookworm, trixie]
         build-type: [Release, Debug]
     
     steps:
@@ -102,6 +103,7 @@ jobs:
           --platform ${PLATFORM} \
           --build-arg BUILD_TYPE=${{ matrix.build-type }} \
           --build-arg TARGET_ARCH=${{ matrix.arch }} \
+          --build-arg DEBIAN_VERSION=${{ matrix.debian-version }} \
           --tag crankshaft-reborn-${{ matrix.arch }}:${{ matrix.build-type }} \
           --load \
           -f Dockerfile.rpi \
@@ -113,7 +115,7 @@ jobs:
         mkdir -p build-output
         
         # Extract built binaries from container
-        CONTAINER_ID=$(docker create crankshaft-reborn-${{ matrix.arch }}:${{ matrix.build-type }})
+        CONTAINER_ID=$(docker create crankshaft-reborn-${{ matrix.arch }}:${{ matrix.build-type }}-${{ matrix.debian-version }})
         docker cp ${CONTAINER_ID}:/output/. ./build-output/
         docker rm ${CONTAINER_ID}
         
@@ -125,7 +127,46 @@ jobs:
       if: matrix.build-type == 'Release'
       uses: actions/upload-artifact@v4
       with:
-        name: crankshaft-reborn-${{ matrix.arch }}-${{ matrix.build-type }}
+        name: crankshaft-reborn-${{ matrix.arch }}-${{ matrix.debian-version }}-${{ matrix.build-type }}
+        path: |
+          build-output/CrankshaftReborn
+          build-output/libCrankshaftCore.a
+          build-output/libCrankshaftExtensions.a
+          build-output/*.so*
+          build-output/*.deb
+
+  build-debian:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        debian-version: [bookworm, trixie]
+        build-type: [Release, Debug]
+    steps:
+    - uses: actions/checkout@v3
+    - name: Setup Docker Buildx
+      uses: docker/setup-buildx-action@v3
+    - name: Build (amd64) for ${{ matrix.debian-version }}
+      run: |
+        docker buildx build \
+          --platform linux/amd64 \
+          --build-arg BUILD_TYPE=${{ matrix.build-type }} \
+          --build-arg DEBIAN_VERSION=${{ matrix.debian-version }} \
+          --tag crankshaft-reborn-amd64:${{ matrix.build-type }}-${{ matrix.debian-version }} \
+          --load \
+          -f Dockerfile.debian \
+          .
+    - name: Extract Binaries
+      run: |
+        mkdir -p build-output
+        CONTAINER_ID=$(docker create crankshaft-reborn-amd64:${{ matrix.build-type }}-${{ matrix.debian-version }})
+        docker cp ${CONTAINER_ID}:/output/. ./build-output/
+        docker rm ${CONTAINER_ID}
+        echo "Built files:"; ls -lh build-output/
+    - name: Upload Artifacts
+      if: matrix.build-type == 'Release'
+      uses: actions/upload-artifact@v4
+      with:
+        name: crankshaft-reborn-amd64-${{ matrix.debian-version }}-${{ matrix.build-type }}
         path: |
           build-output/CrankshaftReborn
           build-output/libCrankshaftCore.a
