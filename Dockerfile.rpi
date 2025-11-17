@@ -40,6 +40,7 @@ RUN apt-get update && apt-get install -y \
     pkg-config \
     git \
     dpkg-dev \
+    file \
     # Qt6 development packages
     qt6-base-dev \
     dpkg-dev \
