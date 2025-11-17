@@ -33,7 +33,12 @@ RUN apt-get update && apt-get install -y \
     pkg-config \
     dpkg-dev \
     file \
+    libxkbcommon-dev \
+    libxkbcommon-x11-dev \
+    libboost-system-dev \
+    libboost-log-dev \
     qt6-base-dev \
+    qt6-declarative-dev \
     qt6-websockets-dev \
     qt6-multimedia-dev \
     qt6-positioning-dev \

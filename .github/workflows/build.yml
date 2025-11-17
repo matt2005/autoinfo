@@ -104,7 +104,7 @@ jobs:
           --build-arg BUILD_TYPE=${{ matrix.build-type }} \
           --build-arg TARGET_ARCH=${{ matrix.arch }} \
           --build-arg DEBIAN_VERSION=${{ matrix.debian-version }} \
-          --tag crankshaft-reborn-${{ matrix.arch }}:${{ matrix.build-type }} \
+          --tag crankshaft-reborn-${{ matrix.arch }}:${{ matrix.build-type }}-${{ matrix.debian-version }} \
           --load \
           -f Dockerfile.rpi \
           .
