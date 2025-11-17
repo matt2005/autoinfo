@@ -1,73 +1,86 @@
-# Crankshaft Reborn Build Container
-FROM ubuntu:22.04
+# * Project: Crankshaft Reborn
+# * This file is part of crankshaft_reborn project.
+# * Copyright (C) 2025 OpenCarDev Team
+# *
+# *  crankshaft_reborn is free software: you can redistribute it and/or modify
+# *  it under the terms of the GNU General Public License as published by
+# *  the Free Software Foundation; either version 3 of the License, or
+# *  (at your option) any later version.
+# *
+# *  crankshaft_reborn is distributed in the hope that it will be useful,
+# *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+# *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# *  GNU General Public License for more details.
+# *
+# *  You should have received a copy of the GNU General Public License
+# *  along with crankshaft_reborn. If not, see <http://www.gnu.org/licenses/>.
 
-# Prevent interactive prompts during package installation
-ENV DEBIAN_FRONTEND=noninteractive
+# Multi-architecture Debian build
+# Supports: amd64, armhf (arm/v7), arm64 (arm64/v8)
+# Debian versions: bookworm, trixie
 
-# Install base dependencies
+ARG DEBIAN_VERSION=trixie
+FROM debian:${DEBIAN_VERSION}-slim
+
+# Build arguments
+ARG BUILD_TYPE=Release
+ARG DEBIAN_FRONTEND=noninteractive
+ARG TARGETARCH
+
+# Set locale to avoid encoding issues
+ENV LANG=C.UTF-8
+ENV LC_ALL=C.UTF-8
+
+# Install build dependencies and Qt6
 RUN apt-get update && apt-get install -y \
+    # Core build tools
     build-essential \
     cmake \
     ninja-build \
-    git \
-    wget \
-    curl \
     pkg-config \
-    clang-format \
-    libgl1-mesa-dev \
-    libglu1-mesa-dev \
-    libxkbcommon-dev \
-    libxkbcommon-x11-dev \
-    libx11-dev \
-    libx11-xcb-dev \
-    libxext-dev \
-    libxfixes-dev \
-    libxi-dev \
-    libxrender-dev \
-    libxcb1-dev \
-    libxcb-glx0-dev \
-    libxcb-keysyms1-dev \
-    libxcb-image0-dev \
-    libxcb-shm0-dev \
-    libxcb-icccm4-dev \
-    libxcb-sync-dev \
-    libxcb-xfixes0-dev \
-    libxcb-shape0-dev \
-    libxcb-randr0-dev \
-    libxcb-render-util0-dev \
-    libxcb-util-dev \
-    libxcb-xinerama0-dev \
-    libxcb-xkb-dev \
-    libfontconfig1-dev \
-    libfreetype6-dev \
-    libdbus-1-dev \
-    libssl-dev \
-    && rm -rf /var/lib/apt/lists/*
-
-# Install Qt6
-RUN apt-get update && apt-get install -y \
+    git \
+    dpkg-dev \
+    file \
+    # Qt6 development packages
     qt6-base-dev \
-    qt6-base-dev-tools \
     libqt6core6 \
     libqt6gui6 \
     libqt6widgets6 \
-    libqt6network6 \
-    libqt6websockets6-dev \
-    libqt6quick6 \
-    libqt6qml6 \
+    qt6-base-dev \
     qt6-declarative-dev \
-    qml6-module-qtquick \
-    qml6-module-qtquick-controls \
-    qml6-module-qtquick-layouts \
-    qml6-module-qtquick-window \
+    qt6-websockets-dev \
+    qt6-multimedia-dev \
+    qt6-positioning-dev \
+    qt6-connectivity-dev \
+    # XKB (required for Qt Quick)
+    libxkbcommon-dev \
+    libxkbcommon-x11-dev \
+    # Additional libraries
+    libboost-system-dev \
+    libboost-log-dev \
+    # Formatting tools
+    clang-format \
     && rm -rf /var/lib/apt/lists/*
 
-# Set up build environment
-ENV Qt6_DIR=/usr/lib/x86_64-linux-gnu/cmake/Qt6
-ENV CMAKE_PREFIX_PATH=/usr/lib/x86_64-linux-gnu/cmake/Qt6
+# Set working directory
+WORKDIR /src
 
-# Create working directory
-WORKDIR /build
+# Copy source code
+COPY . .
 
-# Set default command
-CMD ["/bin/bash"]
+# Create output directory
+RUN mkdir -p /output
+
+# Make build script executable
+RUN chmod +x build.sh
+
+# Build the project
+RUN ./build.sh ${BUILD_TYPE} OFF build ON && \
+    # Copy binaries to output
+    (cp -r build/CrankshaftReborn /output/ || true) && \
+    (cp -r build/*.a /output/ || true) && \
+    (cp -r build/*.so* /output/ || true) && \
+    (cp -r build/*.deb /output/ || true)
+
+# Default command
+CMD ["bash", "-c", "echo 'Crankshaft Reborn build container ready. Binaries are in /output/'"]
