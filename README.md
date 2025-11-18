@@ -176,6 +176,9 @@ CrankshaftReborn
 
 # Run with VNC (for testing without physical display)
 CrankshaftReborn -platform vnc:size=1024x600,port=5900
+
+# Run with debug logging (verbose Qt plugin and QML output)
+QT_DEBUG_PLUGINS=1 QT_LOGGING_RULES="*=true" CrankshaftReborn -platform vnc:size=1024x600,port=5900
 ```
 
 ## Configuration
