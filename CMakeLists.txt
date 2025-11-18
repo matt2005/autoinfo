@@ -17,7 +17,7 @@ if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
 endif()
 
 # Find Qt6 packages
-find_package(Qt6 REQUIRED COMPONENTS Core Gui Quick Widgets WebSockets Network)
+find_package(Qt6 REQUIRED COMPONENTS Core Gui Quick Qml Widgets WebSockets Network)
 
 # Project version
 set(PROJECT_VERSION_MAJOR 1)
@@ -37,6 +37,9 @@ include_directories(
 
 # Core library
 add_subdirectory(src/core)
+
+# UI library
+add_subdirectory(src/ui)
 
 # Extensions framework
 if(BUILD_EXTENSIONS)
@@ -61,6 +64,7 @@ target_link_libraries(${PROJECT_NAME}
         Qt6::WebSockets
         Qt6::Network
         CrankshaftCore
+        CrankshaftUI
         CrankshaftExtensions
 )
 
@@ -85,6 +89,18 @@ install(DIRECTORY extensions/
 install(DIRECTORY config/
     DESTINATION etc/${PROJECT_NAME}
     FILES_MATCHING PATTERN "*.conf" PATTERN "*.json"
+)
+
+# Install theme assets
+install(DIRECTORY assets/themes/
+    DESTINATION share/${PROJECT_NAME}/themes
+    FILES_MATCHING PATTERN "*.json"
+)
+
+# Install QML files
+install(DIRECTORY assets/qml/
+    DESTINATION share/${PROJECT_NAME}/qml
+    FILES_MATCHING PATTERN "*.qml" PATTERN "qmldir"
 )
 
 # Package information
