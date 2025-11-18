@@ -20,17 +20,72 @@
 #include <QApplication>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
+#include <QDir>
+#include <QFileInfo>
+#include <QStandardPaths>
+#include <QUrl>
 #include "core/application.hpp"
+#include "ui/ThemeManager.hpp"
 
 int main(int argc, char *argv[]) {
     QApplication app(argc, argv);
     app.setOrganizationName("OpenCarDev");
-    app.setOrganizationDomain("opencardev.org");
+    app.setOrganizationDomain("getcrankshaft.com");
     app.setApplicationName("Crankshaft Reborn");
     app.setApplicationVersion("1.0.0");
 
     openauto::core::Application application;
     if (!application.initialize()) {
+        return 1;
+    }
+
+    // Register QML singleton and initialize theme manager
+    CrankshaftReborn::UI::ThemeManager::registerQmlType();
+    CrankshaftReborn::UI::ThemeManager::instance()->initialize();
+
+    // Set up QML engine and import paths
+    QQmlApplicationEngine engine;
+
+    QStringList importPaths;
+    importPaths << (QDir::currentPath() + "/assets/qml");
+    importPaths << QString::fromUtf8("/usr/share/crankshaft_reborn/qml");
+    importPaths << (QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/qml");
+
+    for (const QString& p : importPaths) {
+        if (QDir(p).exists()) {
+            engine.addImportPath(p);
+        }
+    }
+
+    // Try to find a main QML to load; fall back to ThemeDemo.qml
+    QStringList candidates = {"Main.qml", "App.qml", "main.qml", "ThemeDemo.qml"};
+    QUrl mainUrl;
+    for (const QString& base : importPaths) {
+        for (const QString& name : candidates) {
+            const QString candidatePath = QDir(base).filePath(name);
+            if (QFileInfo::exists(candidatePath)) {
+                mainUrl = QUrl::fromLocalFile(candidatePath);
+                break;
+            }
+        }
+        if (!mainUrl.isEmpty()) break;
+    }
+
+    if (mainUrl.isEmpty()) {
+        // As a last resort, attempt to load ThemeDemo.qml from current dir
+        const QString fallback = QDir::currentPath() + "/assets/qml/ThemeDemo.qml";
+        if (QFileInfo::exists(fallback)) {
+            mainUrl = QUrl::fromLocalFile(fallback);
+        }
+    }
+
+    if (!mainUrl.isEmpty()) {
+        engine.load(mainUrl);
+    }
+
+    if (engine.rootObjects().isEmpty()) {
+        // No UI loaded; keep core services running if desired
+        // Return failure for now so CI/dev notices missing UI
         return 1;
     }
 
