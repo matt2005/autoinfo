@@ -18,6 +18,7 @@
  */
 
 #include <QApplication>
+#include <QCoreApplication>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 #include <QDir>
@@ -47,9 +48,20 @@ int main(int argc, char *argv[]) {
     QQmlApplicationEngine engine;
 
     QStringList importPaths;
+    // Current working directory (developer runs)
     importPaths << (QDir::currentPath() + "/assets/qml");
+    // Application directory (portable/relocatable bundles)
+    importPaths << (QCoreApplication::applicationDirPath() + "/qml");
+    // System install locations (Debian/Ubuntu packages)
+    importPaths << QString::fromUtf8("/usr/share/CrankshaftReborn/qml");
     importPaths << QString::fromUtf8("/usr/share/crankshaft_reborn/qml");
+    // Per-user data dir
     importPaths << (QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/qml");
+    // Optional override via environment
+    const QString envQml = qEnvironmentVariable("CRANKSHAFT_QML_PATH");
+    if (!envQml.isEmpty()) {
+        importPaths.prepend(envQml);
+    }
 
     for (const QString& p : importPaths) {
         if (QDir(p).exists()) {

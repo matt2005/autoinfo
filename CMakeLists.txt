@@ -81,10 +81,7 @@ install(TARGETS ${PROJECT_NAME}
     ARCHIVE DESTINATION lib
 )
 
-install(DIRECTORY extensions/
-    DESTINATION share/${PROJECT_NAME}/extensions
-    FILES_MATCHING PATTERN "*.json"
-)
+# Extension manifests/assets are installed by each extension's own CMakeLists
 
 install(DIRECTORY config/
     DESTINATION etc/${PROJECT_NAME}

@@ -5,6 +5,9 @@ add_library(MediaPlayerExtension SHARED
     media_player_extension.hpp
 )
 
+# Ensure the built library name matches manifest entry_point (media_player.so)
+set_target_properties(MediaPlayerExtension PROPERTIES OUTPUT_NAME media_player)
+
 target_link_libraries(MediaPlayerExtension
     PRIVATE
     Qt6::Core
@@ -18,14 +21,14 @@ target_include_directories(MediaPlayerExtension
 )
 
 install(TARGETS MediaPlayerExtension
-    LIBRARY DESTINATION lib/crankshaft/extensions/media_player
-    RUNTIME DESTINATION lib/crankshaft/extensions/media_player
+    LIBRARY DESTINATION lib/${PROJECT_NAME}/extensions/media_player
+    RUNTIME DESTINATION lib/${PROJECT_NAME}/extensions/media_player
 )
 
 install(FILES manifest.json
-    DESTINATION lib/crankshaft/extensions/media_player
+    DESTINATION share/${PROJECT_NAME}/extensions/media_player
 )
 
 install(DIRECTORY assets/
-    DESTINATION lib/crankshaft/extensions/media_player/assets
+    DESTINATION share/${PROJECT_NAME}/extensions/media_player/assets
 )

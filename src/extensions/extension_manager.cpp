@@ -19,6 +19,7 @@
 
 #include "extension_manager.hpp"
 #include <QDir>
+#include <QCoreApplication>
 #include <QFile>
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -28,10 +29,10 @@ namespace openauto {
 namespace extensions {
 
 ExtensionManager::ExtensionManager(QObject *parent)
-    : QObject(parent),
-      event_bus_(nullptr),
-      ws_server_(nullptr),
-      extensions_dir_("extensions") {
+        : QObject(parent),
+            event_bus_(nullptr),
+            ws_server_(nullptr),
+            extensions_dir_("extensions") {
 }
 
 ExtensionManager::~ExtensionManager() {
@@ -97,9 +98,33 @@ bool ExtensionManager::unloadExtension(const QString& extension_id) {
 }
 
 void ExtensionManager::loadAll() {
-    qInfo() << "Loading all extensions from:" << extensions_dir_;
-    
-    QStringList extension_paths = discoverExtensions(extensions_dir_);
+    // Build a list of candidate directories
+    QStringList searchPaths;
+    // Respect explicit dir if set externally
+    if (!extensions_dir_.isEmpty()) {
+        searchPaths << extensions_dir_;
+    }
+    // App dir (portable)
+    searchPaths << (QCoreApplication::applicationDirPath() + "/extensions");
+    // Current working dir (developer)
+    searchPaths << (QDir::currentPath() + "/extensions");
+    // System install
+    searchPaths << QString::fromUtf8("/usr/share/CrankshaftReborn/extensions");
+    searchPaths << QString::fromUtf8("/usr/share/crankshaft_reborn/extensions");
+    // Optional override via env
+    const QString envExt = qEnvironmentVariable("CRANKSHAFT_EXTENSIONS_PATH");
+    if (!envExt.isEmpty()) {
+        searchPaths.prepend(envExt);
+    }
+
+    QStringList extension_paths;
+    for (const QString& dir : searchPaths) {
+        qInfo() << "Loading all extensions from:" << dir;
+        const QStringList found = discoverExtensions(dir);
+        for (const QString& p : found) {
+            if (!extension_paths.contains(p)) extension_paths << p;
+        }
+    }
     for (const QString& path : extension_paths) {
         loadExtension(path);
     }

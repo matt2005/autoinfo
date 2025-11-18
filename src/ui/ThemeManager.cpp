@@ -19,6 +19,7 @@
 
 #include "ThemeManager.hpp"
 #include <QDir>
+#include <QCoreApplication>
 #include <QFile>
 #include <QSettings>
 #include <QStandardPaths>
@@ -48,8 +49,14 @@ void ThemeManager::initialize(const QString& themesPath) {
     if (themesPath.isEmpty()) {
         // Try multiple locations
         QStringList searchPaths = {
+            // System install (package)
+            "/usr/share/CrankshaftReborn/themes",
             "/usr/share/crankshaft_reborn/themes",
+            // Application directory (portable/relocatable)
+            QCoreApplication::applicationDirPath() + "/themes",
+            // Current working directory (developer runs)
             QDir::currentPath() + "/themes",
+            // Per-user data dir
             QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/themes"
         };
         
