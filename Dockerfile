@@ -48,6 +48,16 @@ RUN apt-get update && apt-get install -y \
     qt6-multimedia-dev \
     qt6-positioning-dev \
     qt6-connectivity-dev \
+    # Qt6 QML runtime modules (required for QML applications)
+    qml6-module-qtquick \
+    qml6-module-qtquick-controls \
+    qml6-module-qtquick-layouts \
+    qml6-module-qtquick-window \
+    qml6-module-qtqml-workerscript \
+    libqt6qml6 \
+    libqt6quick6 \
+    # Qt6 platform plugins
+    qt6-qpa-plugins \
     # XKB (required for Qt Quick)
     libxkbcommon-dev \
     libxkbcommon-x11-dev \

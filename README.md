@@ -126,7 +126,10 @@ sudo apt-get install -y \
     qt6-base-dev \
     qt6-declarative-dev \
     qt6-websockets-dev \
-    libqt6websockets6-dev
+    libqt6websockets6-dev \
+    qt6-multimedia-dev \
+    qt6-positioning-dev \
+    qt6-connectivity-dev
 
 # Build the project
 cd crankshaft_reborn
@@ -145,6 +148,24 @@ cd crankshaft_reborn
 
 ## Installation
 
+### Install Runtime Dependencies
+
+```bash
+# Install required Qt6 QML runtime modules
+sudo apt-get update
+sudo apt-get install -y \
+    qml6-module-qtquick \
+    qml6-module-qtquick-controls \
+    qml6-module-qtquick-layouts \
+    qml6-module-qtquick-window \
+    qml6-module-qtqml-workerscript \
+    libqt6qml6 \
+    libqt6quick6 \
+    qt6-qpa-plugins
+```
+
+### Install Application
+
 ```bash
 # Install system-wide
 cd build
@@ -152,6 +173,9 @@ sudo cmake --install .
 
 # Run
 CrankshaftReborn
+
+# Run with VNC (for testing without physical display)
+CrankshaftReborn -platform vnc:size=1024x600,port=5900
 ```
 
 ## Configuration
