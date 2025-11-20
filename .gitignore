@@ -28,6 +28,7 @@ ui_*.h
 
 # IDE files
 .vscode/
+!.vscode/tasks.json
 .idea/
 *.pro.user
 *.autosave
