@@ -1,20 +1,20 @@
 /*
- * Project: OpenAuto
- * This file is part of openauto project.
+ * Project: Crankshaft
+ * This file is part of Crankshaft project.
  * Copyright (C) 2025 OpenCarDev Team
  *
- *  openauto is free software: you can redistribute it and/or modify
+ *  Crankshaft is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation; either version 3 of the License, or
  *  (at your option) any later version.
  *
- *  openauto is distributed in the hope that it will be useful,
+ *  Crankshaft is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with openauto. If not, see <http://www.gnu.org/licenses/>.
+ *  along with Crankshaft. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include "CapabilityManager.hpp"
@@ -22,6 +22,9 @@
 #include "websocket_server.hpp"
 #include "../ui/ExtensionRegistry.hpp"
 #include <QGeoPositionInfoSource>
+#include <QTimer>
+#include <QJsonDocument>
+#include <QJsonObject>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
@@ -51,6 +54,8 @@ public:
         , is_valid_(true)
         , next_subscription_id_(1)
         , position_source_(nullptr)
+        , device_mode_(DeviceMode::Internal)
+        , mock_timer_(nullptr)
     {
         // Lazy initialization - don't start position source until actually used
         // This prevents hanging on systems without GPS
@@ -91,12 +96,13 @@ public:
         if (!is_valid_) {
             return QGeoCoordinate();
         }
-        
-        const_cast<LocationCapabilityImpl*>(this)->ensurePositionSource();
-        
-        if (!position_source_) {
-            return QGeoCoordinate();
+        // For mock modes return mock coordinate immediately.
+        if (device_mode_ == DeviceMode::MockStatic || device_mode_ == DeviceMode::MockIP) {
+            return mock_coordinate_;
         }
+
+        const_cast<LocationCapabilityImpl*>(this)->ensurePositionSource();
+        if (!position_source_) return QGeoCoordinate();
         
         manager_->logCapabilityUsage(extension_id_, "location", "getCurrentPosition");
         
@@ -136,19 +142,71 @@ public:
     }
     
     double getAccuracy() const override {
-        if (!is_valid_ || !position_source_) {
-            return -1.0;
-        }
-        
+        if (!is_valid_) return -1.0;
+        if (device_mode_ == DeviceMode::MockStatic) return 25.0; // Approximate fixed accuracy
+        if (device_mode_ == DeviceMode::MockIP) return 5000.0; // IP based coarse accuracy
+        if (!position_source_) return -1.0;
         auto lastPos = position_source_->lastKnownPosition();
-        return lastPos.hasAttribute(QGeoPositionInfo::HorizontalAccuracy)
-            ? lastPos.attribute(QGeoPositionInfo::HorizontalAccuracy)
-            : -1.0;
+        return lastPos.hasAttribute(QGeoPositionInfo::HorizontalAccuracy) ? lastPos.attribute(QGeoPositionInfo::HorizontalAccuracy) : -1.0;
     }
     
     bool isAvailable() const override {
-        return is_valid_ && position_source_ != nullptr;
+        if (!is_valid_) return false;
+        if (device_mode_ == DeviceMode::MockStatic || device_mode_ == DeviceMode::MockIP) return true;
+        return position_source_ != nullptr;
     }
+
+    void setDeviceMode(DeviceMode mode) override {
+        if (device_mode_ == mode) return;
+        device_mode_ = mode;
+
+        // Stop any existing sources
+        if (position_source_) {
+            position_source_->stopUpdates();
+        }
+        if (mock_timer_) {
+            mock_timer_->stop();
+        }
+
+        if (mode == DeviceMode::MockStatic) {
+            mock_coordinate_ = QGeoCoordinate(51.5074, -0.1278); // London static
+            ensureMockTimer();
+        } else if (mode == DeviceMode::MockIP) {
+            // Perform IP geolocation lookup using simple JSON parsing.
+            QNetworkAccessManager* nm = new QNetworkAccessManager();
+            QObject::connect(nm, &QNetworkAccessManager::finished, [this, nm](QNetworkReply* reply) {
+                if (reply->error() == QNetworkReply::NoError) {
+                    const QByteArray data = reply->readAll();
+                    QJsonParseError parseError; // requires include QJsonDocument/QJsonObject
+                    QJsonDocument jd = QJsonDocument::fromJson(data, &parseError);
+                    if (parseError.error == QJsonParseError::NoError && jd.isObject()) {
+                        QJsonObject obj = jd.object();
+                        double lat = obj.value("lat").toDouble();
+                        double lon = obj.value("lon").toDouble();
+                        if (lat != 0.0 || lon != 0.0) {
+                            mock_coordinate_ = QGeoCoordinate(lat, lon);
+                        } else {
+                            mock_coordinate_ = QGeoCoordinate(51.5074, -0.1278); // Fallback
+                        }
+                    } else {
+                        mock_coordinate_ = QGeoCoordinate(51.5074, -0.1278); // Fallback
+                    }
+                } else {
+                    mock_coordinate_ = QGeoCoordinate(51.5074, -0.1278); // Fallback
+                }
+                reply->deleteLater();
+                nm->deleteLater();
+                ensureMockTimer();
+            });
+            nm->get(QNetworkRequest(QUrl("http://ip-api.com/json")));
+        } else {
+            // Real device modes
+            ensurePositionSource();
+            if (mock_timer_) mock_timer_->stop();
+        }
+    }
+
+    DeviceMode deviceMode() const override { return device_mode_; }
 
 private:
     void onPositionUpdated(const QGeoPositionInfo& info) {
@@ -159,6 +217,21 @@ private:
             callback(coord);
         }
     }
+
+    void ensureMockTimer() {
+        if (!mock_timer_) {
+            mock_timer_ = new QTimer();
+            QObject::connect(mock_timer_, &QTimer::timeout, [this]() {
+                // For mock modes we emit current mock coordinate (optionally minor jitter)
+                if (device_mode_ == DeviceMode::MockStatic || device_mode_ == DeviceMode::MockIP) {
+                    for (const auto& callback : subscriptions_) {
+                        callback(mock_coordinate_);
+                    }
+                }
+            });
+        }
+        mock_timer_->start(5000);
+    }
     
     QString extension_id_;
     CapabilityManager* manager_;
@@ -166,6 +239,9 @@ private:
     QGeoPositionInfoSource* position_source_;
     QMap<int, std::function<void(const QGeoCoordinate&)>> subscriptions_;
     int next_subscription_id_;
+    DeviceMode device_mode_;
+    QTimer* mock_timer_;
+    QGeoCoordinate mock_coordinate_;
 };
 
 /**
@@ -794,6 +870,14 @@ bool CapabilityManager::hasCapability(
     return granted_capabilities_.contains(extensionId) &&
            granted_capabilities_[extensionId].contains(capabilityType) &&
            granted_capabilities_[extensionId][capabilityType]->isValid();
+}
+
+std::shared_ptr<capabilities::LocationCapability> CapabilityManager::getLocationCapability(const QString& extensionId) const {
+    QMutexLocker locker(&mutex_);
+    if (granted_capabilities_.contains(extensionId) && granted_capabilities_[extensionId].contains("location")) {
+        return std::dynamic_pointer_cast<capabilities::LocationCapability>(granted_capabilities_[extensionId]["location"]);
+    }
+    return nullptr;
 }
 
 void CapabilityManager::logCapabilityUsage(

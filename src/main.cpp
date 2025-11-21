@@ -1,20 +1,20 @@
 /*
- * Project: OpenAuto
- * This file is part of openauto project.
+ * Project: Crankshaft
+ * This file is part of Crankshaft project.
  * Copyright (C) 2025 OpenCarDev Team
  *
- *  openauto is free software: you can redistribute it and/or modify
+ *  Crankshaft is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation; either version 3 of the License, or
  *  (at your option) any later version.
  *
- *  openauto is distributed in the hope that it will be useful,
+ *  Crankshaft is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with openauto. If not, see <http://www.gnu.org/licenses/>.
+ *  along with Crankshaft. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include <QApplication>
@@ -28,6 +28,7 @@
 #include "core/application.hpp"
 #include "ui/ThemeManager.hpp"
 #include "ui/ExtensionRegistry.hpp"
+#include "ui/NavigationBridge.hpp"
 #include "../extensions/navigation/navigation_extension.hpp"
 
 int main(int argc, char *argv[]) {
@@ -58,6 +59,8 @@ int main(int argc, char *argv[]) {
     // Register QML singletons and initialize managers
     CrankshaftReborn::UI::ThemeManager::registerQmlType();
     CrankshaftReborn::UI::ThemeManager::instance()->initialize();
+    NavigationBridge::registerQmlType();
+    NavigationBridge::initialise(application.capabilityManager());
     
     // Create ExtensionRegistry BEFORE starting extensions so they can register views
     openauto::ui::ExtensionRegistry extensionRegistry(application.extensionManager());
@@ -71,6 +74,7 @@ int main(int argc, char *argv[]) {
     
     // Expose ThemeManager as a context property so it's available in all QML files
     engine.rootContext()->setContextProperty("ThemeManager", CrankshaftReborn::UI::ThemeManager::instance());
+    engine.rootContext()->setContextProperty("NavigationBridge", NavigationBridge::instance());
 
     QStringList importPaths;
     // Qt6 system QML modules (for QtPositioning, QtLocation, etc.)

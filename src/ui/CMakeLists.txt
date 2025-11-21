@@ -4,12 +4,14 @@ set(UI_SOURCES
     Theme.cpp
     ThemeManager.cpp
     ExtensionRegistry.cpp
+    NavigationBridge.cpp
 )
 
 set(UI_HEADERS
     Theme.hpp
     ThemeManager.hpp
     ExtensionRegistry.hpp
+    NavigationBridge.hpp
 )
 
 add_library(CrankshaftUI STATIC

@@ -84,6 +84,7 @@ The project will have a additional extension to support AndroidAuto using AASDK,
 ## copilot instructions
 - Run commands via WSL if running on windows
 - Run builds via WSL if running on windows
+- run git command on windows host if running on windows
 - Use British English for all documentation and comments
 
 
@@ -158,20 +159,20 @@ The project will have a additional extension to support AndroidAuto using AASDK,
 - use lf for all files
 - For new files do not use the existing header information, instead use the following template:
 []: # ```plaintext
-[]: #  * Project: OpenAuto
-[]: #  * This file is part of openauto project.
+[]: #  * Project: Crankshaft
+[]: #  * This file is part of Crankshaft project.
 []: #  * Copyright (C) 2025 OpenCarDev Team
 []: #  *
-[]: #  *  openauto is free software: you can redistribute it and/or modify
+[]: #  *  Crankshaft is free software: you can redistribute it and/or modify
 []: #  *  it under the terms of the GNU General Public License as published by
 []: #  *  the Free Software Foundation; either version 3 of the License, or
 []: #  *  (at your option) any later version.
 []: #  *
-[]: #  *  openauto is distributed in the hope that it will be useful,
+[]: #  *  Crankshaft is distributed in the hope that it will be useful,
 []: #  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
 []: #  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 []: #  *  GNU General Public License for more details.
 []: #  *
 []: #  *  You should have received a copy of the GNU General Public License
-[]: #  *  along with openauto. If not, see <http://www.gnu.org/licenses/>.
+[]: #  *  along with Crankshaft. If not, see <http://www.gnu.org/licenses/>.
 []: # ```

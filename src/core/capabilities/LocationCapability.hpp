@@ -1,20 +1,20 @@
 /*
- * Project: OpenAuto
- * This file is part of openauto project.
+ * Project: Crankshaft
+ * This file is part of Crankshaft project.
  * Copyright (C) 2025 OpenCarDev Team
  *
- *  openauto is free software: you can redistribute it and/or modify
+ *  Crankshaft is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation; either version 3 of the License, or
  *  (at your option) any later version.
  *
- *  openauto is distributed in the hope that it will be useful,
+ *  Crankshaft is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with openauto. If not, see <http://www.gnu.org/licenses/>.
+ *  along with Crankshaft. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #pragma once
@@ -42,6 +42,18 @@ public:
     virtual ~LocationCapability() = default;
     
     QString id() const override { return "location"; }
+
+    // GPS device modes supported by the location capability.
+    // Internal/USB/Hat use the underlying platform position source.
+    // MockStatic provides a fixed coordinate for development.
+    // MockIP resolves approximate location from public IP (network required).
+    enum class DeviceMode {
+        Internal,
+        USB,
+        Hat,
+        MockStatic,
+        MockIP
+    };
     
     /**
      * Get the current GPS position.
@@ -74,6 +86,13 @@ public:
      * Check if location service is available.
      */
     virtual bool isAvailable() const = 0;
+
+    // Set the active GPS device mode. Implementations should switch
+    // between real position source and mock providers accordingly.
+    virtual void setDeviceMode(DeviceMode mode) = 0;
+
+    // Get current active device mode.
+    virtual DeviceMode deviceMode() const = 0;
 
 protected:
     LocationCapability() = default;

@@ -1,20 +1,20 @@
 /*
- * Project: OpenAuto
- * This file is part of openauto project.
+ * Project: Crankshaft
+ * This file is part of Crankshaft project.
  * Copyright (C) 2025 OpenCarDev Team
  *
- *  openauto is free software: you can redistribute it and/or modify
+ *  Crankshaft is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation; either version 3 of the License, or
  *  (at your option) any later version.
  *
- *  openauto is distributed in the hope that it will be useful,
+ *  Crankshaft is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with openauto. If not, see <http://www.gnu.org/licenses/>.
+ *  along with Crankshaft. If not, see <http://www.gnu.org/licenses/>.
  */
 
 pragma Singleton
@@ -29,28 +29,23 @@ QtObject {
     
     // Colors - Primary
     readonly property color primary: manager.primaryColor
-    readonly property color primaryLight: manager.primaryColorLight
-    readonly property color primaryDark: manager.primaryColorDark
+    readonly property color primaryLight: manager.primaryLightColor
+    readonly property color primaryDark: manager.primaryDarkColor
     
     // Colors - Secondary
     readonly property color secondary: manager.secondaryColor
-    readonly property color secondaryLight: manager.secondaryColorLight
-    readonly property color secondaryDark: manager.secondaryColorDark
     
     // Colors - Accent
     readonly property color accent: manager.accentColor
-    readonly property color accentLight: manager.accentColorLight
-    readonly property color accentDark: manager.accentColorDark
     
     // Colors - Background
     readonly property color background: manager.backgroundColor
     readonly property color surface: manager.surfaceColor
-    readonly property color surfaceVariant: manager.surfaceColorVariant
+    readonly property color card: manager.cardColor
     
     // Colors - Text
     readonly property color text: manager.textColor
-    readonly property color textSecondary: manager.textColorSecondary
-    readonly property color textTertiary: manager.textColorTertiary
+    readonly property color textSecondary: manager.textSecondaryColor
     
     // Colors - Status
     readonly property color error: manager.errorColor
@@ -60,7 +55,7 @@ QtObject {
     
     // Colors - Other
     readonly property color divider: manager.dividerColor
-    readonly property color overlay: manager.overlayColor
+    readonly property color border: manager.borderColor
     
     // Properties
     readonly property int cornerRadius: manager.cornerRadius
@@ -70,7 +65,7 @@ QtObject {
     // State
     readonly property bool isDark: manager.isDark
     readonly property string currentTheme: manager.currentTheme
-    readonly property var availableThemes: manager.availableThemes()
+    readonly property var availableThemes: manager.availableThemes
     
     // Methods
     function setTheme(themeName) {

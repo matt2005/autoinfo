@@ -1,20 +1,20 @@
 /*
- * Project: OpenAuto
- * This file is part of openauto project.
+ * Project: Crankshaft
+ * This file is part of Crankshaft project.
  * Copyright (C) 2025 OpenCarDev Team
  *
- *  openauto is free software: you can redistribute it and/or modify
+ *  Crankshaft is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation; either version 3 of the License, or
  *  (at your option) any later version.
  *
- *  openauto is distributed in the hope that it will be useful,
+ *  Crankshaft is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with openauto. If not, see <http://www.gnu.org/licenses/>.
+ *  along with Crankshaft. If not, see <http://www.gnu.org/licenses/>.
  */
 
 /**
@@ -46,6 +46,7 @@ Item {
     readonly property color textColor: ThemeManager.textColor
     readonly property color textSecondary: ThemeManager.textSecondaryColor
     readonly property color outlineColor: ThemeManager.borderColor
+    readonly property color dividerColor: ThemeManager.dividerColor
     readonly property int paddingSize: ThemeManager.padding
     readonly property int spacingSize: ThemeManager.spacing
     
@@ -57,6 +58,18 @@ Item {
     property bool isNavigating: false
     property real distanceRemaining: 0
     property int etaSeconds: 0
+    
+    // Settings
+    property bool showSpeedLimit: true
+    property bool voiceGuidance: true
+    property bool avoidTolls: false
+    property bool avoidMotorways: false
+    property string distanceUnit: "metric" // "metric" or "imperial"
+    property bool settingsVisible: false
+    // GPS hardware settings
+    property var gpsDevices: ["Internal", "USB Receiver", "GNSS Hat", "Mock (Static)", "Mock (IP)"]
+    property string selectedGpsDevice: "Internal"
+    signal gpsDeviceChanged(string device)
     
     // Map placeholder with grid pattern
     Rectangle {
@@ -252,7 +265,373 @@ Item {
                 }
                 
                 onClicked: {
-                    console.log("Navigation settings clicked")
+                    settingsVisible = !settingsVisible
+                }
+            }
+        }
+    }
+    
+    // Settings panel overlay
+    Rectangle {
+        id: settingsPanel
+        anchors {
+            top: parent.top
+            right: parent.right
+            bottom: controlPanel.top
+        }
+        width: settingsVisible ? 350 : 0
+        color: surfaceColor
+        opacity: 0.98
+        visible: width > 0
+        clip: true
+        
+        Behavior on width {
+            NumberAnimation { duration: 250; easing.type: Easing.OutQuad }
+        }
+        
+        // Settings content
+        Column {
+            anchors.fill: parent
+            anchors.margins: paddingSize
+            spacing: spacingSize
+            visible: settingsVisible
+            
+            // Header
+            Row {
+                width: parent.width
+                spacing: spacingSize
+                
+                Text {
+                    text: "⚙️ Navigation Settings"
+                    font.pixelSize: 20
+                    font.bold: true
+                    color: textColor
+                    anchors.verticalCenter: parent.verticalCenter
+                }
+                
+                Item { Layout.fillWidth: true }
+                
+                Button {
+                    width: 40
+                    height: 40
+                    text: "✕"
+                    anchors.verticalCenter: parent.verticalCenter
+                    
+                    background: Rectangle {
+                        color: errorColor
+                        radius: 6
+                        opacity: parent.pressed ? 0.8 : 0.6
+                    }
+                    
+                    contentItem: Text {
+                        text: parent.text
+                        font.pixelSize: 18
+                        font.bold: true
+                        color: "white"
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                    }
+                    
+                    onClicked: settingsVisible = false
+                }
+            }
+            
+            Rectangle {
+                width: parent.width
+                height: 2
+                color: dividerColor
+                opacity: 0.3
+            }
+            
+            // Display settings
+            Text {
+                text: "Display"
+                font.pixelSize: 16
+                font.bold: true
+                color: accentColor
+                topPadding: spacingSize
+            }
+            
+            // Show speed limit
+            Row {
+                width: parent.width
+                spacing: spacingSize
+                
+                Text {
+                    text: "Show Speed Limit"
+                    font.pixelSize: 14
+                    color: textColor
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: parent.width - 60
+                }
+                
+                Rectangle {
+                    width: 50
+                    height: 30
+                    radius: 15
+                    color: showSpeedLimit ? accentColor : surfaceVariant
+                    border.color: outlineColor
+                    border.width: 1
+                    anchors.verticalCenter: parent.verticalCenter
+                    
+                    Rectangle {
+                        width: 24
+                        height: 24
+                        radius: 12
+                        color: "white"
+                        x: showSpeedLimit ? parent.width - width - 3 : 3
+                        y: 3
+                        
+                        Behavior on x {
+                            NumberAnimation { duration: 150 }
+                        }
+                    }
+                    
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: showSpeedLimit = !showSpeedLimit
+                    }
+                }
+            }
+            
+            // Voice guidance
+            Row {
+                width: parent.width
+                spacing: spacingSize
+                
+                Text {
+                    text: "Voice Guidance"
+                    font.pixelSize: 14
+                    color: textColor
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: parent.width - 60
+                }
+                
+                Rectangle {
+                    width: 50
+                    height: 30
+                    radius: 15
+                    color: voiceGuidance ? accentColor : surfaceVariant
+                    border.color: outlineColor
+                    border.width: 1
+                    anchors.verticalCenter: parent.verticalCenter
+                    
+                    Rectangle {
+                        width: 24
+                        height: 24
+                        radius: 12
+                        color: "white"
+                        x: voiceGuidance ? parent.width - width - 3 : 3
+                        y: 3
+                        
+                        Behavior on x {
+                            NumberAnimation { duration: 150 }
+                        }
+                    }
+                    
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: voiceGuidance = !voiceGuidance
+                    }
+                }
+            }
+            
+            // Route preferences
+            Text {
+                text: "Route Preferences"
+                font.pixelSize: 16
+                font.bold: true
+                color: accentColor
+                topPadding: spacingSize * 2
+            }
+            
+            // Avoid tolls
+            Row {
+                width: parent.width
+                spacing: spacingSize
+                
+                Text {
+                    text: "Avoid Toll Roads"
+                    font.pixelSize: 14
+                    color: textColor
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: parent.width - 60
+                }
+                
+                Rectangle {
+                    width: 50
+                    height: 30
+                    radius: 15
+                    color: avoidTolls ? accentColor : surfaceVariant
+                    border.color: outlineColor
+                    border.width: 1
+                    anchors.verticalCenter: parent.verticalCenter
+                    
+                    Rectangle {
+                        width: 24
+                        height: 24
+                        radius: 12
+                        color: "white"
+                        x: avoidTolls ? parent.width - width - 3 : 3
+                        y: 3
+                        
+                        Behavior on x {
+                            NumberAnimation { duration: 150 }
+                        }
+                    }
+                    
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: avoidTolls = !avoidTolls
+                    }
+                }
+            }
+            
+            // Avoid motorways
+            Row {
+                width: parent.width
+                spacing: spacingSize
+                
+                Text {
+                    text: "Avoid Motorways"
+                    font.pixelSize: 14
+                    color: textColor
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: parent.width - 60
+                }
+                
+                Rectangle {
+                    width: 50
+                    height: 30
+                    radius: 15
+                    color: avoidMotorways ? accentColor : surfaceVariant
+                    border.color: outlineColor
+                    border.width: 1
+                    anchors.verticalCenter: parent.verticalCenter
+                    
+                    Rectangle {
+                        width: 24
+                        height: 24
+                        radius: 12
+                        color: "white"
+                        x: avoidMotorways ? parent.width - width - 3 : 3
+                        y: 3
+                        
+                        Behavior on x {
+                            NumberAnimation { duration: 150 }
+                        }
+                    }
+                    
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: avoidMotorways = !avoidMotorways
+                    }
+                }
+            }
+            
+            // Hardware
+            Text {
+                text: "Hardware"
+                font.pixelSize: 16
+                font.bold: true
+                color: accentColor
+                topPadding: spacingSize * 2
+            }
+
+            // GPS Device selection
+            Row {
+                width: parent.width
+                spacing: spacingSize
+
+                Text {
+                    text: "GPS Device"
+                    font.pixelSize: 14
+                    color: textColor
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: parent.width - 160
+                }
+
+                ComboBox {
+                    id: gpsDeviceCombo
+                    width: 140
+                    model: gpsDevices
+                    currentIndex: gpsDevices.indexOf(selectedGpsDevice)
+                    font.pixelSize: 14
+
+                    delegate: ItemDelegate {
+                        width: parent.width
+                        text: modelData
+                        font.pixelSize: 14
+                        highlighted: gpsDeviceCombo.currentIndex === index
+                    }
+
+                    onActivated: function(index) {
+                        selectedGpsDevice = gpsDevices[index]
+                        gpsDeviceChanged(selectedGpsDevice)
+                        if (NavigationBridge) {
+                            NavigationBridge.setGpsDevice(selectedGpsDevice)
+                        }
+                    }
+                }
+            }
+
+            // Units
+            Text {
+                text: "Units"
+                font.pixelSize: 16
+                font.bold: true
+                color: accentColor
+                topPadding: spacingSize * 2
+            }
+            
+            Row {
+                width: parent.width
+                spacing: spacingSize
+                
+                Button {
+                    width: (parent.width - spacingSize) / 2
+                    height: 40
+                    text: "Metric (km)"
+                    
+                    background: Rectangle {
+                        color: distanceUnit === "metric" ? accentColor : surfaceVariant
+                        radius: 6
+                        border.color: outlineColor
+                        border.width: 1
+                    }
+                    
+                    contentItem: Text {
+                        text: parent.text
+                        font.pixelSize: 14
+                        color: distanceUnit === "metric" ? "white" : textColor
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                    }
+                    
+                    onClicked: distanceUnit = "metric"
+                }
+                
+                Button {
+                    width: (parent.width - spacingSize) / 2
+                    height: 40
+                    text: "Imperial (mi)"
+                    
+                    background: Rectangle {
+                        color: distanceUnit === "imperial" ? accentColor : surfaceVariant
+                        radius: 6
+                        border.color: outlineColor
+                        border.width: 1
+                    }
+                    
+                    contentItem: Text {
+                        text: parent.text
+                        font.pixelSize: 14
+                        color: distanceUnit === "imperial" ? "white" : textColor
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                    }
+                    
+                    onClicked: distanceUnit = "imperial"
                 }
             }
         }
@@ -287,7 +666,13 @@ Item {
                 spacing: 4
                 
                 Text {
-                    text: (distanceRemaining / 1000).toFixed(1) + " km"
+                    text: {
+                        if (distanceUnit === "imperial") {
+                            return (distanceRemaining / 1609.34).toFixed(1) + " mi";
+                        } else {
+                            return (distanceRemaining / 1000).toFixed(1) + " km";
+                        }
+                    }
                     font.pixelSize: 24
                     font.bold: true
                     color: textColor
@@ -325,7 +710,7 @@ Item {
                 spacing: 4
                 
                 Text {
-                    text: "50 km/h"
+                    text: distanceUnit === "imperial" ? "31 mph" : "50 km/h"
                     font.pixelSize: 24
                     font.bold: true
                     color: textColor
@@ -333,6 +718,25 @@ Item {
                 
                 Text {
                     text: "Speed"
+                    font.pixelSize: 12
+                    color: textSecondary
+                }
+            }
+
+            // GPS Device
+            Column {
+                Layout.fillWidth: true
+                spacing: 4
+
+                Text {
+                    text: selectedGpsDevice
+                    font.pixelSize: 24
+                    font.bold: true
+                    color: textColor
+                }
+
+                Text {
+                    text: "GPS"
                     font.pixelSize: 12
                     color: textSecondary
                 }
