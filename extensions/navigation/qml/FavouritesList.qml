@@ -205,6 +205,8 @@ Item {
         anchors.centerIn: parent
         modal: true
         title: "Delete Favourite"
+        width: Math.min(parent.width * 0.8, 400)
+        implicitWidth: width
         
         property int favouriteIndex: -1
         property string favouriteName: ""

@@ -1,5 +1,9 @@
 <RCC>
     <qresource prefix="/navigation">
         <file>qml/NavigationView.qml</file>
+        <file>qml/DestinationSearch.qml</file>
+        <file>qml/GeocodingSearch.qml</file>
+        <file>qml/FavouritesList.qml</file>
+        <file>qml/CoordinateInput.qml</file>
     </qresource>
 </RCC>

@@ -267,34 +267,35 @@ Item {
             }
             
             // Search component
-            DestinationSearch {
-                id: destinationSearch
+            Loader {
+                id: destinationSearchLoader
                 width: parent.width
                 height: parent.height - 60
+                source: "DestinationSearch.qml"
                 
-                onDestinationSelected: function(lat, lng, address) {
-                    destLat = lat
-                    destLng = lng
-                    console.log("Destination selected:", address, lat, lng)
-                    
-                    // Send navigation command
-                    if (NavigationBridge) {
-                        // This would trigger the backend navigation
-                        console.log("Triggering navigation to:", lat, lng)
+                onLoaded: {
+                    if (item) {
+                        item.destinationSelected.connect(function(lat, lng, address) {
+                            destLat = lat
+                            destLng = lng
+                            console.log("Destination selected:", address, lat, lng)
+                            
+                            // Send navigation command
+                            if (NavigationBridge) {
+                                // This would trigger the backend navigation
+                                console.log("Triggering navigation to:", lat, lng)
+                            }
+                            
+                            searchOverlay.searchOverlayVisible = false
+                            isNavigating = true
+                            
+                            // Calculate example distance (would be real calculation in production)
+                            var latDiff = Math.abs(currentLat - destLat)
+                            var lngDiff = Math.abs(currentLng - destLng)
+                            distanceRemaining = Math.sqrt(latDiff * latDiff + lngDiff * lngDiff) * 111000 // rough km to meters
+                            etaSeconds = Math.floor(distanceRemaining / 15) // ~54 km/h average
+                        })
                     }
-                    
-                    searchOverlay.searchOverlayVisible = false
-                    isNavigating = true
-                    
-                    // Calculate example distance (would be real calculation in production)
-                    var latDiff = Math.abs(currentLat - destLat)
-                    var lngDiff = Math.abs(currentLng - destLng)
-                    distanceRemaining = Math.sqrt(latDiff * latDiff + lngDiff * lngDiff) * 111000 // rough km to meters
-                    etaSeconds = Math.floor(distanceRemaining / 15) // ~54 km/h average
-                }
-                
-                onSearchLocation: function(query) {
-                    // Already handled by NavigationBridge in GeocodingSearch
                 }
             }
         }
@@ -303,7 +304,9 @@ Item {
         Connections {
             target: NavigationBridge
             function onSearchResultsReady(results) {
-                destinationSearch.setSearchResults(results)
+                if (destinationSearchLoader.item) {
+                    destinationSearchLoader.item.setSearchResults(results)
+                }
             }
         }
     }
@@ -1101,12 +1104,14 @@ Item {
                     
                     onClicked: {
                         if (favouriteNameField.text.trim().length > 0) {
-                            destinationSearch.addFavourite(
-                                favouriteNameField.text.trim(),
-                                destLat,
-                                destLng,
-                                "Saved location"
-                            )
+                            if (destinationSearchLoader.item) {
+                                destinationSearchLoader.item.addFavourite(
+                                    favouriteNameField.text.trim(),
+                                    destLat,
+                                    destLng,
+                                    "Saved location"
+                                )
+                            }
                             favouriteNameField.text = ""
                             saveFavouriteDialog.close()
                         }
