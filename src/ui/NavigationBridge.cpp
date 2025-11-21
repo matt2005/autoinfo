@@ -31,6 +31,11 @@ NavigationBridge::NavigationBridge(QObject* parent) : QObject(parent) {
         QDir().mkpath(base);
     }
     settingsPath_ = base + "/navigation_settings.json";
+    favouritesPath_ = base + "/navigation_favourites.json";
+    
+    // Initialize network manager for geocoding
+    networkManager_ = new QNetworkAccessManager(this);
+    
     load();
 }
 
@@ -96,4 +101,138 @@ void NavigationBridge::setGpsDevice(const QString& device) {
     save();
     applyToCapability();
     emit gpsDeviceChanged();
+}
+
+void NavigationBridge::searchLocation(const QString& query) {
+    if (query.trimmed().isEmpty()) {
+        emit searchError("Search query is empty");
+        return;
+    }
+    
+    // Use Nominatim (OpenStreetMap) geocoding API
+    QUrl url("https://nominatim.openstreetmap.org/search");
+    QUrlQuery urlQuery;
+    urlQuery.addQueryItem("q", query);
+    urlQuery.addQueryItem("format", "json");
+    urlQuery.addQueryItem("limit", "10");
+    urlQuery.addQueryItem("addressdetails", "1");
+    url.setQuery(urlQuery);
+    
+    QNetworkRequest request(url);
+    request.setHeader(QNetworkRequest::UserAgentHeader, "Crankshaft/1.0");
+    
+    qDebug() << "Searching location:" << query;
+    
+    QNetworkReply* reply = networkManager_->get(request);
+    connect(reply, &QNetworkReply::finished, this, [this, reply]() {
+        handleGeocodingResponse(reply);
+    });
+}
+
+void NavigationBridge::handleGeocodingResponse(QNetworkReply* reply) {
+    reply->deleteLater();
+    
+    if (reply->error() != QNetworkReply::NoError) {
+        qWarning() << "Geocoding error:" << reply->errorString();
+        emit searchError(reply->errorString());
+        return;
+    }
+    
+    QByteArray data = reply->readAll();
+    QJsonDocument doc = QJsonDocument::fromJson(data);
+    
+    if (!doc.isArray()) {
+        emit searchError("Invalid response from geocoding service");
+        return;
+    }
+    
+    QJsonArray results = doc.array();
+    QVariantList resultsList;
+    
+    for (const QJsonValue& value : results) {
+        if (!value.isObject()) continue;
+        
+        QJsonObject obj = value.toObject();
+        QVariantMap result;
+        
+        result["latitude"] = obj.value("lat").toString().toDouble();
+        result["longitude"] = obj.value("lon").toString().toDouble();
+        result["display_name"] = obj.value("display_name").toString();
+        result["name"] = obj.value("name").toString();
+        result["type"] = obj.value("type").toString();
+        
+        // Extract address details if available
+        if (obj.contains("address")) {
+            QJsonObject address = obj.value("address").toObject();
+            result["city"] = address.value("city").toString();
+            result["country"] = address.value("country").toString();
+            result["postcode"] = address.value("postcode").toString();
+        }
+        
+        resultsList.append(result);
+    }
+    
+    qDebug() << "Geocoding returned" << resultsList.size() << "results";
+    emit searchResultsReady(resultsList);
+}
+
+QVariantList NavigationBridge::loadFavourites() {
+    QFile f(favouritesPath_);
+    if (!f.exists() || !f.open(QIODevice::ReadOnly)) {
+        return QVariantList();
+    }
+    
+    QJsonDocument doc = QJsonDocument::fromJson(f.readAll());
+    f.close();
+    
+    if (!doc.isArray()) {
+        return QVariantList();
+    }
+    
+    QVariantList favourites;
+    QJsonArray array = doc.array();
+    
+    for (const QJsonValue& value : array) {
+        if (!value.isObject()) continue;
+        
+        QJsonObject obj = value.toObject();
+        QVariantMap favourite;
+        
+        favourite["name"] = obj.value("name").toString();
+        favourite["latitude"] = obj.value("latitude").toDouble();
+        favourite["longitude"] = obj.value("longitude").toDouble();
+        favourite["address"] = obj.value("address").toString();
+        favourite["timestamp"] = obj.value("timestamp").toVariant();
+        
+        favourites.append(favourite);
+    }
+    
+    qDebug() << "Loaded" << favourites.size() << "favourites";
+    return favourites;
+}
+
+void NavigationBridge::saveFavourites(const QVariantList& favourites) {
+    QJsonArray array;
+    
+    for (const QVariant& var : favourites) {
+        QVariantMap favourite = var.toMap();
+        
+        QJsonObject obj;
+        obj["name"] = favourite.value("name").toString();
+        obj["latitude"] = favourite.value("latitude").toDouble();
+        obj["longitude"] = favourite.value("longitude").toDouble();
+        obj["address"] = favourite.value("address").toString();
+        obj["timestamp"] = QJsonValue::fromVariant(favourite.value("timestamp"));
+        
+        array.append(obj);
+    }
+    
+    QFile f(favouritesPath_);
+    if (f.open(QIODevice::WriteOnly)) {
+        f.write(QJsonDocument(array).toJson(QJsonDocument::Compact));
+        f.close();
+        qDebug() << "Saved" << favourites.size() << "favourites";
+    } else {
+        qWarning() << "Failed to save favourites to" << favouritesPath_;
+    }
 }

@@ -24,6 +24,7 @@ target_link_libraries(CrankshaftUI
         Qt6::Core
         Qt6::Gui
         Qt6::Qml
+        Qt6::Network
         CrankshaftExtensions
 )
 

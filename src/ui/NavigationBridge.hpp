@@ -22,12 +22,19 @@
 #include <QObject>
 #include <QString>
 #include <QVariant>
+#include <QVariantList>
 #include <QFile>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QJsonArray>
 #include <QStandardPaths>
 #include <QDir>
 #include <QDebug>
+#include <QNetworkAccessManager>
+#include <QNetworkRequest>
+#include <QNetworkReply>
+#include <QUrl>
+#include <QUrlQuery>
 #include "../core/capabilities/LocationCapability.hpp"
 class openauto_capability_manager_forward_decl;
 
@@ -53,16 +60,29 @@ public:
 
 public slots:
     void setGpsDevice(const QString& device);
+    
+    // Geocoding API
+    void searchLocation(const QString& query);
+    
+    // Favourites management
+    QVariantList loadFavourites();
+    void saveFavourites(const QVariantList& favourites);
 
 signals:
     void gpsDeviceChanged();
+    void searchResultsReady(const QVariantList& results);
+    void searchError(const QString& error);
 
 private:
     explicit NavigationBridge(QObject* parent = nullptr);
     void load();
     void save();
     void applyToCapability();
+    void handleGeocodingResponse(QNetworkReply* reply);
+    
     openauto::core::CapabilityManager* capability_manager_ = nullptr;
     QString gpsDevice_ = "Internal";
     QString settingsPath_;
+    QString favouritesPath_;
+    QNetworkAccessManager* networkManager_;
 };

@@ -199,6 +199,115 @@ Item {
         }
     }
     
+    // Destination search overlay
+    Rectangle {
+        id: searchOverlay
+        anchors {
+            top: parent.top
+            left: parent.left
+            right: parent.right
+            bottom: controlPanel.top
+        }
+        color: surfaceColor
+        opacity: 0.98
+        visible: searchOverlayVisible
+        z: 10
+        
+        property bool searchOverlayVisible: false
+        
+        Column {
+            anchors.fill: parent
+            spacing: 0
+            
+            // Header
+            Rectangle {
+                width: parent.width
+                height: 60
+                color: surfaceVariant
+                
+                RowLayout {
+                    anchors.fill: parent
+                    anchors.margins: paddingSize
+                    spacing: spacingSize
+                    
+                    Text {
+                        text: "📍 Set Destination"
+                        font.pixelSize: 20
+                        font.bold: true
+                        color: textColor
+                    }
+                    
+                    Item { Layout.fillWidth: true }
+                    
+                    Button {
+                        width: 50
+                        height: 50
+                        text: "✕"
+                        
+                        background: Rectangle {
+                            color: errorColor
+                            radius: 8
+                            opacity: parent.pressed ? 0.8 : 0.6
+                        }
+                        
+                        contentItem: Text {
+                            text: parent.text
+                            font.pixelSize: 20
+                            font.bold: true
+                            color: "white"
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
+                        }
+                        
+                        onClicked: {
+                            searchOverlay.searchOverlayVisible = false
+                        }
+                    }
+                }
+            }
+            
+            // Search component
+            DestinationSearch {
+                id: destinationSearch
+                width: parent.width
+                height: parent.height - 60
+                
+                onDestinationSelected: function(lat, lng, address) {
+                    destLat = lat
+                    destLng = lng
+                    console.log("Destination selected:", address, lat, lng)
+                    
+                    // Send navigation command
+                    if (NavigationBridge) {
+                        // This would trigger the backend navigation
+                        console.log("Triggering navigation to:", lat, lng)
+                    }
+                    
+                    searchOverlay.searchOverlayVisible = false
+                    isNavigating = true
+                    
+                    // Calculate example distance (would be real calculation in production)
+                    var latDiff = Math.abs(currentLat - destLat)
+                    var lngDiff = Math.abs(currentLng - destLng)
+                    distanceRemaining = Math.sqrt(latDiff * latDiff + lngDiff * lngDiff) * 111000 // rough km to meters
+                    etaSeconds = Math.floor(distanceRemaining / 15) // ~54 km/h average
+                }
+                
+                onSearchLocation: function(query) {
+                    // Already handled by NavigationBridge in GeocodingSearch
+                }
+            }
+        }
+        
+        // Connect NavigationBridge search results
+        Connections {
+            target: NavigationBridge
+            function onSearchResultsReady(results) {
+                destinationSearch.setSearchResults(results)
+            }
+        }
+    }
+    
     // Navigation controls
     Rectangle {
         id: controlPanel
@@ -215,11 +324,38 @@ Item {
             anchors.margins: paddingSize
             spacing: spacingSize
             
+            // Set Destination button
+            Button {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 60
+                text: isNavigating ? "📍 Change Destination" : "📍 Set Destination"
+                visible: !isNavigating || true // Always show for now
+                
+                background: Rectangle {
+                    color: accentColor
+                    radius: 8
+                }
+                
+                contentItem: Text {
+                    text: parent.text
+                    font.pixelSize: 18
+                    font.bold: true
+                    color: "white"
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                }
+                
+                onClicked: {
+                    searchOverlay.searchOverlayVisible = true
+                }
+            }
+            
             // Start/Stop navigation button
             Button {
                 Layout.fillWidth: true
                 Layout.preferredHeight: 60
                 text: isNavigating ? "Stop Navigation" : "Start Navigation"
+                visible: isNavigating // Only show when navigating
                 
                 background: Rectangle {
                     color: isNavigating ? errorColor : accentColor
@@ -236,11 +372,35 @@ Item {
                 }
                 
                 onClicked: {
-                    isNavigating = !isNavigating
-                    if (isNavigating) {
-                        distanceRemaining = 5000 // 5km example
-                        etaSeconds = 600 // 10 minutes example
-                    }
+                    isNavigating = false
+                    distanceRemaining = 0
+                    etaSeconds = 0
+                }
+            }
+            
+            // Save as favourite button
+            Button {
+                Layout.preferredWidth: 60
+                Layout.preferredHeight: 60
+                text: "⭐"
+                visible: isNavigating
+                
+                background: Rectangle {
+                    color: surfaceColor
+                    radius: 8
+                    border.color: outlineColor
+                    border.width: 2
+                }
+                
+                contentItem: Text {
+                    text: parent.text
+                    font.pixelSize: 24
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                }
+                
+                onClicked: {
+                    saveFavouriteDialog.open()
                 }
             }
             
@@ -741,6 +901,140 @@ Item {
                     color: textSecondary
                 }
             }
+        }
+    }
+    
+    // Save favourite dialog
+    Dialog {
+        id: saveFavouriteDialog
+        anchors.centerIn: parent
+        modal: true
+        title: "Save Favourite"
+        width: 400
+        
+        contentItem: Column {
+            spacing: spacingSize * 2
+            padding: paddingSize * 2
+            
+            Text {
+                text: "Save this location as a favourite?"
+                font.pixelSize: 16
+                color: textColor
+                wrapMode: Text.WordWrap
+                width: parent.width
+            }
+            
+            Column {
+                width: parent.width
+                spacing: 8
+                
+                Text {
+                    text: "Name:"
+                    font.pixelSize: 14
+                    font.bold: true
+                    color: textColor
+                }
+                
+                Rectangle {
+                    width: parent.width
+                    height: 45
+                    color: surfaceVariant
+                    radius: 6
+                    border.color: favouriteNameField.activeFocus ? accentColor : outlineColor
+                    border.width: 2
+                    
+                    TextField {
+                        id: favouriteNameField
+                        anchors.fill: parent
+                        anchors.margins: paddingSize
+                        placeholderText: "e.g., Home, Work, etc."
+                        color: textColor
+                        font.pixelSize: 16
+                        
+                        background: Rectangle {
+                            color: "transparent"
+                        }
+                    }
+                }
+            }
+            
+            Text {
+                text: "📍 " + destLat.toFixed(6) + ", " + destLng.toFixed(6)
+                font.pixelSize: 12
+                color: textSecondary
+            }
+            
+            Row {
+                spacing: spacingSize
+                anchors.horizontalCenter: parent.horizontalCenter
+                
+                Button {
+                    text: "Cancel"
+                    width: 120
+                    height: 45
+                    
+                    background: Rectangle {
+                        color: surfaceVariant
+                        radius: 6
+                        border.color: outlineColor
+                        border.width: 1
+                    }
+                    
+                    contentItem: Text {
+                        text: parent.text
+                        font.pixelSize: 16
+                        color: textColor
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                    }
+                    
+                    onClicked: {
+                        favouriteNameField.text = ""
+                        saveFavouriteDialog.close()
+                    }
+                }
+                
+                Button {
+                    text: "Save"
+                    width: 120
+                    height: 45
+                    enabled: favouriteNameField.text.trim().length > 0
+                    
+                    background: Rectangle {
+                        color: parent.enabled ? accentColor : surfaceVariant
+                        radius: 6
+                    }
+                    
+                    contentItem: Text {
+                        text: parent.text
+                        font.pixelSize: 16
+                        font.bold: true
+                        color: parent.enabled ? "white" : textSecondary
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                    }
+                    
+                    onClicked: {
+                        if (favouriteNameField.text.trim().length > 0) {
+                            destinationSearch.addFavourite(
+                                favouriteNameField.text.trim(),
+                                destLat,
+                                destLng,
+                                "Saved location"
+                            )
+                            favouriteNameField.text = ""
+                            saveFavouriteDialog.close()
+                        }
+                    }
+                }
+            }
+        }
+        
+        background: Rectangle {
+            color: surfaceColor
+            radius: 12
+            border.color: outlineColor
+            border.width: 2
         }
     }
     

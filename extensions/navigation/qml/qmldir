@@ -1,0 +1,6 @@
+module navigation
+DestinationSearch 1.0 DestinationSearch.qml
+GeocodingSearch 1.0 GeocodingSearch.qml
+FavouritesList 1.0 FavouritesList.qml
+CoordinateInput 1.0 CoordinateInput.qml
+NavigationView 1.0 NavigationView.qml
