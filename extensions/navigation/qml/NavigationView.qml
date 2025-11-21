@@ -576,12 +576,19 @@ Item {
             NumberAnimation { duration: 250; easing.type: Easing.OutQuad }
         }
         
-        // Settings content
-        Column {
+        // Scrollable settings content
+        ScrollView {
             anchors.fill: parent
             anchors.margins: paddingSize
-            spacing: spacingSize
             visible: settingsVisible
+            clip: true
+            
+            ScrollBar.vertical.policy: ScrollBar.AsNeeded
+            ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
+            
+            Column {
+                width: settingsPanel.width - paddingSize * 2
+                spacing: spacingSize
             
             // Header
             Row {
@@ -1006,6 +1013,7 @@ Item {
                     onClicked: distanceUnit = "imperial"
                 }
             }
+        }
         }
     }
     
