@@ -18,6 +18,8 @@
  */
 
 #include "extension_manager.hpp"
+#include "../core/CapabilityManager.hpp"
+#include "../core/capabilities/Capability.hpp"
 #include <QDir>
 #include <QCoreApplication>
 #include <QFile>
@@ -30,8 +32,7 @@ namespace extensions {
 
 ExtensionManager::ExtensionManager(QObject *parent)
         : QObject(parent),
-            event_bus_(nullptr),
-            ws_server_(nullptr),
+            capability_manager_(nullptr),
             extensions_dir_("extensions") {
 }
 
@@ -39,10 +40,9 @@ ExtensionManager::~ExtensionManager() {
     unloadAll();
 }
 
-void ExtensionManager::initialize(core::EventBus* event_bus, core::WebSocketServer* ws_server) {
-    event_bus_ = event_bus;
-    ws_server_ = ws_server;
-    qInfo() << "Extension manager initialized";
+void ExtensionManager::initialize(core::CapabilityManager* capability_manager) {
+    capability_manager_ = capability_manager;
+    qInfo() << "Extension manager initialized with capability-based security";
 }
 
 bool ExtensionManager::loadExtension(const QString& extension_path) {
@@ -55,6 +55,12 @@ bool ExtensionManager::loadExtension(const QString& extension_path) {
         qWarning() << "Invalid manifest for extension:" << extension_path;
         emit extensionError(manifest.id, "Invalid manifest");
         return false;
+    }
+    
+    // Skip if already loaded (e.g., built-in extension already registered)
+    if (extensions_.contains(manifest.id)) {
+        qDebug() << "Extension already loaded, skipping:" << manifest.id;
+        return true;
     }
     
     if (!validateManifest(manifest)) {
@@ -72,10 +78,80 @@ bool ExtensionManager::loadExtension(const QString& extension_path) {
     // TODO: Load the actual extension library/executable
     // This would involve loading shared libraries or spawning processes
     
+    // For now, store the manifest for capability granting
+    ExtensionInfo info;
+    info.manifest = manifest;
+    info.path = extension_path;
+    info.is_running = false;
+    // Note: extension pointer will be set when actual extension is created
+    extensions_[manifest.id] = info;
+    
     qInfo() << "Extension loaded successfully:" << manifest.id;
     emit extensionLoaded(manifest.id);
     
     return true;
+}
+
+bool ExtensionManager::registerBuiltInExtension(std::shared_ptr<Extension> extension, const QString& extension_path) {
+    if (!extension) {
+        qWarning() << "Cannot register null extension";
+        return false;
+    }
+    
+    QString manifest_path = extension_path + "/manifest.json";
+    ExtensionManifest manifest = loadManifest(manifest_path);
+    
+    if (!manifest.isValid()) {
+        qWarning() << "Invalid manifest for built-in extension:" << extension_path;
+        return false;
+    }
+    
+    // Check if already loaded (manifest discovered but extension not instantiated)
+    if (extensions_.contains(manifest.id)) {
+        qDebug() << "Extension manifest already loaded, adding implementation:" << manifest.id;
+        auto& info = extensions_[manifest.id];
+        info.extension = extension;
+        
+        // Grant capabilities based on manifest
+        grantCapabilities(extension.get(), manifest);
+        
+        // Initialize and start extension
+        if (extension->initialize()) {
+            extension->start();
+            info.is_running = true;
+            qInfo() << "Built-in extension started:" << manifest.id;
+            return true;
+        } else {
+            qWarning() << "Failed to initialize built-in extension:" << manifest.id;
+            emit extensionError(manifest.id, "Initialization failed");
+            return false;
+        }
+    }
+    
+    // Store extension info
+    ExtensionInfo info;
+    info.extension = extension;
+    info.manifest = manifest;
+    info.path = extension_path;
+    info.is_running = false;
+    extensions_[manifest.id] = info;
+    
+    // Grant capabilities based on manifest
+    grantCapabilities(extension.get(), manifest);
+    
+    // Initialize and start extension
+    if (extension->initialize()) {
+        extension->start();
+        extensions_[manifest.id].is_running = true;
+        qInfo() << "Built-in extension registered and started:" << manifest.id;
+        emit extensionLoaded(manifest.id);
+        return true;
+    } else {
+        qWarning() << "Failed to initialize built-in extension:" << manifest.id;
+        extensions_.remove(manifest.id);
+        emit extensionError(manifest.id, "Initialization failed");
+        return false;
+    }
 }
 
 bool ExtensionManager::unloadExtension(const QString& extension_id) {
@@ -209,6 +285,37 @@ ExtensionManifest ExtensionManager::loadManifest(const QString& manifest_path) {
     
     QVariantMap json = doc.object().toVariantMap();
     return ExtensionManifest::fromJson(json);
+}
+
+void ExtensionManager::grantCapabilities(Extension* extension, const ExtensionManifest& manifest) {
+    if (!capability_manager_) {
+        qWarning() << "Cannot grant capabilities - CapabilityManager not initialized";
+        return;
+    }
+    
+    qInfo() << "Granting capabilities to extension:" << manifest.id;
+    qDebug() << "  Requested permissions:" << manifest.requirements.required_permissions;
+    
+    for (const QString& permission : manifest.requirements.required_permissions) {
+        qDebug() << "  Requesting capability:" << permission;
+        auto capability = capability_manager_->grantCapability(extension->id(), permission);
+        if (capability) {
+            qDebug() << "  Calling extension->grantCapability for:" << permission;
+            extension->grantCapability(capability);
+            qDebug() << "  Granted capability:" << permission;
+        } else {
+            qWarning() << "  Failed to grant capability:" << permission;
+        }
+    }
+    
+    qDebug() << "  All capabilities granted, proceeding to audit log";
+    
+    // Log the capability grant for security audit
+    capability_manager_->logCapabilityUsage(
+        extension->id(),
+        "extension_initialization",
+        QString("Granted %1 capabilities based on manifest permissions").arg(manifest.requirements.required_permissions.size())
+    );
 }
 
 }  // namespace extensions

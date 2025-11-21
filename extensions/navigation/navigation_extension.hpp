@@ -65,6 +65,7 @@ private:
     QGeoCoordinate destination_;
     QVector<RoutePoint> currentRoute_;
     bool isNavigating_;
+    int location_subscription_id_ = -1;
 };
 
 }  // namespace navigation

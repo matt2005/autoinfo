@@ -27,6 +27,8 @@
 #include <QUrl>
 #include "core/application.hpp"
 #include "ui/ThemeManager.hpp"
+#include "ui/ExtensionRegistry.hpp"
+#include "../extensions/navigation/navigation_extension.hpp"
 
 int main(int argc, char *argv[]) {
     QApplication app(argc, argv);
@@ -36,18 +38,43 @@ int main(int argc, char *argv[]) {
     app.setApplicationVersion("1.0.0");
 
     openauto::core::Application application;
+    
+    // Register built-in extensions BEFORE initialize()
+    auto navigationExtension = std::make_shared<openauto::extensions::navigation::NavigationExtension>();
+    QString navExtensionPath = QDir(QCoreApplication::applicationDirPath()).filePath("extensions/navigation");
+    if (!QFile::exists(navExtensionPath + "/manifest.json")) {
+        // Try build directory path
+        navExtensionPath = QDir::currentPath() + "/build/extensions/navigation";
+        if (!QFile::exists(navExtensionPath + "/manifest.json")) {
+            // Try relative to executable
+            navExtensionPath = "../extensions/navigation";
+        }
+    }
+    
     if (!application.initialize()) {
         return 1;
     }
-
-    // Register QML singleton and initialize theme manager
+    
+    // Register QML singletons and initialize managers
     CrankshaftReborn::UI::ThemeManager::registerQmlType();
     CrankshaftReborn::UI::ThemeManager::instance()->initialize();
+    
+    // Create ExtensionRegistry BEFORE starting extensions so they can register views
+    openauto::ui::ExtensionRegistry extensionRegistry(application.extensionManager());
+    openauto::ui::ExtensionRegistry::registerQmlType();
+    
+    // Now register the built-in extension (after ExtensionRegistry is created)
+    application.extensionManager()->registerBuiltInExtension(navigationExtension, navExtensionPath);
 
     // Set up QML engine and import paths
     QQmlApplicationEngine engine;
+    
+    // Expose ThemeManager as a context property so it's available in all QML files
+    engine.rootContext()->setContextProperty("ThemeManager", CrankshaftReborn::UI::ThemeManager::instance());
 
     QStringList importPaths;
+    // Qt6 system QML modules (for QtPositioning, QtLocation, etc.)
+    importPaths << QString::fromUtf8("/usr/lib/x86_64-linux-gnu/qt6/qml");
     // Current working directory (developer runs)
     importPaths << (QDir::currentPath() + "/assets/qml");
     // Application directory (portable/relocatable bundles)
@@ -72,11 +99,14 @@ int main(int argc, char *argv[]) {
     // Try to find a main QML to load; fall back to ThemeDemo.qml
     QStringList candidates = {"Main.qml", "App.qml", "main.qml", "ThemeDemo.qml"};
     QUrl mainUrl;
+    qDebug() << "Searching for QML file in import paths:";
     for (const QString& base : importPaths) {
+        qDebug() << "  Checking path:" << base;
         for (const QString& name : candidates) {
             const QString candidatePath = QDir(base).filePath(name);
             if (QFileInfo::exists(candidatePath)) {
                 mainUrl = QUrl::fromLocalFile(candidatePath);
+                qDebug() << "  Found QML file:" << candidatePath;
                 break;
             }
         }
@@ -86,20 +116,28 @@ int main(int argc, char *argv[]) {
     if (mainUrl.isEmpty()) {
         // As a last resort, attempt to load ThemeDemo.qml from current dir
         const QString fallback = QDir::currentPath() + "/assets/qml/ThemeDemo.qml";
+        qDebug() << "Trying fallback:" << fallback;
         if (QFileInfo::exists(fallback)) {
             mainUrl = QUrl::fromLocalFile(fallback);
+            qDebug() << "Fallback found!";
         }
     }
 
     if (!mainUrl.isEmpty()) {
+        qDebug() << "Loading QML from:" << mainUrl;
         engine.load(mainUrl);
+    } else {
+        qWarning() << "No QML file found to load!";
     }
 
     if (engine.rootObjects().isEmpty()) {
+        qWarning() << "No root objects after loading QML - UI failed to load";
         // No UI loaded; keep core services running if desired
         // Return failure for now so CI/dev notices missing UI
         return 1;
     }
+    
+    qDebug() << "QML loaded successfully, entering event loop";
 
     return app.exec();
 }

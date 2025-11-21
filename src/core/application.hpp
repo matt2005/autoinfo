@@ -23,6 +23,7 @@
 #include <QObject>
 #include "event_bus.hpp"
 #include "websocket_server.hpp"
+#include "CapabilityManager.hpp"
 #include "../extensions/extension_manager.hpp"
 
 namespace openauto {
@@ -36,19 +37,23 @@ public:
     ~Application() override;
 
     bool initialize();
+    void registerBuiltInExtensions();
     void shutdown();
 
     EventBus* eventBus() const { return event_bus_.get(); }
     WebSocketServer* webSocketServer() const { return websocket_server_.get(); }
+    CapabilityManager* capabilityManager() const { return capability_manager_.get(); }
     extensions::ExtensionManager* extensionManager() const { return extension_manager_.get(); }
 
 private:
     void setupEventBus();
     void setupWebSocketServer();
+    void setupCapabilityManager();
     void loadExtensions();
 
     std::unique_ptr<EventBus> event_bus_;
     std::unique_ptr<WebSocketServer> websocket_server_;
+    std::unique_ptr<CapabilityManager> capability_manager_;
     std::unique_ptr<extensions::ExtensionManager> extension_manager_;
 };
 

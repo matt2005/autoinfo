@@ -27,6 +27,7 @@ Application::Application(QObject *parent)
     : QObject(parent),
       event_bus_(std::make_unique<EventBus>()),
       websocket_server_(std::make_unique<WebSocketServer>()),
+      capability_manager_(nullptr),
       extension_manager_(std::make_unique<extensions::ExtensionManager>()) {
 }
 
@@ -35,10 +36,11 @@ Application::~Application() {
 }
 
 bool Application::initialize() {
-    qInfo() << "Initializing Crankshaft Reborn Application...";
+    qInfo() << "Initializing Crankshaft Reborn Application (Capability-Based Architecture)...";
 
     setupEventBus();
     setupWebSocketServer();
+    setupCapabilityManager();
     loadExtensions();
 
     qInfo() << "Application initialized successfully";
@@ -67,9 +69,21 @@ void Application::setupWebSocketServer() {
     websocket_server_->start(8080);
 }
 
+void Application::setupCapabilityManager() {
+    qDebug() << "Setting up capability manager...";
+    capability_manager_ = std::make_unique<CapabilityManager>(event_bus_.get(), websocket_server_.get());
+    qInfo() << "Capability manager initialized - extensions will use capability-based security";
+}
+
+void Application::registerBuiltInExtensions() {
+    qDebug() << "Registering built-in extensions...";
+    // Built-in extensions will be registered here before loadAll() is called
+    // This is called from main.cpp before initialize()
+}
+
 void Application::loadExtensions() {
-    qDebug() << "Loading extensions...";
-    extension_manager_->initialize(event_bus_.get(), websocket_server_.get());
+    qDebug() << "Loading extensions with capability-based security...";
+    extension_manager_->initialize(capability_manager_.get());
     extension_manager_->loadAll();
 }
 

@@ -3,11 +3,13 @@ cmake_minimum_required(VERSION 3.16)
 set(UI_SOURCES
     Theme.cpp
     ThemeManager.cpp
+    ExtensionRegistry.cpp
 )
 
 set(UI_HEADERS
     Theme.hpp
     ThemeManager.hpp
+    ExtensionRegistry.hpp
 )
 
 add_library(CrankshaftUI STATIC
@@ -20,6 +22,7 @@ target_link_libraries(CrankshaftUI
         Qt6::Core
         Qt6::Gui
         Qt6::Qml
+        CrankshaftExtensions
 )
 
 target_include_directories(CrankshaftUI

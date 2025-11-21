@@ -1,0 +1,291 @@
+/*
+ * Project: OpenAuto
+ * This file is part of openauto project.
+ * Copyright (C) 2025 OpenCarDev Team
+ *
+ *  openauto is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  openauto is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with openauto. If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/**
+ * Navigation extension UI component
+ * 
+ * Demonstrates capability-based extension architecture:
+ * - Extension uses LocationCapability for GPS
+ * - Extension uses NetworkCapability for map tiles
+ * - Extension uses EventCapability for communication
+ * - Extension cannot directly access core services
+ * 
+ * NOTE: QtLocation/QtPositioning modules not available in current Qt6 setup
+ * Using placeholder UI until qml6-module-qtlocation package is installed
+ */
+
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Layouts
+import CrankshaftReborn.UI 1.0
+
+Item {
+    id: root
+    
+    // Current location (updated by extension via events)
+    property real currentLat: 51.5074
+    property real currentLng: -0.1278
+    property real destLat: 51.5074
+    property real destLng: -0.1278
+    property bool isNavigating: false
+    property real distanceRemaining: 0
+    property int etaSeconds: 0
+    
+    // Placeholder for map (until QtLocation module is installed)
+    Rectangle {
+        id: mapPlaceholder
+        anchors.fill: parent
+        color: Theme.surface
+            visible: isNavigating
+            coordinate: QtPositioning.coordinate(destLat, destLng)
+            anchorPoint.x: destMarker.width / 2
+            anchorPoint.y: destMarker.height
+            
+            sourceItem: Column {
+                id: destMarker
+                spacing: 0
+                
+                Rectangle {
+                    width: 32
+                    height: 40
+                    color: Theme.error
+                    radius: 16
+                    
+                    Rectangle {
+                        width: 0
+                        height: 0
+                        anchors.bottom: parent.bottom
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        
+                        // Marker pin point
+                        Canvas {
+                            width: 32
+                            height: 16
+                            onPaint: {
+                                var ctx = getContext("2d");
+                                ctx.fillStyle = Theme.error;
+                                ctx.beginPath();
+                                ctx.moveTo(16, 0);
+                                ctx.lineTo(0, 16);
+                                ctx.lineTo(32, 16);
+                                ctx.closePath();
+                                ctx.fill();
+                            }
+                        }
+                    }
+                    
+                    Text {
+                        text: "🎯"
+                        font.pixelSize: 20
+                        anchors.centerIn: parent
+                        anchors.verticalCenterOffset: -4
+                    }
+                }
+            }
+        }
+        
+        // Route line (simplified - would use MapPolyline with actual route)
+        MapPolyline {
+            visible: isNavigating
+            line.color: Theme.accent
+            line.width: 4
+            path: [
+                QtPositioning.coordinate(currentLat, currentLng),
+                QtPositioning.coordinate(destLat, destLng)
+            ]
+        }
+    }
+    
+    // Navigation info panel
+    Rectangle {
+        id: infoPanel
+        anchors.bottom: parent.bottom
+        anchors.left: parent.left
+        anchors.right: parent.right
+        height: isNavigating ? 120 : 0
+        color: Theme.surface
+        opacity: 0.95
+        
+        Behavior on height {
+            NumberAnimation { duration: 300; easing.type: Easing.OutQuad }
+        }
+        
+        ColumnLayout {
+            anchors.fill: parent
+            anchors.margins: Theme.padding
+            spacing: Theme.spacing
+            visible: isNavigating
+            
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: Theme.spacing * 2
+                
+                // Distance remaining
+                Column {
+                    spacing: 4
+                    
+                    Text {
+                        text: (distanceRemaining / 1000).toFixed(1) + " km"
+                        font.pixelSize: 28
+                        font.bold: true
+                        color: Theme.text
+                    }
+                    
+                    Text {
+                        text: "Distance"
+                        font.pixelSize: 12
+                        color: Theme.textSecondary
+                    }
+                }
+                
+                Rectangle {
+                    width: 1
+                    height: 40
+                    color: Theme.border
+                }
+                
+                // ETA
+                Column {
+                    spacing: 4
+                    
+                    Text {
+                        text: Math.floor(etaSeconds / 60) + " min"
+                        font.pixelSize: 28
+                        font.bold: true
+                        color: Theme.text
+                    }
+                    
+                    Text {
+                        text: "ETA"
+                        font.pixelSize: 12
+                        color: Theme.textSecondary
+                    }
+                }
+                
+                Item { Layout.fillWidth: true }
+                
+                // Cancel button
+                Button {
+                    text: "Cancel"
+                    onClicked: {
+                        // Send event via extension's EventCapability
+                        console.log("Canceling navigation (would emit navigation.cancel event)");
+                        isNavigating = false;
+                    }
+                }
+            }
+        }
+    }
+    
+    // Search/destination entry
+    Rectangle {
+        anchors.top: parent.top
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.margins: Theme.padding
+        height: 50
+        color: Theme.surface
+        radius: Theme.cornerRadius
+        opacity: 0.95
+        
+        RowLayout {
+            anchors.fill: parent
+            anchors.margins: Theme.padding
+            spacing: Theme.spacing
+            
+            Text {
+                text: "🔍"
+                font.pixelSize: 20
+            }
+            
+            TextField {
+                id: searchField
+                Layout.fillWidth: true
+                placeholderText: "Search destination..."
+                background: Rectangle { color: "transparent" }
+                color: Theme.text
+                
+                onAccepted: {
+                    console.log("Search for:", text);
+                    // Would emit navigation.searchLocation event
+                }
+            }
+            
+            Button {
+                text: "Go"
+                enabled: searchField.text.length > 0
+                onClicked: {
+                    console.log("Navigate to:", searchField.text);
+                    // Demo: Set destination to London Eye
+                    destLat = 51.5033;
+                    destLng = -0.1195;
+                    isNavigating = true;
+                    distanceRemaining = 2500; // Demo value
+                    etaSeconds = 480; // Demo value
+                }
+            }
+        }
+    }
+    
+    // Quick action buttons
+    Column {
+        anchors.right: parent.right
+        anchors.top: parent.top
+        anchors.margins: Theme.padding
+        anchors.topMargin: 70
+        spacing: Theme.spacing
+        
+        Button {
+            width: 50
+            height: 50
+            text: "+"
+            font.pixelSize: 24
+            onClicked: map.zoomLevel = Math.min(map.zoomLevel + 1, map.maximumZoomLevel)
+        }
+        
+        Button {
+            width: 50
+            height: 50
+            text: "−"
+            font.pixelSize: 24
+            onClicked: map.zoomLevel = Math.max(map.zoomLevel - 1, map.minimumZoomLevel)
+        }
+        
+        Button {
+            width: 50
+            height: 50
+            text: "📍"
+            font.pixelSize: 20
+            onClicked: {
+                // Center on current location
+                map.center = QtPositioning.coordinate(currentLat, currentLng);
+            }
+        }
+    }
+    
+    // Theme-aware styling
+    Behavior on opacity {
+        NumberAnimation { duration: 200 }
+    }
+    
+    Component.onCompleted: {
+        console.log("NavigationView loaded - capability-based architecture");
+        console.log("Extension communicates via EventCapability only");
+    }
+}

@@ -30,6 +30,7 @@ namespace openauto {
 namespace core {
     class EventBus;
     class WebSocketServer;
+    class CapabilityManager;
 }
 
 namespace extensions {
@@ -41,10 +42,11 @@ public:
     explicit ExtensionManager(QObject *parent = nullptr);
     ~ExtensionManager() override;
 
-    void initialize(core::EventBus* event_bus, core::WebSocketServer* ws_server);
+    void initialize(core::CapabilityManager* capability_manager);
     
     // Extension lifecycle
     bool loadExtension(const QString& extension_path);
+    bool registerBuiltInExtension(std::shared_ptr<Extension> extension, const QString& extension_path);
     bool unloadExtension(const QString& extension_id);
     void loadAll();
     void unloadAll();
@@ -80,10 +82,10 @@ private:
     bool validateManifest(const ExtensionManifest& manifest);
     bool checkDependencies(const ExtensionManifest& manifest);
     ExtensionManifest loadManifest(const QString& manifest_path);
+    void grantCapabilities(Extension* extension, const ExtensionManifest& manifest);
     
     QMap<QString, ExtensionInfo> extensions_;
-    core::EventBus* event_bus_;
-    core::WebSocketServer* ws_server_;
+    core::CapabilityManager* capability_manager_;
     QString extensions_dir_;
 };
 

@@ -4,7 +4,7 @@ An extensible automotive infotainment system designed for modern vehicles, optim
 
 ## Overview
 
-Crankshaft Reborn is a modular, open-source infotainment platform that provides a robust foundation for creating custom in-vehicle experiences. Built with Qt6 and C++, it offers a flexible extension framework similar to Home Assistant, allowing developers to create and share custom functionality.
+Crankshaft Reborn is a modular, open-source infotainment platform that provides a robust foundation for creating custom in-vehicle experiences. Built with Qt6 and C++, it offers a flexible extension framework, allowing developers to create and share custom functionality.
 
 ## Key Features
 

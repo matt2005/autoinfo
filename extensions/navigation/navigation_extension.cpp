@@ -18,7 +18,11 @@
  */
 
 #include "navigation_extension.hpp"
-#include "../../src/core/event_bus.hpp"
+#include "../../src/core/capabilities/LocationCapability.hpp"
+#include "../../src/core/capabilities/NetworkCapability.hpp"
+#include "../../src/core/capabilities/FileSystemCapability.hpp"
+#include "../../src/core/capabilities/UICapability.hpp"
+#include "../../src/core/capabilities/EventCapability.hpp"
 #include <QDebug>
 
 namespace openauto {
@@ -26,19 +30,62 @@ namespace extensions {
 namespace navigation {
 
 bool NavigationExtension::initialize() {
-    qInfo() << "Initializing Navigation extension...";
+    qInfo() << "Initializing Navigation extension (capability-based)...";
     isNavigating_ = false;
-    setupEventHandlers();
+    
+    // Check required capabilities
+    if (!hasCapability("location")) {
+        qWarning() << "Navigation: Location capability not granted!";
+    }
+    if (!hasCapability("event")) {
+        qWarning() << "Navigation: Event capability not granted!";
+    }
+    if (!hasCapability("ui")) {
+        qWarning() << "Navigation: UI capability not granted!";
+    }
+    
     return true;
 }
 
 void NavigationExtension::start() {
     qInfo() << "Starting Navigation extension...";
+    
+    // Register UI using UI capability
+    auto uiCap = getCapability<core::capabilities::UICapability>();
+    if (uiCap) {
+        QVariantMap metadata;
+        metadata["title"] = "Navigation";
+        metadata["icon"] = "navigation";
+        metadata["description"] = "GPS navigation with real-time traffic";
+        uiCap->registerMainView("qrc:/navigation/qml/NavigationView.qml", metadata);
+        qInfo() << "Navigation: Registered main view with path: qrc:/navigation/qml/NavigationView.qml";
+    }
+    
+    // Subscribe to events using Event capability
+    setupEventHandlers();
+    
+    // Subscribe to location updates using Location capability
+    auto locationCap = getCapability<core::capabilities::LocationCapability>();
+    if (locationCap) {
+        location_subscription_id_ = locationCap->subscribeToUpdates(
+            [this](const QGeoCoordinate& coord) {
+                updateCurrentLocation(coord);
+            }
+        );
+        qInfo() << "Navigation: Subscribed to location updates";
+    }
 }
 
 void NavigationExtension::stop() {
     qInfo() << "Stopping Navigation extension...";
     isNavigating_ = false;
+    
+    // Unsubscribe from location updates
+    auto locationCap = getCapability<core::capabilities::LocationCapability>();
+    if (locationCap && location_subscription_id_ >= 0) {
+        locationCap->unsubscribe(location_subscription_id_);
+        location_subscription_id_ = -1;
+    }
 }
 
 void NavigationExtension::cleanup() {
@@ -47,32 +94,30 @@ void NavigationExtension::cleanup() {
 }
 
 void NavigationExtension::setupEventHandlers() {
-    if (!event_bus_) {
-        qWarning() << "Event bus not available";
+    auto eventCap = getCapability<core::capabilities::EventCapability>();
+    if (!eventCap) {
+        qWarning() << "Navigation: Event capability not available";
         return;
     }
 
-    event_bus_->subscribe("navigation.navigateTo", [this](const QVariantMap& data) {
+    // Subscribe to navigation commands (our own namespace)
+    eventCap->subscribe("navigation.navigateTo", [this](const QVariantMap& data) {
         handleNavigateToCommand(data);
     });
 
-    event_bus_->subscribe("navigation.cancel", [this](const QVariantMap& data) {
+    eventCap->subscribe("navigation.cancel", [this](const QVariantMap& data) {
         handleCancelNavigationCommand(data);
     });
 
-    event_bus_->subscribe("navigation.setDestination", [this](const QVariantMap& data) {
+    eventCap->subscribe("navigation.setDestination", [this](const QVariantMap& data) {
         handleSetDestinationCommand(data);
     });
 
-    event_bus_->subscribe("navigation.searchLocation", [this](const QVariantMap& data) {
+    eventCap->subscribe("navigation.searchLocation", [this](const QVariantMap& data) {
         handleSearchLocationCommand(data);
     });
-
-    event_bus_->subscribe("location.updated", [this](const QVariantMap& data) {
-        double latitude = data.value("latitude").toDouble();
-        double longitude = data.value("longitude").toDouble();
-        updateCurrentLocation(QGeoCoordinate(latitude, longitude));
-    });
+    
+    qInfo() << "Navigation: Event handlers configured";
 }
 
 void NavigationExtension::handleNavigateToCommand(const QVariantMap& data) {
@@ -99,9 +144,12 @@ void NavigationExtension::handleCancelNavigationCommand(const QVariantMap& data)
     isNavigating_ = false;
     currentRoute_.clear();
 
-    QVariantMap event;
-    event["status"] = "cancelled";
-    event_bus_->publish("navigation.status", event);
+    auto eventCap = getCapability<core::capabilities::EventCapability>();
+    if (eventCap) {
+        QVariantMap event;
+        event["status"] = "cancelled";
+        eventCap->emitEvent("status", event);
+    }
 }
 
 void NavigationExtension::handleSetDestinationCommand(const QVariantMap& data) {
@@ -117,8 +165,34 @@ void NavigationExtension::handleSearchLocationCommand(const QVariantMap& data) {
     qDebug() << "Search location command received:" << data;
     QString query = data.value("query").toString();
 
-    // TODO: Implement location search
-    qInfo() << "Searching for location:" << query;
+    // Use network capability to search for location
+    auto networkCap = getCapability<core::capabilities::NetworkCapability>();
+    if (networkCap && networkCap->isOnline()) {
+        // Example: Search using Nominatim API
+        QString searchUrl = QString("https://nominatim.openstreetmap.org/search?q=%1&format=json&limit=5")
+            .arg(QString(QUrl::toPercentEncoding(query)));
+        
+        QNetworkReply* reply = networkCap->get(QUrl(searchUrl));
+        if (reply) {
+            QObject::connect(reply, &QNetworkReply::finished, [this, reply]() {
+                if (reply->error() == QNetworkReply::NoError) {
+                    QByteArray response = reply->readAll();
+                    qInfo() << "Search results:" << response;
+                    
+                    // Parse and emit results via event capability
+                    auto eventCap = getCapability<core::capabilities::EventCapability>();
+                    if (eventCap) {
+                        QVariantMap event;
+                        event["results"] = QString::fromUtf8(response);
+                        eventCap->emitEvent("searchResults", event);
+                    }
+                }
+                reply->deleteLater();
+            });
+        }
+    } else {
+        qWarning() << "Network capability not available for location search";
+    }
 }
 
 void NavigationExtension::updateCurrentLocation(const QGeoCoordinate& location) {
@@ -130,7 +204,8 @@ void NavigationExtension::updateCurrentLocation(const QGeoCoordinate& location) 
 }
 
 void NavigationExtension::publishNavigationUpdate() {
-    if (!event_bus_) {
+    auto eventCap = getCapability<core::capabilities::EventCapability>();
+    if (!eventCap) {
         return;
     }
 
@@ -150,7 +225,7 @@ void NavigationExtension::publishNavigationUpdate() {
         event["etaSeconds"] = etaSeconds;
     }
 
-    event_bus_->publish("navigation.update", event);
+    eventCap->emitEvent("update", event);
 }
 
 }  // namespace navigation

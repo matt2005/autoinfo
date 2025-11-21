@@ -17,7 +17,7 @@ if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
 endif()
 
 # Find Qt6 packages
-find_package(Qt6 REQUIRED COMPONENTS Core Gui Quick Qml Widgets WebSockets Network)
+find_package(Qt6 REQUIRED COMPONENTS Core Gui Quick Qml Widgets WebSockets Network Positioning)
 
 # Project version
 set(PROJECT_VERSION_MAJOR 1)
@@ -63,9 +63,27 @@ target_link_libraries(${PROJECT_NAME}
         Qt6::Widgets
         Qt6::WebSockets
         Qt6::Network
+        Qt6::Positioning
         CrankshaftCore
         CrankshaftUI
         CrankshaftExtensions
+        NavigationExtension
+)
+
+# Copy assets to build directory for development
+add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/assets
+        ${CMAKE_BINARY_DIR}/assets
+    COMMENT "Copying assets to build directory"
+)
+
+# Copy config to build directory for development
+add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/config
+        ${CMAKE_BINARY_DIR}/config
+    COMMENT "Copying config to build directory"
 )
 
 # Tests

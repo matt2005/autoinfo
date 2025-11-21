@@ -81,6 +81,11 @@ The project will have a additional extension to support AndroidAuto using AASDK,
 - Ensure workflows are well-documented and easy to understand.
 - Use Full path to GH cli when debugging, testing, or running workflows.
 
+## copilot instructions
+- Run commands via WSL if running on windows
+- Run builds via WSL if running on windows
+- Use British English for all documentation and comments
+
 
 ## Coding Standards
 
