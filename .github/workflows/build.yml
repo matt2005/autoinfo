@@ -79,7 +79,7 @@ jobs:
     strategy:
       matrix:
         arch: [amd64, armhf, arm64]
-        debian-version: [bookworm, trixie]
+        debian-version: [trixie]
         build-type: [Release, Debug]
     
     steps:
