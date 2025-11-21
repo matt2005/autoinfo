@@ -735,6 +735,91 @@ Item {
                 }
             }
 
+            // Services
+            Text {
+                text: "Services"
+                font.pixelSize: 16
+                font.bold: true
+                color: accentColor
+                topPadding: spacingSize * 2
+            }
+
+            // Geocoding Provider selection
+            Column {
+                width: parent.width
+                spacing: 8
+
+                Row {
+                    width: parent.width
+                    spacing: spacingSize
+
+                    Text {
+                        text: "Map Provider"
+                        font.pixelSize: 14
+                        color: textColor
+                        anchors.verticalCenter: parent.verticalCenter
+                        width: parent.width - 160
+                    }
+
+                    ComboBox {
+                        id: providerCombo
+                        width: 140
+                        model: ListModel { id: providersModel }
+                        textRole: "displayName"
+                        font.pixelSize: 14
+
+                        delegate: ItemDelegate {
+                            width: parent.width
+                            text: model.displayName
+                            font.pixelSize: 14
+                            highlighted: providerCombo.currentIndex === index
+                        }
+
+                        onActivated: function(index) {
+                            if (NavigationBridge && providersModel.count > 0) {
+                                var providerId = providersModel.get(index).id
+                                NavigationBridge.setGeocodingProvider(providerId)
+                            }
+                        }
+                        
+                        Component.onCompleted: {
+                            if (NavigationBridge) {
+                                // Populate providers list
+                                var providers = NavigationBridge.availableProviders
+                                providersModel.clear()
+                                for (var i = 0; i < providers.length; i++) {
+                                    providersModel.append(providers[i])
+                                }
+                                
+                                // Set current provider
+                                var currentProvider = NavigationBridge.geocodingProvider
+                                for (var j = 0; j < providersModel.count; j++) {
+                                    if (providersModel.get(j).id === currentProvider) {
+                                        providerCombo.currentIndex = j
+                                        break
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Provider description
+                Text {
+                    text: {
+                        if (NavigationBridge && providersModel.count > 0 && providerCombo.currentIndex >= 0) {
+                            return providersModel.get(providerCombo.currentIndex).description
+                        }
+                        return ""
+                    }
+                    font.pixelSize: 11
+                    color: textSecondary
+                    opacity: 0.7
+                    wrapMode: Text.WordWrap
+                    width: parent.width
+                }
+            }
+
             // Units
             Text {
                 text: "Units"

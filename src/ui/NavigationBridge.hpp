@@ -36,6 +36,8 @@
 #include <QUrl>
 #include <QUrlQuery>
 #include "../core/capabilities/LocationCapability.hpp"
+#include "../../extensions/navigation/GeocodingProvider.hpp"
+#include "../../extensions/navigation/GeocodingProviderFactory.hpp"
 class openauto_capability_manager_forward_decl;
 
 namespace openauto {
@@ -50,6 +52,8 @@ namespace core { class CapabilityManager; }
 class NavigationBridge : public QObject {
     Q_OBJECT
     Q_PROPERTY(QString gpsDevice READ gpsDevice WRITE setGpsDevice NOTIFY gpsDeviceChanged)
+    Q_PROPERTY(QString geocodingProvider READ geocodingProvider WRITE setGeocodingProvider NOTIFY geocodingProviderChanged)
+    Q_PROPERTY(QVariantList availableProviders READ availableProviders NOTIFY availableProvidersChanged)
 public:
     static NavigationBridge* instance();
 
@@ -57,9 +61,12 @@ public:
     static void registerQmlType();
 
     QString gpsDevice() const { return gpsDevice_; }
+    QString geocodingProvider() const { return geocodingProviderId_; }
+    QVariantList availableProviders() const;
 
 public slots:
     void setGpsDevice(const QString& device);
+    void setGeocodingProvider(const QString& providerId);
     
     // Geocoding API
     void searchLocation(const QString& query);
@@ -70,6 +77,8 @@ public slots:
 
 signals:
     void gpsDeviceChanged();
+    void geocodingProviderChanged();
+    void availableProvidersChanged();
     void searchResultsReady(const QVariantList& results);
     void searchError(const QString& error);
 
@@ -78,11 +87,13 @@ private:
     void load();
     void save();
     void applyToCapability();
-    void handleGeocodingResponse(QNetworkReply* reply);
+    void initializeProviders();
+    void switchProvider(const QString& providerId);
     
     openauto::core::CapabilityManager* capability_manager_ = nullptr;
     QString gpsDevice_ = "Internal";
+    QString geocodingProviderId_ = "nominatim";
     QString settingsPath_;
     QString favouritesPath_;
-    QNetworkAccessManager* networkManager_;
+    openauto::extensions::navigation::GeocodingProvider* currentProvider_ = nullptr;
 };

@@ -33,8 +33,8 @@ NavigationBridge::NavigationBridge(QObject* parent) : QObject(parent) {
     settingsPath_ = base + "/navigation_settings.json";
     favouritesPath_ = base + "/navigation_favourites.json";
     
-    // Initialize network manager for geocoding
-    networkManager_ = new QNetworkAccessManager(this);
+    // Initialize provider system
+    initializeProviders();
     
     load();
 }
@@ -67,6 +67,10 @@ void NavigationBridge::load() {
         const auto doc = QJsonDocument::fromJson(f.readAll());
         if (doc.isObject()) {
             gpsDevice_ = doc.object().value("gpsDevice").toString(gpsDevice_);
+            QString providerId = doc.object().value("geocodingProvider").toString(geocodingProviderId_);
+            if (providerId != geocodingProviderId_) {
+                switchProvider(providerId);
+            }
         }
     }
 }
@@ -74,6 +78,7 @@ void NavigationBridge::load() {
 void NavigationBridge::save() {
     QJsonObject obj;
     obj["gpsDevice"] = gpsDevice_;
+    obj["geocodingProvider"] = geocodingProviderId_;
     QFile f(settingsPath_);
     if (f.open(QIODevice::WriteOnly)) {
         f.write(QJsonDocument(obj).toJson(QJsonDocument::Compact));
@@ -104,76 +109,89 @@ void NavigationBridge::setGpsDevice(const QString& device) {
 }
 
 void NavigationBridge::searchLocation(const QString& query) {
+    if (!currentProvider_) {
+        emit searchError("No geocoding provider available");
+        return;
+    }
+    
     if (query.trimmed().isEmpty()) {
         emit searchError("Search query is empty");
         return;
     }
     
-    // Use Nominatim (OpenStreetMap) geocoding API
-    QUrl url("https://nominatim.openstreetmap.org/search");
-    QUrlQuery urlQuery;
-    urlQuery.addQueryItem("q", query);
-    urlQuery.addQueryItem("format", "json");
-    urlQuery.addQueryItem("limit", "10");
-    urlQuery.addQueryItem("addressdetails", "1");
-    url.setQuery(urlQuery);
-    
-    QNetworkRequest request(url);
-    request.setHeader(QNetworkRequest::UserAgentHeader, "Crankshaft/1.0");
-    
-    qDebug() << "Searching location:" << query;
-    
-    QNetworkReply* reply = networkManager_->get(request);
-    connect(reply, &QNetworkReply::finished, this, [this, reply]() {
-        handleGeocodingResponse(reply);
-    });
+    qDebug() << "Searching location with provider" << geocodingProviderId_ << ":" << query;
+    currentProvider_->search(query);
 }
 
-void NavigationBridge::handleGeocodingResponse(QNetworkReply* reply) {
-    reply->deleteLater();
+void NavigationBridge::initializeProviders() {
+    using namespace openauto::extensions::navigation;
     
-    if (reply->error() != QNetworkReply::NoError) {
-        qWarning() << "Geocoding error:" << reply->errorString();
-        emit searchError(reply->errorString());
-        return;
+    // Register all built-in providers
+    GeocodingProviderFactory::registerBuiltInProviders();
+    
+    // Create initial provider
+    switchProvider(geocodingProviderId_);
+    
+    qInfo() << "Initialized geocoding providers. Available:"
+            << GeocodingProviderFactory::instance().availableProviders();
+}
+
+void NavigationBridge::switchProvider(const QString& providerId) {
+    using namespace openauto::extensions::navigation;
+    
+    // Disconnect old provider
+    if (currentProvider_) {
+        disconnect(currentProvider_, nullptr, this, nullptr);
+        currentProvider_->deleteLater();
+        currentProvider_ = nullptr;
     }
     
-    QByteArray data = reply->readAll();
-    QJsonDocument doc = QJsonDocument::fromJson(data);
+    // Create new provider
+    currentProvider_ = GeocodingProviderFactory::instance().createProvider(providerId, this);
     
-    if (!doc.isArray()) {
-        emit searchError("Invalid response from geocoding service");
-        return;
+    if (!currentProvider_) {
+        qWarning() << "Failed to create provider:" << providerId << ". Falling back to nominatim.";
+        currentProvider_ = GeocodingProviderFactory::instance().createProvider("nominatim", this);
+        geocodingProviderId_ = "nominatim";
+    } else {
+        geocodingProviderId_ = providerId;
     }
     
-    QJsonArray results = doc.array();
-    QVariantList resultsList;
+    // Connect signals
+    if (currentProvider_) {
+        connect(currentProvider_, &GeocodingProvider::searchResultsReady,
+                this, &NavigationBridge::searchResultsReady);
+        connect(currentProvider_, &GeocodingProvider::errorOccurred,
+                this, &NavigationBridge::searchError);
+        
+        qInfo() << "Switched to geocoding provider:" << geocodingProviderId_;
+    }
+}
+
+QVariantList NavigationBridge::availableProviders() const {
+    using namespace openauto::extensions::navigation;
     
-    for (const QJsonValue& value : results) {
-        if (!value.isObject()) continue;
-        
-        QJsonObject obj = value.toObject();
-        QVariantMap result;
-        
-        result["latitude"] = obj.value("lat").toString().toDouble();
-        result["longitude"] = obj.value("lon").toString().toDouble();
-        result["display_name"] = obj.value("display_name").toString();
-        result["name"] = obj.value("name").toString();
-        result["type"] = obj.value("type").toString();
-        
-        // Extract address details if available
-        if (obj.contains("address")) {
-            QJsonObject address = obj.value("address").toObject();
-            result["city"] = address.value("city").toString();
-            result["country"] = address.value("country").toString();
-            result["postcode"] = address.value("postcode").toString();
-        }
-        
-        resultsList.append(result);
+    QVariantList providers;
+    auto infoList = GeocodingProviderFactory::instance().getAllProviderInfo();
+    
+    for (const auto& info : infoList) {
+        QVariantMap providerMap;
+        providerMap["id"] = info.id;
+        providerMap["displayName"] = info.displayName;
+        providerMap["description"] = info.description;
+        providerMap["requiresApiKey"] = info.requiresApiKey;
+        providers.append(providerMap);
     }
     
-    qDebug() << "Geocoding returned" << resultsList.size() << "results";
-    emit searchResultsReady(resultsList);
+    return providers;
+}
+
+void NavigationBridge::setGeocodingProvider(const QString& providerId) {
+    if (providerId == geocodingProviderId_) return;
+    
+    switchProvider(providerId);
+    save();
+    emit geocodingProviderChanged();
 }
 
 QVariantList NavigationBridge::loadFavourites() {

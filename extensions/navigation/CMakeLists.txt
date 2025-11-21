@@ -1,13 +1,23 @@
-find_package(Qt6 REQUIRED COMPONENTS Core Positioning)
+find_package(Qt6 REQUIRED COMPONENTS Core Positioning Network)
 
 # Add QML resources
 set(NAVIGATION_QML_RESOURCES
     resources.qrc
 )
 
+# Geocoding provider sources
+set(PROVIDER_SOURCES
+    GeocodingProvider.hpp
+    GeocodingProviderFactory.hpp
+    GeocodingProviderFactory.cpp
+    NominatimProvider.hpp
+    NominatimProvider.cpp
+)
+
 add_library(NavigationExtension SHARED
     navigation_extension.cpp
     navigation_extension.hpp
+    ${PROVIDER_SOURCES}
     ${NAVIGATION_QML_RESOURCES}
 )
 
@@ -37,6 +47,7 @@ target_link_libraries(NavigationExtension
     PRIVATE
     Qt6::Core
     Qt6::Positioning
+    Qt6::Network
     CrankshaftExtensions
 )
 
