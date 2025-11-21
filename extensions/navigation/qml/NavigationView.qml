@@ -25,15 +25,13 @@
  * - Extension uses NetworkCapability for map tiles
  * - Extension uses EventCapability for communication
  * - Extension cannot directly access core services
- * 
- * NOTE: QtPositioning is available. QtLocation (for full map support) is not available
- * in Debian 12 - it would require building from source or upgrading to a newer release
  */
 
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import QtPositioning
+import QtLocation
 
 Item {
     id: root
@@ -58,6 +56,10 @@ Item {
     property bool isNavigating: false
     property real distanceRemaining: 0
     property int etaSeconds: 0
+    property var routeCoordinates: []
+    property string currentInstruction: ""
+    property string nextInstruction: ""
+    property real distanceToNextTurn: 0
     
     // Settings
     property bool showSpeedLimit: true
@@ -71,131 +73,159 @@ Item {
     property string selectedGpsDevice: "Internal"
     signal gpsDeviceChanged(string device)
     
-    // Map placeholder with grid pattern
-    Rectangle {
-        id: mapPlaceholder
+    // OSM Map Plugin
+    Plugin {
+        id: mapPlugin
+        name: "osm"
+        PluginParameter {
+            name: "osm.mapping.providersrepository.disabled"
+            value: "true"
+        }
+        PluginParameter {
+            name: "osm.mapping.providersrepository.address"
+            value: "http://maps-redirect.qt.io/osm/5.6/"
+        }
+    }
+    
+    // Main map view
+    Map {
+        id: map
         anchors {
             top: parent.top
             left: parent.left
             right: parent.right
             bottom: controlPanel.top
         }
-        color: surfaceColor
+        plugin: mapPlugin
+        center: QtPositioning.coordinate(currentLat, currentLng)
+        zoomLevel: isNavigating ? 16 : 14
         
-        // Grid pattern to simulate map
-        Grid {
-            anchors.fill: parent
-            columns: 10
-            rows: 10
-            Repeater {
-                model: 100
+        // Smooth animations
+        Behavior on center {
+            CoordinateAnimation { duration: 500; easing.type: Easing.InOutQuad }
+        }
+        Behavior on zoomLevel {
+            NumberAnimation { duration: 300 }
+        }
+        
+        // Current position marker
+        MapQuickItem {
+            id: positionMarker
+            coordinate: QtPositioning.coordinate(currentLat, currentLng)
+            anchorPoint.x: locationPin.width / 2
+            anchorPoint.y: locationPin.height
+            
+            sourceItem: Item {
+                id: locationPin
+                width: 40
+                height: 40
+                
+                // Pulsing circle
                 Rectangle {
-                    width: mapPlaceholder.width / 10
-                    height: mapPlaceholder.height / 10
-                    color: "transparent"
-                    border.color: outlineColor
-                    border.width: 1
-                    opacity: 0.2
+                    anchors.centerIn: parent
+                    width: 60
+                    height: 60
+                    radius: 30
+                    color: accentColor
+                    opacity: 0.3
+                    
+                    SequentialAnimation on scale {
+                        running: true
+                        loops: Animation.Infinite
+                        NumberAnimation { from: 1.0; to: 1.5; duration: 1000 }
+                        NumberAnimation { from: 1.5; to: 1.0; duration: 1000 }
+                    }
+                }
+                
+                // Position dot
+                Rectangle {
+                    anchors.centerIn: parent
+                    width: 20
+                    height: 20
+                    radius: 10
+                    color: accentColor
+                    border.color: surfaceColor
+                    border.width: 3
+                }
+                
+                // Direction indicator (when navigating)
+                Canvas {
+                    visible: isNavigating
+                    anchors.centerIn: parent
+                    width: 40
+                    height: 40
+                    onPaint: {
+                        var ctx = getContext("2d")
+                        ctx.reset()
+                        ctx.fillStyle = accentColor
+                        ctx.beginPath()
+                        ctx.moveTo(20, 5)
+                        ctx.lineTo(25, 15)
+                        ctx.lineTo(15, 15)
+                        ctx.closePath()
+                        ctx.fill()
+                    }
                 }
             }
         }
         
-        // Centre content
-        Column {
-            anchors.centerIn: parent
-            spacing: 20
+        // Destination marker
+        MapQuickItem {
+            id: destinationMarker
+            visible: isNavigating
+            coordinate: QtPositioning.coordinate(destLat, destLng)
+            anchorPoint.x: destPin.width / 2
+            anchorPoint.y: destPin.height
             
-            // Location marker
-            Rectangle {
-                width: 80
-                height: 80
-                radius: 40
-                color: accentColor
-                border.color: surfaceColor
-                border.width: 4
-                anchors.horizontalCenter: parent.horizontalCenter
-                
-                Text {
-                    text: "📍"
-                    font.pixelSize: 40
-                    anchors.centerIn: parent
-                }
-            }
-            
-            // Title
-            Text {
-                text: "Navigation Extension"
-                font.pixelSize: 28
-                font.bold: true
-                color: textColor
-                anchors.horizontalCenter: parent.horizontalCenter
-            }
-            
-            // Coordinates
-            Column {
-                spacing: 8
-                anchors.horizontalCenter: parent.horizontalCenter
-                
-                Text {
-                    text: "Latitude: " + currentLat.toFixed(6)
-                    font.pixelSize: 16
-                    color: textSecondary
-                    anchors.horizontalCenter: parent.horizontalCenter
-                }
-                
-                Text {
-                    text: "Longitude: " + currentLng.toFixed(6)
-                    font.pixelSize: 16
-                    color: textSecondary
-                    anchors.horizontalCenter: parent.horizontalCenter
-                }
-            }
-            
-            // Status
-            Rectangle {
-                width: 320
+            sourceItem: Item {
+                id: destPin
+                width: 50
                 height: 60
-                radius: 8
-                color: isNavigating ? accentColor : surfaceVariant
-                opacity: 0.3
-                anchors.horizontalCenter: parent.horizontalCenter
                 
-                Text {
-                    text: isNavigating ? "🧭 Navigating..." : "📡 Ready"
-                    font.pixelSize: 18
-                    font.bold: true
-                    color: textColor
-                    anchors.centerIn: parent
+                // Pin shape
+                Rectangle {
+                    width: 50
+                    height: 50
+                    radius: 25
+                    color: errorColor
+                    border.color: surfaceColor
+                    border.width: 3
+                    
+                    Text {
+                        text: "🏁"
+                        font.pixelSize: 30
+                        anchors.centerIn: parent
+                    }
+                }
+                
+                // Pin point
+                Rectangle {
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    anchors.top: parent.top
+                    anchors.topMargin: 45
+                    width: 8
+                    height: 15
+                    color: errorColor
+                    
+                    Rectangle {
+                        anchors.bottom: parent.bottom
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        width: 4
+                        height: 4
+                        radius: 2
+                        color: errorColor
+                    }
                 }
             }
-            
-            // Info message
-            Text {
-                text: "Using capability-based architecture\nLocation updates via LocationCapability"
-                font.pixelSize: 14
-                color: textSecondary
-                opacity: 0.7
-                horizontalAlignment: Text.AlignHCenter
-                anchors.horizontalCenter: parent.horizontalCenter
-                lineHeight: 1.4
-            }
-            
-            // Note about full features
-            Rectangle {
-                width: 400
-                height: 50
-                radius: 6
-                color: surfaceVariant
-                opacity: 0.5
-                anchors.horizontalCenter: parent.horizontalCenter
-                
-                Text {
-                    text: "Install qml6-module-qtlocation for full map view"
-                    font.pixelSize: 12
-                    color: textSecondary
-                    anchors.centerIn: parent
-                }
-            }
+        }
+        
+        // Route line
+        MapPolyline {
+            id: routeLine
+            visible: isNavigating && routeCoordinates.length > 0
+            line.width: 5
+            line.color: accentColor
+            path: routeCoordinates
         }
     }
     
@@ -306,6 +336,100 @@ Item {
             function onSearchResultsReady(results) {
                 if (destinationSearchLoader.item) {
                     destinationSearchLoader.item.setSearchResults(results)
+                }
+            }
+        }
+    }
+    
+    // Navigation instructions panel
+    Rectangle {
+        id: instructionsPanel
+        anchors {
+            bottom: controlPanel.top
+            left: parent.left
+            right: parent.right
+        }
+        height: isNavigating ? 180 : 0
+        visible: height > 0
+        color: surfaceColor
+        border.color: outlineColor
+        border.width: 1
+        
+        Behavior on height {
+            NumberAnimation { duration: 300; easing.type: Easing.InOutQuad }
+        }
+        
+        Column {
+            anchors.fill: parent
+            anchors.margins: paddingSize * 2
+            spacing: spacingSize
+            
+            // Current instruction
+            Row {
+                width: parent.width
+                spacing: spacingSize * 2
+                
+                // Turn icon
+                Rectangle {
+                    width: 80
+                    height: 80
+                    radius: 8
+                    color: accentColor
+                    
+                    Text {
+                        anchors.centerIn: parent
+                        text: getTurnIcon(currentInstruction)
+                        font.pixelSize: 48
+                    }
+                }
+                
+                // Instruction details
+                Column {
+                    width: parent.width - 100
+                    spacing: spacingSize / 2
+                    
+                    // Distance to turn
+                    Text {
+                        text: formatDistance(distanceToNextTurn)
+                        font.pixelSize: 32
+                        font.bold: true
+                        color: textColor
+                    }
+                    
+                    // Instruction text
+                    Text {
+                        text: currentInstruction || "Continue on current road"
+                        font.pixelSize: 18
+                        color: textColor
+                        wrapMode: Text.WordWrap
+                        width: parent.width
+                    }
+                }
+            }
+            
+            Rectangle {
+                width: parent.width
+                height: 1
+                color: dividerColor
+            }
+            
+            // Next instruction preview
+            Row {
+                width: parent.width
+                spacing: spacingSize * 2
+                
+                Text {
+                    text: getTurnIcon(nextInstruction)
+                    font.pixelSize: 24
+                    color: textSecondary
+                }
+                
+                Text {
+                    text: nextInstruction || "Then continue"
+                    font.pixelSize: 14
+                    color: textSecondary
+                    elide: Text.ElideRight
+                    width: parent.width - 50
                 }
             }
         }
@@ -1127,6 +1251,56 @@ Item {
             border.width: 2
         }
     }
+    
+    // Helper functions
+    function getTurnIcon(instruction: string): string {
+        if (!instruction) return "➡️"
+        
+        const lowerInst = instruction.toLowerCase()
+        if (lowerInst.includes("left")) return "↰"
+        if (lowerInst.includes("right")) return "↱"
+        if (lowerInst.includes("u-turn") || lowerInst.includes("uturn")) return "↶"
+        if (lowerInst.includes("straight") || lowerInst.includes("continue")) return "⬆️"
+        if (lowerInst.includes("roundabout")) return "⭮"
+        if (lowerInst.includes("exit")) return "🛣️"
+        if (lowerInst.includes("arrive") || lowerInst.includes("destination")) return "🏁"
+        return "➡️"
+    }
+    
+    function formatDistance(meters: real): string {
+        if (distanceUnit === "imperial") {
+            const feet = meters * 3.28084
+            if (feet < 1000) {
+                return Math.round(feet) + " ft"
+            } else {
+                const miles = feet / 5280
+                return miles.toFixed(1) + " mi"
+            }
+        } else {
+            if (meters < 1000) {
+                return Math.round(meters) + " m"
+            } else {
+                const km = meters / 1000
+                return km.toFixed(1) + " km"
+            }
+        }
+    }
+    
+    function formatETA(seconds: int): string {
+        if (seconds < 60) {
+            return "< 1 min"
+        } else if (seconds < 3600) {
+            return Math.round(seconds / 60) + " min"
+        } else {
+            const hours = Math.floor(seconds / 3600)
+            const mins = Math.round((seconds % 3600) / 60)
+            return hours + " h " + mins + " min"
+        }
+    }
+    
+    // TODO: Event connections for routing
+    // Will be connected once NavigationBridge exposes routing signals
+    // For now, routing happens in C++ backend and can be tested via console logs
     
     Component.onCompleted: {
         console.log("Navigation view loaded")

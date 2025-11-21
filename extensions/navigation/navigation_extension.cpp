@@ -18,6 +18,7 @@
  */
 
 #include "navigation_extension.hpp"
+#include "OSRMProvider.hpp"
 #include "../../src/core/capabilities/LocationCapability.hpp"
 #include "../../src/core/capabilities/NetworkCapability.hpp"
 #include "../../src/core/capabilities/FileSystemCapability.hpp"
@@ -32,6 +33,13 @@ namespace navigation {
 bool NavigationExtension::initialize() {
     qInfo() << "Initializing Navigation extension (capability-based)...";
     isNavigating_ = false;
+    
+    // Initialize routing provider
+    routingProvider_ = new OSRMProvider(nullptr);
+    QObject::connect(routingProvider_, &RoutingProvider::routeCalculated,
+            [this](const Route& route) { handleRouteCalculated(route); });
+    QObject::connect(routingProvider_, &RoutingProvider::routeError,
+            [this](const QString& error) { handleRouteError(error); });
     
     // Check required capabilities
     if (!hasCapability("location")) {
@@ -133,7 +141,14 @@ void NavigationExtension::handleNavigateToCommand(const QVariantMap& data) {
     qInfo() << "Starting navigation to:" << address
             << "(" << latitude << "," << longitude << ")";
 
-    // TODO: Calculate route
+    // Calculate route using routing provider
+    if (routingProvider_ && currentLocation_.isValid()) {
+        qDebug() << "Calculating route from" << currentLocation_ << "to" << destination_;
+        routingProvider_->calculateRoute(currentLocation_, destination_);
+    } else {
+        qWarning() << "Cannot calculate route: provider or location invalid";
+    }
+    
     publishNavigationUpdate();
 }
 
@@ -226,6 +241,57 @@ void NavigationExtension::publishNavigationUpdate() {
     }
 
     eventCap->emitEvent("update", event);
+}
+
+void NavigationExtension::handleRouteCalculated(const Route& route) {
+    qInfo() << "Route calculated:" << route.steps.size() << "steps";
+    
+    // Send route to UI via event
+    auto eventCap = getCapability<core::capabilities::EventCapability>();
+    if (!eventCap) return;
+    
+    // Convert route coordinates to QVariantList
+    QVariantList coordinates;
+    for (const QGeoCoordinate& coord : route.coordinates) {
+        QVariantMap coordMap;
+        coordMap["latitude"] = coord.latitude();
+        coordMap["longitude"] = coord.longitude();
+        coordinates.append(coordMap);
+    }
+    
+    // Convert route steps to QVariantList
+    QVariantList steps;
+    for (const RouteStep& step : route.steps) {
+        QVariantMap stepMap;
+        stepMap["instruction"] = step.instruction;
+        stepMap["type"] = step.type;
+        stepMap["distance"] = step.distance;
+        stepMap["duration"] = step.duration;
+        stepMap["latitude"] = step.location.latitude();
+        stepMap["longitude"] = step.location.longitude();
+        steps.append(stepMap);
+    }
+    
+    QVariantMap routeData;
+    routeData["coordinates"] = coordinates;
+    routeData["steps"] = steps;
+    routeData["totalDistance"] = route.totalDistance;
+    routeData["totalDuration"] = route.totalDuration;
+    routeData["summary"] = route.summary;
+    
+    eventCap->emitEvent("navigation.routeCalculated", routeData);
+    qDebug() << "Route data sent to UI";
+}
+
+void NavigationExtension::handleRouteError(const QString& error) {
+    qWarning() << "Route calculation error:" << error;
+    
+    auto eventCap = getCapability<core::capabilities::EventCapability>();
+    if (!eventCap) return;
+    
+    QVariantMap errorData;
+    errorData["error"] = error;
+    eventCap->emitEvent("navigation.routeError", errorData);
 }
 
 }  // namespace navigation

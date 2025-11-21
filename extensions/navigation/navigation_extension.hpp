@@ -20,6 +20,7 @@
 #pragma once
 
 #include "../../src/extensions/extension.hpp"
+#include "RoutingProvider.hpp"
 #include <QGeoCoordinate>
 #include <QString>
 #include <QVector>
@@ -60,12 +61,15 @@ private:
     void handleSearchLocationCommand(const QVariantMap& data);
     void updateCurrentLocation(const QGeoCoordinate& location);
     void publishNavigationUpdate();
+    void handleRouteCalculated(const Route& route);
+    void handleRouteError(const QString& error);
 
     QGeoCoordinate currentLocation_;
     QGeoCoordinate destination_;
     QVector<RoutePoint> currentRoute_;
     bool isNavigating_;
     int location_subscription_id_ = -1;
+    RoutingProvider* routingProvider_ = nullptr;
 };
 
 }  // namespace navigation

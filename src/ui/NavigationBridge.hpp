@@ -81,6 +81,8 @@ signals:
     void availableProvidersChanged();
     void searchResultsReady(const QVariantList& results);
     void searchError(const QString& error);
+    void routeCalculated(const QVariantMap& routeData);
+    void routeError(const QString& error);
 
 private:
     explicit NavigationBridge(QObject* parent = nullptr);

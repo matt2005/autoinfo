@@ -5,13 +5,16 @@ set(NAVIGATION_QML_RESOURCES
     resources.qrc
 )
 
-# Geocoding provider sources
+# Geocoding and routing provider sources
 set(PROVIDER_SOURCES
     GeocodingProvider.hpp
     GeocodingProviderFactory.hpp
     GeocodingProviderFactory.cpp
     NominatimProvider.hpp
     NominatimProvider.cpp
+    RoutingProvider.hpp
+    OSRMProvider.hpp
+    OSRMProvider.cpp
 )
 
 add_library(NavigationExtension SHARED
