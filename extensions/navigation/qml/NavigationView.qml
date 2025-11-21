@@ -582,12 +582,13 @@ Item {
             anchors.margins: paddingSize
             visible: settingsVisible
             clip: true
+            contentWidth: availableWidth
             
-            ScrollBar.vertical.policy: ScrollBar.AsNeeded
+            ScrollBar.vertical.policy: ScrollBar.AlwaysOn
             ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
             
             Column {
-                width: settingsPanel.width - paddingSize * 2
+                width: settingsPanel.width - paddingSize * 4
                 spacing: spacingSize
             
             // Header
