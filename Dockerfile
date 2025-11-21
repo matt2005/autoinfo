@@ -54,10 +54,12 @@ RUN apt-get update && apt-get install -y \
     qml6-module-qtquick-layouts \
     qml6-module-qtquick-window \
     qml6-module-qtqml-workerscript \
+    qml6-module-qtlocation \
     libqt6qml6 \
     libqt6quick6 \
     # Qt6 platform plugins
     qt6-qpa-plugins \
+    qt6-location-plugins \
     # XKB (required for Qt Quick)
     libxkbcommon-dev \
     libxkbcommon-x11-dev \

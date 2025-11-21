@@ -129,7 +129,8 @@ sudo apt-get install -y \
     libqt6websockets6-dev \
     qt6-multimedia-dev \
     qt6-positioning-dev \
-    qt6-connectivity-dev
+    qt6-connectivity-dev \
+    qt6-location-plugins
 
 # Build the project
 cd crankshaft_reborn
@@ -161,7 +162,9 @@ sudo apt-get install -y \
     qml6-module-qtqml-workerscript \
     libqt6qml6 \
     libqt6quick6 \
-    qt6-qpa-plugins
+    qt6-qpa-plugins \
+    qml6-module-qtlocation \
+    qt6-location-plugins
 ```
 
 ### Install Application

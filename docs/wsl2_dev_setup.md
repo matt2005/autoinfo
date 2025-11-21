@@ -73,10 +73,11 @@ sudo apt install -y \
     qt6-positioning-dev \
     libqt6positioningquick6 \
     qml6-module-qtpositioning \
-    qml6-module-qtlocation
+    qml6-module-qtlocation \
+    qt6-location-plugins
 ```
 
-**Note:** `qml6-module-qtlocation` is available in Debian Trixie (13) and later. It provides full map functionality for the navigation extension.
+**Note:** `qml6-module-qtlocation` and `qt6-location-plugins` are available in Debian Trixie (13) and later. They provide full map functionality including OSM tile support for the navigation extension.
 
 ### 4. Install Additional Development Tools
 

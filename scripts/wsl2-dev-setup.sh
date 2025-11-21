@@ -152,6 +152,7 @@ QT6_PACKAGES=(
     "libqt6positioningquick6"
     "qml6-module-qtpositioning"
     "qml6-module-qtlocation"
+    "qt6-location-plugins"
 )
 
 for package in "${QT6_PACKAGES[@]}"; do
@@ -165,7 +166,7 @@ for package in "${QT6_PACKAGES[@]}"; do
 done
 
 print_success "Qt6 development packages installed"
-print_status "Note: qml6-module-qtlocation provides full map functionality for navigation"
+print_status "Note: qml6-module-qtlocation and qt6-location-plugins provide full map functionality for navigation"
 
 echo ""
 
