@@ -5,6 +5,7 @@ set(UI_SOURCES
     ThemeManager.cpp
     ExtensionRegistry.cpp
     NavigationBridge.cpp
+    UIRegistrarImpl.cpp
 )
 
 set(UI_HEADERS
@@ -12,6 +13,7 @@ set(UI_HEADERS
     ThemeManager.hpp
     ExtensionRegistry.hpp
     NavigationBridge.hpp
+    UIRegistrarImpl.hpp
 )
 
 add_library(CrankshaftUI STATIC

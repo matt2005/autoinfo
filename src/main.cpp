@@ -29,6 +29,11 @@
 #include "ui/ThemeManager.hpp"
 #include "ui/ExtensionRegistry.hpp"
 #include "ui/NavigationBridge.hpp"
+// Registrar decoupling: inject UI registrar into core
+#include "core/ui/UIRegistrar.hpp"
+#include "ui/UIRegistrarImpl.hpp"
+// Temporarily disabled due to GCC 14/Qt6 ABI incompatibility
+// #include "ui/BluetoothBridge.hpp"
 #include "../extensions/navigation/navigation_extension.hpp"
 
 int main(int argc, char *argv[]) {
@@ -61,10 +66,17 @@ int main(int argc, char *argv[]) {
     CrankshaftReborn::UI::ThemeManager::instance()->initialize();
     NavigationBridge::registerQmlType();
     NavigationBridge::initialise(application.capabilityManager());
+    // Temporarily disabled due to GCC 14/Qt6 ABI incompatibility
+    // BluetoothBridge::registerQmlType();
+    // BluetoothBridge::initialise(&application);
     
     // Create ExtensionRegistry BEFORE starting extensions so they can register views
     openauto::ui::ExtensionRegistry extensionRegistry(application.extensionManager());
     openauto::ui::ExtensionRegistry::registerQmlType();
+
+    // Inject UI registrar implementation into core (decouples core from UI)
+    openauto::ui::UIRegistrarImpl uiRegistrar;
+    application.capabilityManager()->setUIRegistrar(&uiRegistrar);
     
     // Now register the built-in extension (after ExtensionRegistry is created)
     application.extensionManager()->registerBuiltInExtension(navigationExtension, navExtensionPath);
@@ -75,6 +87,8 @@ int main(int argc, char *argv[]) {
     // Expose ThemeManager as a context property so it's available in all QML files
     engine.rootContext()->setContextProperty("ThemeManager", CrankshaftReborn::UI::ThemeManager::instance());
     engine.rootContext()->setContextProperty("NavigationBridge", NavigationBridge::instance());
+    // Temporarily disabled due to GCC 14/Qt6 ABI incompatibility
+    // engine.rootContext()->setContextProperty("BluetoothBridge", BluetoothBridge::instance());
 
     QStringList importPaths;
     // Qt6 system QML modules (for QtPositioning, QtLocation, etc.)

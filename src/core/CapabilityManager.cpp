@@ -20,7 +20,7 @@
 #include "CapabilityManager.hpp"
 #include "event_bus.hpp"
 #include "websocket_server.hpp"
-#include "../ui/ExtensionRegistry.hpp"
+#include "ui/UIRegistrar.hpp"
 #include <QGeoPositionInfoSource>
 #include <QTimer>
 #include <QJsonDocument>
@@ -35,6 +35,12 @@
 #include <QDateTime>
 #include <QStandardPaths>
 #include <QDebug>
+
+// Forward declaration of Bluetooth capability factory to avoid header circular dependency.
+namespace openauto { namespace core { namespace capabilities {
+class BluetoothCapability; // forward declare type
+std::shared_ptr<BluetoothCapability> createBluetoothCapabilityInstance(const QString& extensionId, CapabilityManager* manager);
+}}}
 
 namespace openauto {
 namespace core {
@@ -517,13 +523,13 @@ public:
             qmlPath
         );
         
-        // Register with ExtensionRegistry for QML exposure
-        auto* registry = openauto::ui::ExtensionRegistry::instance();
-        if (registry) {
-            registry->registerComponent(extension_id_, "main", qmlPath, metadata);
+        // Register via injected UI registrar to avoid core->UI dependency
+        auto* registrar = manager_->uiRegistrar();
+        if (registrar) {
+            registrar->registerComponent(extension_id_, "main", qmlPath, metadata);
             qDebug() << "Registered main view for extension:" << extension_id_ << "at" << qmlPath;
         } else {
-            qWarning() << "ExtensionRegistry not available for main view registration";
+            qWarning() << "UIRegistrar not set; cannot register main view";
             return false;
         }
         
@@ -540,13 +546,13 @@ public:
             qmlPath
         );
         
-        // Register widget with ExtensionRegistry
-        auto* registry = openauto::ui::ExtensionRegistry::instance();
-        if (registry) {
-            registry->registerComponent(extension_id_, "widget", qmlPath, metadata);
+        // Register widget via injected UI registrar
+        auto* registrar = manager_->uiRegistrar();
+        if (registrar) {
+            registrar->registerComponent(extension_id_, "widget", qmlPath, metadata);
             qDebug() << "Registered widget for extension:" << extension_id_ << "at" << qmlPath;
         } else {
-            qWarning() << "ExtensionRegistry not available for widget registration";
+            qWarning() << "UIRegistrar not set; cannot register widget";
             return false;
         }
         
@@ -781,6 +787,8 @@ std::shared_ptr<capabilities::Capability> CapabilityManager::grantCapability(
         capability = createUICapability(extensionId, options);
     } else if (capabilityType == "event") {
         capability = createEventCapability(extensionId, options);
+    } else if (capabilityType == "bluetooth") {
+        capability = createBluetoothCapability(extensionId, options);
     } else {
         qWarning() << "Unknown capability type:" << capabilityType;
         return nullptr;
@@ -985,5 +993,26 @@ std::shared_ptr<capabilities::EventCapability> CapabilityManager::createEventCap
     return std::make_shared<EventCapabilityImpl>(extensionId, this, event_bus_);
 }
 
+std::shared_ptr<capabilities::Capability> CapabilityManager::createBluetoothCapability(
+    const QString& extensionId,
+    const QVariantMap& options
+) {
+    return std::static_pointer_cast<capabilities::Capability>(
+        capabilities::createBluetoothCapabilityInstance(extensionId, this)
+    );
+}
+
 }  // namespace core
 }  // namespace openauto
+
+// ===== CapabilityManager: UI registrar injection =====
+namespace openauto {
+namespace core {
+
+void CapabilityManager::setUIRegistrar(ui::UIRegistrar* registrar) {
+    QMutexLocker locker(&mutex_);
+    ui_registrar_ = registrar;
+}
+
+} // namespace core
+} // namespace openauto

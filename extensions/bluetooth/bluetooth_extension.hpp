@@ -20,20 +20,15 @@
 #pragma once
 
 #include "../../src/extensions/extension.hpp"
+#include "../../src/core/capabilities/BluetoothCapability.hpp"
+#include "../../src/core/capabilities/EventCapability.hpp"
 #include <QString>
 #include <QVector>
+#include <memory>
 
 namespace openauto {
 namespace extensions {
 namespace bluetooth {
-
-struct BluetoothDevice {
-    QString address;
-    QString name;
-    bool paired;
-    bool connected;
-    int signalStrength;
-};
 
 struct PhoneCall {
     QString number;
@@ -71,11 +66,17 @@ private:
     void handleDialCommand(const QVariantMap& data);
     void publishDeviceList();
     void publishCallStatus();
+    void subscribeCommandEvents();
+    void handleDevicesUpdated(const QList<core::capabilities::BluetoothCapability::Device>& list);
 
-    QVector<BluetoothDevice> devices_;
-    BluetoothDevice* connectedDevice_;
-    PhoneCall* activeCall_;
+    std::shared_ptr<core::capabilities::BluetoothCapability> btCap_;
+    std::shared_ptr<core::capabilities::EventCapability> eventCap_;
+    int deviceSubscriptionId_ = -1;
+    QString currentAdapter_;
     bool scanning_;
+    // Legacy simulated call state retained
+    core::capabilities::BluetoothCapability::Device connectedDevice_{};
+    PhoneCall* activeCall_;
 };
 
 }  // namespace bluetooth

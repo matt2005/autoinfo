@@ -26,6 +26,7 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QDebug>
+#include <QQueue>
 
 namespace openauto {
 namespace extensions {
@@ -71,7 +72,7 @@ bool ExtensionManager::loadExtension(const QString& extension_path) {
     
     if (!checkDependencies(manifest)) {
         qWarning() << "Dependency check failed for:" << manifest.id;
-        emit extensionError(manifest.id, "Missing dependencies");
+        emit extensionError(manifest.id, "Missing dependencies or not running");
         return false;
     }
     
@@ -82,7 +83,10 @@ bool ExtensionManager::loadExtension(const QString& extension_path) {
     ExtensionInfo info;
     info.manifest = manifest;
     info.path = extension_path;
-    info.is_running = false;
+    // Dynamic loading not implemented yet, but mark as running so that
+    // dependent extensions consider this satisfied. Replace with actual
+    // load/start when plugin mechanism added.
+    info.is_running = true;
     // Note: extension pointer will be set when actual extension is created
     extensions_[manifest.id] = info;
     
@@ -174,35 +178,97 @@ bool ExtensionManager::unloadExtension(const QString& extension_id) {
 }
 
 void ExtensionManager::loadAll() {
-    // Build a list of candidate directories
+    // 1. Aggregate candidate directories
     QStringList searchPaths;
-    // Respect explicit dir if set externally
     if (!extensions_dir_.isEmpty()) {
         searchPaths << extensions_dir_;
     }
-    // App dir (portable)
     searchPaths << (QCoreApplication::applicationDirPath() + "/extensions");
-    // Current working dir (developer)
     searchPaths << (QDir::currentPath() + "/extensions");
-    // System install
     searchPaths << QString::fromUtf8("/usr/share/CrankshaftReborn/extensions");
     searchPaths << QString::fromUtf8("/usr/share/crankshaft_reborn/extensions");
-    // Optional override via env
     const QString envExt = qEnvironmentVariable("CRANKSHAFT_EXTENSIONS_PATH");
     if (!envExt.isEmpty()) {
         searchPaths.prepend(envExt);
     }
 
+    // 2. Discover paths (unique)
     QStringList extension_paths;
     for (const QString& dir : searchPaths) {
-        qInfo() << "Loading all extensions from:" << dir;
         const QStringList found = discoverExtensions(dir);
         for (const QString& p : found) {
             if (!extension_paths.contains(p)) extension_paths << p;
         }
     }
+
+    if (extension_paths.isEmpty()) {
+        qInfo() << "No extensions discovered for loading";
+        return;
+    }
+
+    // 3. Load manifests first (do not instantiate yet)
+    QMap<QString, ExtensionManifest> manifestsById;
+    QMap<QString, QString> pathById;
     for (const QString& path : extension_paths) {
-        loadExtension(path);
+        const QString manifest_path = path + "/manifest.json";
+        ExtensionManifest manifest = loadManifest(manifest_path);
+        if (!manifest.isValid()) {
+            qWarning() << "Skipping invalid manifest at" << manifest_path;
+            continue;
+        }
+        if (!validateManifest(manifest)) {
+            qWarning() << "Skipping manifest failing validation for" << manifest.id;
+            continue;
+        }
+        // Avoid duplicate ids overriding earlier entries
+        if (manifestsById.contains(manifest.id)) {
+            qWarning() << "Duplicate extension id discovered, ignoring later instance:" << manifest.id;
+            continue;
+        }
+        manifestsById.insert(manifest.id, manifest);
+        pathById.insert(manifest.id, path);
+    }
+
+    if (manifestsById.isEmpty()) {
+        qInfo() << "No valid manifests discovered";
+        return;
+    }
+
+    // 4. Resolve dependency order (excluding already loaded built-ins)
+    QSet<QString> alreadyLoaded;
+    for (const QString& id : extensions_.keys()) {
+        alreadyLoaded.insert(id);
+    }
+    QMap<QString, QStringList> missingDeps;
+    QStringList cycleGroup;
+    QStringList ordered = resolveLoadOrder(manifestsById, alreadyLoaded, missingDeps, cycleGroup);
+
+    // 5. Report missing dependencies
+    for (auto it = missingDeps.begin(); it != missingDeps.end(); ++it) {
+        const QString& extId = it.key();
+        const QStringList& deps = it.value();
+        qWarning() << "Extension" << extId << "has missing dependencies" << deps;
+        emit extensionError(extId, QString("Missing dependencies: %1").arg(deps.join(",")));
+    }
+
+    // 6. Report cycles
+    if (!cycleGroup.isEmpty()) {
+        qWarning() << "Dependency cycle detected among extensions:" << cycleGroup;
+        for (const QString& extId : cycleGroup) {
+            emit extensionError(extId, "Dependency cycle detected");
+        }
+    }
+
+    // 7. Load in resolved order
+    for (const QString& id : ordered) {
+        if (alreadyLoaded.contains(id)) {
+            qDebug() << "Extension already loaded (built-in), skipping explicit load:" << id;
+            continue;
+        }
+        if (!pathById.contains(id)) {
+            continue; // Should not happen
+        }
+        loadExtension(pathById.value(id));
     }
 }
 
@@ -260,8 +326,13 @@ bool ExtensionManager::validateManifest(const ExtensionManifest& manifest) {
 
 bool ExtensionManager::checkDependencies(const ExtensionManifest& manifest) {
     for (const QString& dep : manifest.dependencies) {
-        if (!isLoaded(dep)) {
+        if (!extensions_.contains(dep)) {
             qWarning() << "Missing dependency:" << dep << "for extension:" << manifest.id;
+            return false;
+        }
+        const auto &info = extensions_[dep];
+        if (!info.is_running) {
+            qWarning() << "Dependency present but not running:" << dep << "required by:" << manifest.id;
             return false;
         }
     }
@@ -316,6 +387,83 @@ void ExtensionManager::grantCapabilities(Extension* extension, const ExtensionMa
         "extension_initialization",
         QString("Granted %1 capabilities based on manifest permissions").arg(manifest.requirements.required_permissions.size())
     );
+}
+
+QStringList ExtensionManager::resolveLoadOrder(const QMap<QString, ExtensionManifest>& manifests,
+                                               const QSet<QString>& alreadyLoaded,
+                                               QMap<QString, QStringList>& missingDeps,
+                                               QStringList& cycleGroup) {
+    // Kahn topological sort
+    QMap<QString, int> indegree;
+    QMap<QString, QStringList> adjacency;
+    QSet<QString> candidates;
+    for (const auto &k : manifests.keys()) {
+        candidates.insert(k);
+    }
+
+    // First pass: record missing deps and build adjacency for satisfiable deps
+    for (auto it = manifests.begin(); it != manifests.end(); ++it) {
+        const QString id = it.key();
+        indegree[id] = 0; // initialise
+    }
+    for (auto it = manifests.begin(); it != manifests.end(); ++it) {
+        const QString id = it.key();
+        const ExtensionManifest& manifest = it.value();
+        for (const QString& dep : manifest.dependencies) {
+            if (alreadyLoaded.contains(dep)) {
+                // satisfied externally
+                continue;
+            }
+            if (!manifests.contains(dep)) {
+                // missing dependency
+                missingDeps[id] << dep;
+                continue;
+            }
+            adjacency[dep] << id; // dep -> id edge
+            indegree[id] += 1;
+        }
+    }
+
+    // Remove any candidates with missing dependencies from sorting set
+    for (auto it = missingDeps.begin(); it != missingDeps.end(); ++it) {
+        candidates.remove(it.key());
+    }
+
+    // Queue initial zero indegree nodes
+    QQueue<QString> queue;
+    for (const QString& id : candidates) {
+        if (indegree[id] == 0) {
+            queue.enqueue(id);
+        }
+    }
+
+    QStringList order;
+    while (!queue.isEmpty()) {
+        QString node = queue.dequeue();
+        order << node;
+        for (const QString& next : adjacency.value(node)) {
+            if (!candidates.contains(next)) {
+                continue; // filtered out earlier
+            }
+            indegree[next] -= 1;
+            if (indegree[next] == 0) {
+                queue.enqueue(next);
+            }
+        }
+    }
+
+    // Any remaining nodes (with indegree > 0) form cycles
+    QSet<QString> inCycle;
+    for (const QString& id : candidates) {
+        if (!order.contains(id)) {
+            if (indegree[id] > 0) {
+                inCycle.insert(id);
+            }
+        }
+    }
+    cycleGroup = inCycle.values();
+
+    return order;
 }
 
 }  // namespace extensions

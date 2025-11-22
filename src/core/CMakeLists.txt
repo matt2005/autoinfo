@@ -5,6 +5,7 @@ set(CORE_SOURCES
     event_bus.cpp
     websocket_server.cpp
     CapabilityManager.cpp
+    capabilities/BluetoothCapability.cpp
 )
 
 set(CORE_HEADERS
@@ -12,12 +13,14 @@ set(CORE_HEADERS
     event_bus.hpp
     websocket_server.hpp
     CapabilityManager.hpp
+    ui/UIRegistrar.hpp
     capabilities/Capability.hpp
     capabilities/LocationCapability.hpp
     capabilities/NetworkCapability.hpp
     capabilities/FileSystemCapability.hpp
     capabilities/UICapability.hpp
     capabilities/EventCapability.hpp
+    capabilities/BluetoothCapability.hpp
 )
 
 add_library(CrankshaftCore STATIC
@@ -32,6 +35,7 @@ target_link_libraries(CrankshaftCore
         Qt6::Network
         Qt6::Positioning
         Qt6::Qml
+        Qt6::Bluetooth
 )
 
 target_include_directories(CrankshaftCore

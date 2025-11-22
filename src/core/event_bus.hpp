@@ -23,8 +23,8 @@
 #include <QVariantMap>
 #include <QString>
 #include <functional>
-#include <unordered_map>
-#include <vector>
+#include <QHash>
+#include <QList>
 #include <memory>
 
 namespace openauto {
@@ -58,7 +58,7 @@ private:
         EventCallback callback;
     };
 
-    std::unordered_map<QString, std::vector<std::shared_ptr<Subscription>>> subscriptions_;
+    QHash<QString, QList<std::shared_ptr<Subscription>>> subscriptions_;
     int next_subscription_id_;
 };
 

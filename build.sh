@@ -27,6 +27,38 @@ BUILD_TESTS="${2:-OFF}"
 BUILD_DIR="${3:-build}"
 PACKAGE_DEB="${4:-OFF}"
 
+# Ensure required system packages (Bluetooth, Qt Connectivity). This is best-effort: if
+# packages are already installed or we lack privileges, we continue gracefully.
+ensure_packages() {
+    # Only attempt on Debian-based systems with apt-get available.
+    if ! command -v apt-get >/dev/null 2>&1; then
+        return 0
+    fi
+    local pkgs=(bluez bluez-tools libbluetooth-dev qt6-connectivity-dev)
+    local missing=()
+    for p in "${pkgs[@]}"; do
+        if ! dpkg -s "$p" >/dev/null 2>&1; then
+            missing+=("$p")
+        fi
+    done
+    if [ ${#missing[@]} -eq 0 ]; then
+        return 0
+    fi
+    echo -e "${YELLOW}Installing missing packages (Bluetooth support): ${missing[*]}${NC}" || true
+    # Determine privilege usage
+    if [ "$(id -u)" -ne 0 ]; then
+        if command -v sudo >/dev/null 2>&1; then
+            sudo apt-get update && sudo apt-get install -y "${missing[@]}" || true
+        else
+            echo -e "${RED}Cannot install packages (no sudo). Please install manually: ${missing[*]}${NC}" || true
+        fi
+    else
+        apt-get update && apt-get install -y "${missing[@]}" || true
+    fi
+}
+
+ensure_packages
+
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'

@@ -49,6 +49,8 @@ Crankshaft Reborn is a modular, open-source infotainment platform that provides 
 - Qt6 (6.2 or later)
 - CMake (3.16 or later)
 - GCC/Clang with C++17 support
+- BlueZ stack (`bluez`, `bluez-tools`, `libbluetooth-dev`) for real Bluetooth
+- Qt6 Connectivity module (`qt6-connectivity-dev`) for QtBluetooth
 
 ## Building
 
@@ -130,7 +132,10 @@ sudo apt-get install -y \
     qt6-multimedia-dev \
     qt6-positioning-dev \
     qt6-connectivity-dev \
-    qt6-location-plugins
+    qt6-location-plugins \
+    bluez \
+    bluez-tools \
+    libbluetooth-dev
 
 # Build the project
 cd crankshaft_reborn
@@ -164,7 +169,9 @@ sudo apt-get install -y \
     libqt6quick6 \
     qt6-qpa-plugins \
     qml6-module-qtlocation \
-    qt6-location-plugins
+    qt6-location-plugins \
+    bluez \
+    bluez-tools
 ```
 
 ### Install Application
@@ -193,6 +200,7 @@ See `config/crankshaft.json` or `config/crankshaft.conf` for configuration optio
 ## Developing Extensions
 
 Extensions allow you to add custom functionality to Crankshaft Reborn. See the [Extension Development Guide](docs/extension_development.md) for detailed instructions.
+The manifest `dependencies` field declares other extensions that must be loaded and running first. The core performs topological ordering with cycle detection; any missing or non-running dependency prevents load. Cycles generate errors for all involved ids.
 
 ### Quick Start
 
@@ -226,11 +234,29 @@ GPS navigation system featuring:
 ### Bluetooth Manager
 
 Bluetooth connectivity for:
+
 - Hands-free calling
 - Audio streaming (A2DP)
 - Contact synchronisation
 - Multiple device support
 - Auto-connect
+- Timed discovery sessions
+- Capability-based security (requires `bluetooth` permission)
+- Mock adapter fallback if BlueZ unavailable (WSL/container development)
+
+Enable on Raspberry Pi OS:
+
+```bash
+sudo apt-get install -y bluez bluez-tools libbluetooth-dev qt6-connectivity-dev
+sudo systemctl enable bluetooth.service
+sudo systemctl start bluetooth.service
+```
+Verify:
+
+```bash
+systemctl status bluetooth.service | grep Active
+bluetoothctl show
+```
 
 ## API Documentation
 
@@ -243,11 +269,10 @@ We welcome contributions! Please read our [Contributing Guide](docs/CONTRIBUTING
 ## Testing
 
 ```bash
-# Build with tests
+mkdir -p build && cd build
 cmake .. -DBUILD_TESTS=ON
-
-# Run tests
-ctest
+cmake --build . --target test_extension_dependencies
+ctest --output-on-failure
 ```
 
 ## License

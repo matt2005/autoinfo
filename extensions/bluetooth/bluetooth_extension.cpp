@@ -18,138 +18,111 @@
  */
 
 #include "bluetooth_extension.hpp"
-#include "../../src/core/event_bus.hpp"
 #include <QDebug>
+#include <QVariantMap>
 
 namespace openauto {
 namespace extensions {
 namespace bluetooth {
 
 bool BluetoothExtension::initialize() {
-    qInfo() << "Initializing Bluetooth extension...";
+    qInfo() << "Initializing Bluetooth extension (capability-driven)...";
+
+    // Acquire capabilities granted by manager.
+    btCap_ = getCapability<core::capabilities::BluetoothCapability>();
+    eventCap_ = getCapability<core::capabilities::EventCapability>();
+
+    if (!btCap_) {
+        qWarning() << "Bluetooth capability not granted; extension will be disabled.";
+        return false;
+    }
+    if (!eventCap_) {
+        qWarning() << "Event capability not granted; cannot communicate.";
+        return false;
+    }
+
     scanning_ = false;
-    connectedDevice_ = nullptr;
     activeCall_ = nullptr;
-    setupEventHandlers();
+    currentAdapter_ = btCap_->currentAdapter();
+
+    // Subscribe to device updates from capability
+    deviceSubscriptionId_ = btCap_->subscribeDevices([this](const QList<core::capabilities::BluetoothCapability::Device>& list) {
+        handleDevicesUpdated(list);
+    });
+
+    // Subscribe to command events emitted in our namespace.
+    subscribeCommandEvents();
     return true;
 }
 
 void BluetoothExtension::start() {
-    qInfo() << "Starting Bluetooth extension...";
+    qInfo() << "Starting Bluetooth extension";
+    publishDeviceList();
 }
 
 void BluetoothExtension::stop() {
-    qInfo() << "Stopping Bluetooth extension...";
+    qInfo() << "Stopping Bluetooth extension";
+    if (btCap_ && deviceSubscriptionId_ >= 0) {
+        btCap_->unsubscribeDevices(deviceSubscriptionId_);
+        deviceSubscriptionId_ = -1;
+    }
     scanning_ = false;
 }
 
 void BluetoothExtension::cleanup() {
-    qInfo() << "Cleaning up Bluetooth extension...";
-    devices_.clear();
-    connectedDevice_ = nullptr;
-    if (activeCall_) {
-        delete activeCall_;
-        activeCall_ = nullptr;
-    }
+    qInfo() << "Cleaning up Bluetooth extension";
+    if (activeCall_) { delete activeCall_; activeCall_ = nullptr; }
+    btCap_.reset();
+    eventCap_.reset();
 }
 
-void BluetoothExtension::setupEventHandlers() {
-    if (!event_bus_) {
-        qWarning() << "Event bus not available";
-        return;
-    }
+void BluetoothExtension::setupEventHandlers() {}
 
-    event_bus_->subscribe("bluetooth.scan", [this](const QVariantMap& data) {
-        handleScanCommand(data);
-    });
-
-    event_bus_->subscribe("bluetooth.pair", [this](const QVariantMap& data) {
-        handlePairCommand(data);
-    });
-
-    event_bus_->subscribe("bluetooth.connect", [this](const QVariantMap& data) {
-        handleConnectCommand(data);
-    });
-
-    event_bus_->subscribe("bluetooth.disconnect", [this](const QVariantMap& data) {
-        handleDisconnectCommand(data);
-    });
-
-    event_bus_->subscribe("bluetooth.answerCall", [this](const QVariantMap& data) {
-        handleAnswerCallCommand(data);
-    });
-
-    event_bus_->subscribe("bluetooth.rejectCall", [this](const QVariantMap& data) {
-        handleRejectCallCommand(data);
-    });
-
-    event_bus_->subscribe("bluetooth.endCall", [this](const QVariantMap& data) {
-        handleEndCallCommand(data);
-    });
-
-    event_bus_->subscribe("bluetooth.dial", [this](const QVariantMap& data) {
-        handleDialCommand(data);
-    });
+void BluetoothExtension::subscribeCommandEvents() {
+    if (!eventCap_) return;
+    // Use fully-qualified event names matching EventCapability emission model.
+    eventCap_->subscribe("bluetooth.scan", [this](const QVariantMap& data){ handleScanCommand(data); });
+    eventCap_->subscribe("bluetooth.pair", [this](const QVariantMap& data){ handlePairCommand(data); });
+    eventCap_->subscribe("bluetooth.connect", [this](const QVariantMap& data){ handleConnectCommand(data); });
+    eventCap_->subscribe("bluetooth.disconnect", [this](const QVariantMap& data){ handleDisconnectCommand(data); });
+    eventCap_->subscribe("bluetooth.answerCall", [this](const QVariantMap& data){ handleAnswerCallCommand(data); });
+    eventCap_->subscribe("bluetooth.rejectCall", [this](const QVariantMap& data){ handleRejectCallCommand(data); });
+    eventCap_->subscribe("bluetooth.endCall", [this](const QVariantMap& data){ handleEndCallCommand(data); });
+    eventCap_->subscribe("bluetooth.dial", [this](const QVariantMap& data){ handleDialCommand(data); });
 }
 
 void BluetoothExtension::handleScanCommand(const QVariantMap& data) {
-    Q_UNUSED(data);
-    qDebug() << "Bluetooth scan command received";
-
+    if (!btCap_ || !eventCap_) return;
+    int timeoutMs = data.value("timeoutMs").toInt();
     scanning_ = true;
-
-    QVariantMap event;
-    event["scanning"] = true;
-    event_bus_->publish("bluetooth.scanStarted", event);
-
-    // TODO: Implement actual Bluetooth scanning
-    // For now, simulate finding some devices
-    qInfo() << "Starting Bluetooth device scan...";
-
-    // Simulate scan completion
-    scanning_ = false;
-    event["scanning"] = false;
-    event_bus_->publish("bluetooth.scanCompleted", event);
-
-    publishDeviceList();
+    QVariantMap started; started["scanning"] = true; started["timeoutMs"] = timeoutMs;
+    eventCap_->emitEvent("scan_started", started);
+    btCap_->startDiscovery(timeoutMs);
 }
 
 void BluetoothExtension::handlePairCommand(const QVariantMap& data) {
-    QString deviceAddress = data.value("address").toString();
-    qDebug() << "Pair command received for device:" << deviceAddress;
-
-    // TODO: Implement actual Bluetooth pairing
-    qInfo() << "Pairing with device:" << deviceAddress;
-
-    QVariantMap event;
-    event["address"] = deviceAddress;
-    event["paired"] = true;
-    event_bus_->publish("bluetooth.paired", event);
+    if (!btCap_ || !eventCap_) return;
+    QString addr = data.value("address").toString();
+    bool ok = btCap_->pairDevice(addr);
+    QVariantMap ev; ev["address"] = addr; ev["paired"] = ok;
+    eventCap_->emitEvent("paired", ev);
 }
 
 void BluetoothExtension::handleConnectCommand(const QVariantMap& data) {
-    QString deviceAddress = data.value("address").toString();
-    qDebug() << "Connect command received for device:" << deviceAddress;
-
-    // TODO: Implement actual Bluetooth connection
-    qInfo() << "Connecting to device:" << deviceAddress;
-
-    QVariantMap event;
-    event["address"] = deviceAddress;
-    event["connected"] = true;
-    event_bus_->publish("bluetooth.connected", event);
+    if (!btCap_ || !eventCap_) return;
+    QString addr = data.value("address").toString();
+    bool ok = btCap_->connectDevice(addr);
+    QVariantMap ev; ev["address"] = addr; ev["connected"] = ok;
+    eventCap_->emitEvent("connected", ev);
 }
 
 void BluetoothExtension::handleDisconnectCommand(const QVariantMap& data) {
-    QString deviceAddress = data.value("address").toString();
-    qDebug() << "Disconnect command received for device:" << deviceAddress;
-
-    connectedDevice_ = nullptr;
-
-    QVariantMap event;
-    event["address"] = deviceAddress;
-    event["connected"] = false;
-    event_bus_->publish("bluetooth.disconnected", event);
+    if (!btCap_ || !eventCap_) return;
+    QString addr = data.value("address").toString();
+    bool ok = btCap_->disconnectDevice(addr);
+    QVariantMap ev; ev["address"] = addr; ev["connected"] = !ok ? true : false; // if disconnect succeeded connected=false
+    ev["connected"] = false;
+    eventCap_->emitEvent("disconnected", ev);
 }
 
 void BluetoothExtension::handleAnswerCallCommand(const QVariantMap& data) {
@@ -209,44 +182,35 @@ void BluetoothExtension::handleDialCommand(const QVariantMap& data) {
     publishCallStatus();
 }
 
+void BluetoothExtension::handleDevicesUpdated(const QList<core::capabilities::BluetoothCapability::Device>& list) {
+    Q_UNUSED(list); // Publish through publishDeviceList
+    publishDeviceList();
+}
+
 void BluetoothExtension::publishDeviceList() {
-    if (!event_bus_) {
-        return;
-    }
-
+    if (!eventCap_ || !btCap_) return;
     QVariantList deviceList;
-    for (const auto& device : devices_) {
-        QVariantMap deviceMap;
-        deviceMap["address"] = device.address;
-        deviceMap["name"] = device.name;
-        deviceMap["paired"] = device.paired;
-        deviceMap["connected"] = device.connected;
-        deviceMap["signalStrength"] = device.signalStrength;
-        deviceList.append(deviceMap);
+    for (const auto &d : btCap_->listDevices()) {
+        QVariantMap m; m["address"] = d.address; m["name"] = d.name; m["paired"] = d.paired; m["connected"] = d.connected; m["rssi"] = d.rssi;
+        deviceList.append(m);
     }
-
-    QVariantMap event;
-    event["devices"] = deviceList;
-    event_bus_->publish("bluetooth.deviceList", event);
+    QVariantMap ev; ev["devices"] = deviceList; ev["scanning"] = scanning_;
+    eventCap_->emitEvent("devices_updated", ev);
 }
 
 void BluetoothExtension::publishCallStatus() {
-    if (!event_bus_) {
-        return;
-    }
-
-    QVariantMap event;
+    if (!eventCap_) return;
+    QVariantMap ev;
     if (activeCall_) {
-        event["hasActiveCall"] = true;
-        event["number"] = activeCall_->number;
-        event["contactName"] = activeCall_->contactName;
-        event["incoming"] = activeCall_->incoming;
-        event["active"] = activeCall_->active;
+        ev["hasActiveCall"] = true;
+        ev["number"] = activeCall_->number;
+        ev["contactName"] = activeCall_->contactName;
+        ev["incoming"] = activeCall_->incoming;
+        ev["active"] = activeCall_->active;
     } else {
-        event["hasActiveCall"] = false;
+        ev["hasActiveCall"] = false;
     }
-
-    event_bus_->publish("bluetooth.callStatus", event);
+    eventCap_->emitEvent("call_status", ev);
 }
 
 }  // namespace bluetooth

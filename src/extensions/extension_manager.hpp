@@ -22,6 +22,8 @@
 #include <QObject>
 #include <QString>
 #include <QMap>
+#include <QSet>
+#include <QStringList>
 #include <memory>
 #include "extension.hpp"
 #include "extension_manifest.hpp"
@@ -83,6 +85,13 @@ private:
     bool checkDependencies(const ExtensionManifest& manifest);
     ExtensionManifest loadManifest(const QString& manifest_path);
     void grantCapabilities(Extension* extension, const ExtensionManifest& manifest);
+    // Resolve a safe load order using topological sort. Returns ordered list of ids.
+    // Populates missingDeps with any extension -> missing dependency list.
+    // Populates cycleGroup with extensions participating in a dependency cycle.
+    QStringList resolveLoadOrder(const QMap<QString, ExtensionManifest>& manifests,
+                                 const QSet<QString>& alreadyLoaded,
+                                 QMap<QString, QStringList>& missingDeps,
+                                 QStringList& cycleGroup);
     
     QMap<QString, ExtensionInfo> extensions_;
     core::CapabilityManager* capability_manager_;

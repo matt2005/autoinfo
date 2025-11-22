@@ -16,8 +16,12 @@ if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
     set(CMAKE_INSTALL_PREFIX "/usr" CACHE PATH "" FORCE)
 endif()
 
-# Find Qt6 packages
-find_package(Qt6 REQUIRED COMPONENTS Core Gui Quick Qml Widgets WebSockets Network Positioning)
+# Find Qt6 packages (include Bluetooth for capability; add Test when BUILD_TESTS)
+find_package(Qt6 REQUIRED COMPONENTS Core Gui Quick Qml Widgets WebSockets Network Positioning Bluetooth)
+
+if(BUILD_TESTS)
+    find_package(Qt6 REQUIRED COMPONENTS Test)
+endif()
 
 # Project version
 set(PROJECT_VERSION_MAJOR 1)
@@ -25,7 +29,7 @@ set(PROJECT_VERSION_MINOR 0)
 set(PROJECT_VERSION_PATCH 0)
 
 # Build options
-option(BUILD_TESTS "Build tests" ON)
+option(BUILD_TESTS "Build tests" OFF)
 option(BUILD_EXTENSIONS "Build extensions" ON)
 option(ENABLE_EGLFS "Enable EGLFS platform support" ON)
 
@@ -151,7 +155,7 @@ set(CPACK_DEBIAN_FILE_NAME DEB-DEFAULT)
 # Let dpkg-shlibdeps compute runtime dependencies from linked shared libs
 set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
 # Additional runtime dependencies (QML modules not detected by shlibdeps)
-set(CPACK_DEBIAN_PACKAGE_DEPENDS "qml6-module-qtquick, qml6-module-qtquick-controls, qml6-module-qtquick-layouts, qml6-module-qtquick-window, qml6-module-qtqml-workerscript, libqt6qml6, libqt6quick6, qt6-qpa-plugins")
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "qml6-module-qtquick, qml6-module-qtquick-controls, qml6-module-qtquick-layouts, qml6-module-qtquick-window, qml6-module-qtqml-workerscript, libqt6qml6, libqt6quick6, qt6-qpa-plugins, libqt6bluetooth6, bluez")
 # Include license/readme files
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE")
 set(CPACK_RESOURCE_FILE_README "${CMAKE_SOURCE_DIR}/README.md")

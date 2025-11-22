@@ -21,7 +21,7 @@
 
 #include <QString>
 #include <QVariantMap>
-#include <QMap>
+#include <QHash>
 #include <memory>
 #include "../core/capabilities/Capability.hpp"
 
@@ -136,7 +136,7 @@ protected:
 
 private:
     // Granted capabilities (capability_id -> capability)
-    QMap<QString, std::shared_ptr<core::capabilities::Capability>> capabilities_;
+    QHash<QString, std::shared_ptr<core::capabilities::Capability>> capabilities_;
 };
 
 }  // namespace extensions

@@ -25,6 +25,7 @@
 #include "capabilities/FileSystemCapability.hpp"
 #include "capabilities/UICapability.hpp"
 #include "capabilities/EventCapability.hpp"
+#include "capabilities/BluetoothCapability.hpp"
 #include <QString>
 #include <QVariantMap>
 #include <QMap>
@@ -38,6 +39,7 @@ namespace core {
 // Forward declarations
 class EventBus;
 class WebSocketServer;
+namespace ui { class UIRegistrar; }
 
 /**
  * CapabilityManager grants, revokes, and audits capabilities for extensions.
@@ -138,6 +140,10 @@ public:
         const QVariantMap& options
     ) const;
 
+    // Inject UI registrar implementation from UI module to decouple core from UI
+    void setUIRegistrar(ui::UIRegistrar* registrar);
+    ui::UIRegistrar* uiRegistrar() const { return ui_registrar_; }
+
 private:
     // Factory methods for creating concrete capability implementations
     std::shared_ptr<capabilities::LocationCapability> createLocationCapability(
@@ -164,6 +170,10 @@ private:
         const QString& extensionId,
         const QVariantMap& options
     );
+    std::shared_ptr<capabilities::Capability> createBluetoothCapability(
+        const QString& extensionId,
+        const QVariantMap& options
+    );
     
     // Core services (non-owned)
     EventBus* event_bus_;
@@ -184,6 +194,9 @@ private:
     
     // Thread safety
     mutable QRecursiveMutex mutex_;
+
+    // Non-owned pointer to UI registrar (implemented in UI module)
+    ui::UIRegistrar* ui_registrar_ = nullptr;
 };
 
 }  // namespace core

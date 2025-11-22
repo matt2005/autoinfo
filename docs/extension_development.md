@@ -4,7 +4,7 @@ This guide will help you create extensions for Crankshaft Reborn using Qt6.
 
 ## Overview
 
-Extensions are self-contained modules that add functionality to Crankshaft Reborn. They can be written in C/C++, Python, or Node.js and can interact with the core system through the event bus and WebSocket API.
+Extensions are self-contained modules that add functionality to Crankshaft Reborn. They can be written in C/C++, Python, or Node.js and interact with the core only through granted capabilities (capability-based security) and the WebSocket API. Direct access to the raw event bus is restricted; instead use the `event` capability.
 
 ## Extension Types
 
@@ -47,7 +47,7 @@ extensions/
 
 ### Step 2: Manifest File
 
-Create a `manifest.json` file:
+Create a `manifest.json` file (include dependencies and permissions):
 
 ```json
 {
@@ -57,7 +57,7 @@ Create a `manifest.json` file:
   "description": "Description of my extension",
   "author": "Your Name",
   "type": "service",
-  "dependencies": [],
+    "dependencies": ["navigation"],
   "platforms": ["linux", "all"],
   "entry_point": "my_extension.so",
   "config_schema": "config_schema.json",
@@ -77,10 +77,12 @@ Create a `manifest.json` file:
 
 ### Step 3: Implement the Extension
 
-#### C++ Extension
+#### C++ Extension (Capability-based)
 
 ```cpp
+// Capability-based extension example
 #include "../../src/extensions/extension.hpp"
+#include "../../src/core/capabilities/EventCapability.hpp"
 
 namespace openauto {
 namespace extensions {
@@ -92,6 +94,11 @@ public:
     ~MyExtension() override = default;
 
     bool initialize() override {
+        // Acquire capabilities granted based on manifest permissions
+        eventCap_ = getCapability<openauto::core::capabilities::EventCapability>();
+        if (!eventCap_) {
+            return false; // Missing required permission
+        }
         setupEventHandlers();
         return true;
     }
@@ -114,14 +121,16 @@ public:
     ExtensionType type() const override { return ExtensionType::Service; }
 
 private:
+    std::shared_ptr<openauto::core::capabilities::EventCapability> eventCap_;
     void setupEventHandlers() {
-        event_bus_->subscribe("my.event", [this](const QVariantMap& data) {
-            handleEvent(data);
-        });
+        // Subscribe to namespaced events (full name: my_extension.my.event)
+        eventCap_->subscribe("my_extension.my.event", [this](const QVariantMap& data){ handleEvent(data); });
     }
 
     void handleEvent(const QVariantMap& data) {
-        // Handle the event
+        // Process event then emit a response
+        QVariantMap response; response["status"] = "ok";
+        eventCap_->emitEvent("processed", response); // Emits my_extension.processed
     }
 };
 
@@ -165,29 +174,25 @@ install(FILES manifest.json
 )
 ```
 
-## Event Bus API
+## Event Capability API
 
 ### Subscribing to Events
 
 ```cpp
-int subscription_id = event_bus_->subscribe("event.name", 
-    [](const QVariantMap& data) {
-        // Handle event
-    });
+int subId = eventCap_->subscribe("my_extension.*", [](const QVariantMap& data){ /* ... */ });
 ```
 
-### Publishing Events
+### Emitting Events (namespaced automatically)
 
 ```cpp
-QVariantMap data;
-data["key"] = "value";
-event_bus_->publish("event.name", data);
+QVariantMap payload; payload["key"] = "value";
+eventCap_->emitEvent("updated", payload); // Emits my_extension.updated
 ```
 
 ### Unsubscribing
 
 ```cpp
-event_bus_->unsubscribe(subscription_id);
+eventCap_->unsubscribe(subId);
 ```
 
 ## WebSocket API
@@ -210,7 +215,7 @@ connect(ws_server_, &WebSocketServer::messageReceived,
     });
 ```
 
-## Permissions
+## Permissions & Dependencies
 
 Extensions must declare required permissions in their manifest:
 
@@ -218,7 +223,20 @@ Extensions must declare required permissions in their manifest:
 - `filesystem`: File system access
 - `audio`: Audio device access
 - `video`: Video device access
-- `bluetooth`: Bluetooth access
+-- `bluetooth`: Bluetooth access (adapter discovery, pairing, connect/disconnect)
+Dependencies declared in `manifest.json` are validated before load. All referenced extensions must be loaded and running; cycles cause errors for every member of the cycle and prevent loading. The core computes a topological ordering for safe initialization.
+
+## Capability List
+
+| Capability | Purpose |
+|------------|---------|
+| `event` | Namespaced pub/sub messaging |
+| `location` | GPS & mock location modes |
+| `network` | HTTP operations (GET/POST/etc.) |
+| `filesystem` | Sandboxed storage per extension |
+| `ui` | UI view registration (future) |
+| `bluetooth` | Adapter/device discovery, pairing, connection |
+
 - `location`: GPS/location access
 - `contacts`: Contact list access
 - `phone`: Phone functionality
