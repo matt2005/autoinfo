@@ -5,6 +5,7 @@ set(UI_SOURCES
     ThemeManager.cpp
     ExtensionRegistry.cpp
     NavigationBridge.cpp
+    ConfigManagerBridge.cpp
     UIRegistrarImpl.cpp
 )
 
@@ -13,6 +14,7 @@ set(UI_HEADERS
     ThemeManager.hpp
     ExtensionRegistry.hpp
     NavigationBridge.hpp
+    ConfigManagerBridge.hpp
     UIRegistrarImpl.hpp
 )
 

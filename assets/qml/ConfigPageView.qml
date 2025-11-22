@@ -20,6 +20,7 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
+import CrankshaftReborn.UI 1.0
 import Crankshaft.ConfigManagerBridge 1.0
 
 Item {
@@ -33,6 +34,14 @@ Item {
         loadPage()
     }
     
+    function complexityToIndex(c) {
+        var v = (c || "basic").toString().toLowerCase()
+        if (v === "advanced") return 1
+        if (v === "expert") return 2
+        if (v === "developer" || v === "dev") return 3
+        return 0
+    }
+
     function loadPage() {
         if (!domain || !extension) {
             return
@@ -40,19 +49,19 @@ Item {
         
         var page = ConfigManagerBridge.getConfigPage(domain, extension)
         if (!page || !page.sections) {
-            sectionsModel.clear()
+            sectionsData = []
             return
         }
         
-        sectionsModel.clear()
-        
         // Filter sections by complexity level
+        var filtered = []
         for (var i = 0; i < page.sections.length; i++) {
             var section = page.sections[i]
-            if (section.complexity <= complexityLevel) {
-                sectionsModel.append(section)
+            if (complexityToIndex(section.complexity) <= complexityLevel) {
+                filtered.push(section)
             }
         }
+        sectionsData = filtered
         
         pageTitle.text = page.title || ""
         pageDescription.text = page.description || ""
@@ -64,9 +73,7 @@ Item {
     
     Component.onCompleted: loadPage()
     
-    ListModel {
-        id: sectionsModel
-    }
+    property var sectionsData: []
     
     ColumnLayout {
         anchors.fill: parent
@@ -112,9 +119,10 @@ Item {
                 spacing: 20
                 
                 Repeater {
-                    model: sectionsModel
+                    model: sectionsData ? sectionsData.length : 0
                     
                     delegate: ColumnLayout {
+                        property var section: sectionsData[index]
                         Layout.fillWidth: true
                         spacing: 10
                         
@@ -124,14 +132,14 @@ Item {
                             spacing: 10
                             
                             Image {
-                                source: model.icon || ""
+                                source: section && section.icon || ""
                                 width: 24
                                 height: 24
-                                visible: model.icon !== ""
+                                visible: section && section.icon !== ""
                             }
                             
                             Text {
-                                text: model.title
+                                text: section ? section.title : ""
                                 font.pixelSize: 16
                                 font.bold: true
                                 color: ThemeManager.textColor
@@ -143,28 +151,26 @@ Item {
                                 width: complexityText.width + 16
                                 height: 20
                                 color: {
-                                    switch(model.complexity) {
-                                        case 0: return "#4CAF50"  // Basic - Green
-                                        case 1: return "#FF9800"  // Advanced - Orange
-                                        case 2: return "#F44336"  // Expert - Red
-                                        case 3: return "#9C27B0"  // Developer - Purple
-                                        default: return "#9E9E9E"
-                                    }
+                                    var c = section && (section.complexity || "basic").toString().toLowerCase()
+                                    if (c === "basic") return "#4CAF50"
+                                    if (c === "advanced") return "#FF9800"
+                                    if (c === "expert") return "#F44336"
+                                    if (c === "developer" || c === "dev") return "#9C27B0"
+                                    return "#9E9E9E"
                                 }
                                 radius: 10
-                                visible: model.complexity > 0
+                                visible: section && complexityToIndex(section.complexity) > 0
                                 
                                 Text {
                                     id: complexityText
                                     anchors.centerIn: parent
                                     text: {
-                                        switch(model.complexity) {
-                                            case 0: return "Basic"
-                                            case 1: return "Advanced"
-                                            case 2: return "Expert"
-                                            case 3: return "Developer"
-                                            default: return ""
-                                        }
+                                        var c = section && (section.complexity || "basic").toString().toLowerCase()
+                                        if (c === "basic") return "Basic"
+                                        if (c === "advanced") return "Advanced"
+                                        if (c === "expert") return "Expert"
+                                        if (c === "developer" || c === "dev") return "Developer"
+                                        return ""
                                     }
                                     color: "white"
                                     font.pixelSize: 11
@@ -174,12 +180,12 @@ Item {
                         }
                         
                         Text {
-                            text: model.description
+                            text: section ? section.description : ""
                             font.pixelSize: 12
                             color: ThemeManager.secondaryTextColor
                             wrapMode: Text.WordWrap
                             Layout.fillWidth: true
-                            visible: model.description !== ""
+                            visible: section && section.description !== ""
                         }
                         
                         // Section items
@@ -189,14 +195,13 @@ Item {
                             spacing: 15
                             
                             Repeater {
-                                model: items
-                                
+                                model: section && section.items ? section.items.length : 0
                                 delegate: ConfigItemView {
                                     Layout.fillWidth: true
                                     domain: root.domain
                                     extension: root.extension
-                                    sectionKey: key
-                                    itemData: modelData
+                                    sectionKey: section ? section.key : ""
+                                    itemData: section ? section.items[index] : null
                                     complexityLevel: root.complexityLevel
                                 }
                             }
@@ -222,7 +227,7 @@ Item {
                     horizontalAlignment: Text.AlignHCenter
                     Layout.fillWidth: true
                     Layout.topMargin: 50
-                    visible: sectionsModel.count === 0
+                    visible: !sectionsData || sectionsData.length === 0
                 }
             }
         }

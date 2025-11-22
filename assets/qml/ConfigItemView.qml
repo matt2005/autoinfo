@@ -21,6 +21,7 @@ import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
 import QtQuick.Dialogs
+import CrankshaftReborn.UI 1.0
 import Crankshaft.ConfigManagerBridge 1.0
 
 Item {
@@ -33,7 +34,15 @@ Item {
     property int complexityLevel: 0
     
     height: itemLayout.height
-    visible: itemData && (itemData.complexity <= complexityLevel)
+    visible: itemData && (complexityIndex(itemData.complexity) <= complexityLevel)
+
+    function complexityIndex(c) {
+        var v = (c || "basic").toString().toLowerCase()
+        if (v === "advanced") return 1
+        if (v === "expert") return 2
+        if (v === "developer" || v === "dev") return 3
+        return 0
+    }
     
     function getConfigKey() {
         return domain + "." + extension + "." + sectionKey + "." + (itemData ? itemData.key : "")
@@ -42,32 +51,32 @@ Item {
     function loadValue() {
         if (!itemData) return
         
-        var value = ConfigManagerBridge.getValue(getConfigKey(), itemData.defaultValue)
+        var value = ConfigManagerBridge.getValue(getConfigKey())
         
         switch(itemData.type) {
-            case 0: // Boolean
+            case "boolean":
                 booleanSwitch.checked = value
                 break
-            case 1: // Integer
+            case "integer":
                 integerSpinBox.value = value
                 break
-            case 2: // Double
+            case "double":
                 doubleSpinBox.value = value
                 break
-            case 3: // String
+            case "string":
                 stringTextField.text = value
                 break
-            case 4: // Selection
-                selectionComboBox.currentIndex = itemData.options.indexOf(value)
+            case "selection":
+                selectionComboBox.currentIndex = (itemData.properties && itemData.properties.options) ? itemData.properties.options.indexOf(value) : -1
                 break
-            case 5: // MultiSelection
+            case "multiselection":
                 loadMultiSelection(value)
                 break
-            case 6: // Color
+            case "color":
                 colorButton.selectedColor = value
                 break
-            case 7: // File
-            case 8: // Directory
+            case "file":
+            case "directory":
                 fileTextField.text = value
                 break
         }
@@ -77,10 +86,11 @@ Item {
         multiSelectionRepeater.model = []
         var selectedValues = Array.isArray(value) ? value : []
         var items = []
-        for (var i = 0; i < itemData.options.length; i++) {
+        var opts = (itemData.properties && itemData.properties.options) ? itemData.properties.options : []
+        for (var i = 0; i < opts.length; i++) {
             items.push({
-                label: itemData.options[i],
-                checked: selectedValues.indexOf(itemData.options[i]) !== -1
+                label: opts[i],
+                checked: selectedValues.indexOf(opts[i]) !== -1
             })
         }
         multiSelectionRepeater.model = items
@@ -149,7 +159,7 @@ Item {
             Switch {
                 id: booleanSwitch
                 anchors.verticalCenter: parent.verticalCenter
-                visible: itemData && itemData.type === 0
+                visible: itemData && itemData.type === "boolean"
                 enabled: itemData && !itemData.readOnly
                 onToggled: saveValue(checked)
             }
@@ -159,16 +169,16 @@ Item {
                 id: integerSpinBox
                 anchors.verticalCenter: parent.verticalCenter
                 width: 150
-                visible: itemData && itemData.type === 1
+                visible: itemData && itemData.type === "integer"
                 enabled: itemData && !itemData.readOnly
-                from: itemData ? (itemData.minValue !== undefined ? itemData.minValue : -2147483648) : -2147483648
-                to: itemData ? (itemData.maxValue !== undefined ? itemData.maxValue : 2147483647) : 2147483647
-                stepSize: itemData ? (itemData.step !== undefined ? itemData.step : 1) : 1
+                from: itemData ? ((itemData.properties && itemData.properties.minValue !== undefined) ? itemData.properties.minValue : -2147483648) : -2147483648
+                to: itemData ? ((itemData.properties && itemData.properties.maxValue !== undefined) ? itemData.properties.maxValue : 2147483647) : 2147483647
+                stepSize: itemData ? ((itemData.properties && itemData.properties.step !== undefined) ? itemData.properties.step : 1) : 1
                 editable: true
                 onValueModified: saveValue(value)
                 
                 background: Rectangle {
-                    color: ThemeManager.inputBackgroundColor
+                    color: ThemeManager.surfaceColor
                     border.color: ThemeManager.borderColor
                     border.width: 1
                     radius: 4
@@ -191,11 +201,11 @@ Item {
                 id: doubleSpinBox
                 anchors.verticalCenter: parent.verticalCenter
                 width: 150
-                visible: itemData && itemData.type === 2
+                visible: itemData && itemData.type === "double"
                 enabled: itemData && !itemData.readOnly
-                from: itemData ? (itemData.minValue !== undefined ? itemData.minValue * 100 : -214748364) : -214748364
-                to: itemData ? (itemData.maxValue !== undefined ? itemData.maxValue * 100 : 214748364) : 214748364
-                stepSize: itemData ? (itemData.step !== undefined ? itemData.step * 100 : 10) : 10
+                from: itemData ? ((itemData.properties && itemData.properties.minValue !== undefined) ? itemData.properties.minValue * 100 : -214748364) : -214748364
+                to: itemData ? ((itemData.properties && itemData.properties.maxValue !== undefined) ? itemData.properties.maxValue * 100 : 214748364) : 214748364
+                stepSize: itemData ? ((itemData.properties && itemData.properties.step !== undefined) ? itemData.properties.step * 100 : 10) : 10
                 editable: true
                 
                 property int decimals: 2
@@ -218,7 +228,7 @@ Item {
                 onValueModified: saveValue(realValue)
                 
                 background: Rectangle {
-                    color: ThemeManager.inputBackgroundColor
+                    color: ThemeManager.surfaceColor
                     border.color: ThemeManager.borderColor
                     border.width: 1
                     radius: 4
@@ -241,9 +251,9 @@ Item {
                 id: stringTextField
                 anchors.verticalCenter: parent.verticalCenter
                 width: parent.width
-                visible: itemData && itemData.type === 3
+                visible: itemData && itemData.type === "string"
                 enabled: itemData && !itemData.readOnly
-                placeholderText: itemData ? itemData.placeholder : ""
+                placeholderText: itemData && itemData.properties ? itemData.properties.placeholder : ""
                 font.pixelSize: 13
                 color: ThemeManager.textColor
                 echoMode: itemData && itemData.isSecret ? TextInput.Password : TextInput.Normal
@@ -251,7 +261,7 @@ Item {
                 onEditingFinished: saveValue(text)
                 
                 background: Rectangle {
-                    color: ThemeManager.inputBackgroundColor
+                    color: ThemeManager.surfaceColor
                     border.color: stringTextField.activeFocus ? ThemeManager.primaryColor : ThemeManager.borderColor
                     border.width: 1
                     radius: 4
@@ -263,15 +273,15 @@ Item {
                 id: selectionComboBox
                 anchors.verticalCenter: parent.verticalCenter
                 width: parent.width
-                visible: itemData && itemData.type === 4
+                visible: itemData && itemData.type === "selection"
                 enabled: itemData && !itemData.readOnly
-                model: itemData ? itemData.options : []
+                model: itemData && itemData.properties ? itemData.properties.options : []
                 font.pixelSize: 13
                 
                 onActivated: saveValue(currentText)
                 
                 background: Rectangle {
-                    color: ThemeManager.inputBackgroundColor
+                    color: ThemeManager.surfaceColor
                     border.color: ThemeManager.borderColor
                     border.width: 1
                     radius: 4
@@ -292,7 +302,7 @@ Item {
             ColumnLayout {
                 anchors.verticalCenter: parent.verticalCenter
                 width: parent.width
-                visible: itemData && itemData.type === 5
+                visible: itemData && itemData.type === "multiselection"
                 spacing: 5
                 
                 Repeater {
@@ -329,7 +339,7 @@ Item {
             // Color (type 6)
             RowLayout {
                 anchors.verticalCenter: parent.verticalCenter
-                visible: itemData && itemData.type === 6
+                visible: itemData && itemData.type === "color"
                 spacing: 10
                 
                 Rectangle {
@@ -380,21 +390,21 @@ Item {
             RowLayout {
                 anchors.verticalCenter: parent.verticalCenter
                 width: parent.width
-                visible: itemData && (itemData.type === 7 || itemData.type === 8)
+                visible: itemData && (itemData.type === "file" || itemData.type === "directory")
                 spacing: 5
                 
                 TextField {
                     id: fileTextField
                     Layout.fillWidth: true
                     enabled: itemData && !itemData.readOnly
-                    placeholderText: itemData && itemData.type === 7 ? "Select file..." : "Select directory..."
+                    placeholderText: itemData && itemData.type === "file" ? "Select file..." : "Select directory..."
                     font.pixelSize: 13
                     color: ThemeManager.textColor
                     
                     onEditingFinished: saveValue(text)
                     
                     background: Rectangle {
-                        color: ThemeManager.inputBackgroundColor
+                        color: ThemeManager.surfaceColor
                         border.color: fileTextField.activeFocus ? ThemeManager.primaryColor : ThemeManager.borderColor
                         border.width: 1
                         radius: 4
@@ -406,7 +416,7 @@ Item {
                     enabled: itemData && !itemData.readOnly
                     
                     onClicked: {
-                        if (itemData.type === 7) {
+                        if (itemData.type === "file") {
                             fileDialog.selectFolder = false
                         } else {
                             fileDialog.selectFolder = true
@@ -430,7 +440,7 @@ Item {
                 
                 FileDialog {
                     id: fileDialog
-                    title: itemData && itemData.type === 7 ? "Select File" : "Select Directory"
+                    title: itemData && itemData.type === "file" ? "Select File" : "Select Directory"
                     currentFolder: fileTextField.text || ""
                     onAccepted: {
                         var path = selectedFile.toString().replace("file:///", "")
@@ -443,7 +453,7 @@ Item {
             // Custom (type 9) - Placeholder
             Text {
                 anchors.verticalCenter: parent.verticalCenter
-                visible: itemData && itemData.type === 9
+                visible: itemData && itemData.type === "custom"
                 text: "Custom widget not implemented"
                 font.pixelSize: 12
                 color: ThemeManager.secondaryTextColor

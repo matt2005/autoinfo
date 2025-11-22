@@ -20,6 +20,7 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
+import CrankshaftReborn.UI 1.0
 import Crankshaft.ConfigManagerBridge 1.0
 
 Rectangle {
@@ -47,7 +48,12 @@ Rectangle {
             if (!domains[page.domain]) {
                 domains[page.domain] = []
             }
-            domains[page.domain].push(page)
+            // Store only lightweight fields needed in the sidebar to avoid
+            // role-type conflicts from nested objects
+            domains[page.domain].push({
+                extension: page.extension,
+                title: page.title
+            })
         }
         
         // Add domains to model
@@ -127,7 +133,7 @@ Rectangle {
             Rectangle {
                 Layout.preferredWidth: 250
                 Layout.fillHeight: true
-                color: ThemeManager.cardBackgroundColor
+                color: ThemeManager.cardColor
                 border.color: ThemeManager.borderColor
                 border.width: 1
                 radius: 5
@@ -213,7 +219,7 @@ Rectangle {
             Rectangle {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                color: ThemeManager.cardBackgroundColor
+                color: ThemeManager.cardColor
                 border.color: ThemeManager.borderColor
                 border.width: 1
                 radius: 5

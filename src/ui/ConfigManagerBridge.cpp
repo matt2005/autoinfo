@@ -51,7 +51,7 @@ void ConfigManagerBridge::registerQmlType()
     );
 }
 
-void ConfigManagerBridge::initialise(core::ConfigManager* manager)
+void ConfigManagerBridge::initialise(core::config::ConfigManager* manager)
 {
     if (instance_ == nullptr) {
         instance_ = new ConfigManagerBridge();
@@ -67,13 +67,13 @@ void ConfigManagerBridge::connectSignals()
         return;
     }
 
-    connect(config_manager_, &core::ConfigManager::configValueChanged,
+        connect(config_manager_, &core::config::ConfigManager::configValueChanged,
             this, &ConfigManagerBridge::configValueChanged);
-    connect(config_manager_, &core::ConfigManager::configPageRegistered,
+        connect(config_manager_, &core::config::ConfigManager::configPageRegistered,
             this, &ConfigManagerBridge::configPageRegistered);
-    connect(config_manager_, &core::ConfigManager::complexityLevelChanged,
-            this, [this](core::ConfigComplexity level) {
-                emit complexityLevelChanged(core::configComplexityToString(level));
+        connect(config_manager_, &core::config::ConfigManager::complexityLevelChanged,
+            this, [this](core::config::ConfigComplexity level) {
+            emit complexityLevelChanged(core::config::configComplexityToString(level));
             });
 }
 
@@ -281,7 +281,7 @@ QString ConfigManagerBridge::getComplexityLevel() const
         return "Basic";
     }
 
-    return core::configComplexityToString(config_manager_->getComplexityLevel());
+    return core::config::configComplexityToString(config_manager_->getComplexityLevel());
 }
 
 void ConfigManagerBridge::setComplexityLevel(const QString& level)
@@ -291,7 +291,7 @@ void ConfigManagerBridge::setComplexityLevel(const QString& level)
         return;
     }
 
-    config_manager_->setComplexityLevel(core::stringToConfigComplexity(level));
+    config_manager_->setComplexityLevel(core::config::stringToConfigComplexity(level));
 }
 
 QStringList ConfigManagerBridge::getComplexityLevels() const

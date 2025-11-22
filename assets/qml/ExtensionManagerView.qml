@@ -89,7 +89,7 @@ Item {
         Rectangle {
             Layout.fillWidth: true
             Layout.fillHeight: true
-            color: ThemeManager.cardBackgroundColor
+            color: ThemeManager.cardColor
             radius: 8
             border.color: ThemeManager.borderColor
             border.width: 1

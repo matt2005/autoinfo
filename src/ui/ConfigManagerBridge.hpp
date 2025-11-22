@@ -24,11 +24,11 @@
 #include <QVariantMap>
 #include <qqml.h>
 
-namespace opencardev::crankshaft::core {
+namespace opencardev::crankshaft::core::config {
     class ConfigManager;
 }
 
-namespace ui {
+namespace opencardev::crankshaft::ui {
 
 class ConfigManagerBridge : public QObject {
     Q_OBJECT
@@ -38,7 +38,7 @@ class ConfigManagerBridge : public QObject {
 public:
     static ConfigManagerBridge* instance();
     static void registerQmlType();
-    static void initialise(core::ConfigManager* manager);
+    static void initialise(core::config::ConfigManager* manager);
 
     // Config pages
     Q_INVOKABLE QVariantList getAllConfigPages() const;
@@ -94,9 +94,7 @@ private:
     void connectSignals();
 
     static ConfigManagerBridge* instance_;
-    core::ConfigManager* config_manager_;
+    core::config::ConfigManager* config_manager_;
 };
 
-}  // namespace ui
-}  // namespace crankshaft
-}  // namespace opencardev
+}  // namespace opencardev::crankshaft::ui

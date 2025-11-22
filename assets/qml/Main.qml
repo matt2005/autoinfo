@@ -375,6 +375,35 @@ ApplicationWindow {
                         }
                     }
                 }
+
+                // Settings tab (appears after dynamic extensions)
+                TabButton {
+                    readonly property int tabIndex: 1 + ExtensionRegistry.mainComponents.length
+                    text: "⚙ Settings"
+                    font.pixelSize: 14
+
+                    background: Rectangle {
+                        color: tabBar.currentIndex === parent.tabIndex ? Theme.accent : "transparent"
+                        opacity: tabBar.currentIndex === parent.tabIndex ? 0.1 : 0
+                        radius: Theme.cornerRadius
+
+                        Behavior on opacity {
+                            NumberAnimation { duration: 150 }
+                        }
+                    }
+
+                    contentItem: Text {
+                        text: parent.text
+                        font: parent.font
+                        color: tabBar.currentIndex === parent.tabIndex ? Theme.accent : Theme.text
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+
+                        Behavior on color {
+                            ColorAnimation { duration: 150 }
+                        }
+                    }
+                }
             }
         }
         
@@ -450,6 +479,24 @@ ApplicationWindow {
                             font.pixelSize: 14
                         }
                     }
+                }
+            }
+        }
+
+        // Settings / Configuration view (last page)
+        Rectangle {
+            color: Theme.background
+
+            Behavior on color {
+                ColorAnimation { duration: 200 }
+            }
+
+            // Full configuration screen
+            ConfigScreen {
+                anchors.fill: parent
+                onClosed: {
+                    // When closed from within, return to Home tab
+                    tabBar.currentIndex = 0
                 }
             }
         }
