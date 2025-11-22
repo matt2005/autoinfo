@@ -99,11 +99,11 @@ QVariantMap ExtensionManifest::toJson() const {
 }
 
 bool ExtensionManifest::isValid() const {
+    // Basic validation: id, name and version are required
+    // entry_point and type can be optional for declarative extensions
     return !id.isEmpty() && 
            !name.isEmpty() && 
-           !version.isEmpty() && 
-           !type.isEmpty() && 
-           !entry_point.isEmpty();
+           !version.isEmpty();
 }
 
 }  // namespace extensions

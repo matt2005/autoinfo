@@ -24,7 +24,7 @@ namespace openauto {
 namespace core {
 
 EventBus::EventBus(QObject *parent)
-    : QObject(parent), next_subscription_id_(0) {
+    : QObject(parent), next_subscription_id_(1) {
 }
 
 EventBus::~EventBus() {

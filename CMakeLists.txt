@@ -29,7 +29,7 @@ set(PROJECT_VERSION_MINOR 0)
 set(PROJECT_VERSION_PATCH 0)
 
 # Build options
-option(BUILD_TESTS "Build tests" OFF)
+option(BUILD_TESTS "Build tests" ON)
 option(BUILD_EXTENSIONS "Build extensions" ON)
 option(ENABLE_EGLFS "Enable EGLFS platform support" ON)
 
