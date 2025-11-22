@@ -28,11 +28,14 @@
 #include "extension.hpp"
 #include "extension_manifest.hpp"
 
-namespace openauto {
+namespace opencardev::crankshaft {
 namespace core {
     class EventBus;
     class WebSocketServer;
     class CapabilityManager;
+    namespace config {
+        class ConfigManager;
+    }
 }
 
 namespace extensions {
@@ -44,7 +47,7 @@ public:
     explicit ExtensionManager(QObject *parent = nullptr);
     ~ExtensionManager() override;
 
-    void initialize(core::CapabilityManager* capability_manager);
+    void initialize(core::CapabilityManager* capability_manager, core::config::ConfigManager* config_manager);
     
     // Extension lifecycle
     bool loadExtension(const QString& extension_path);
@@ -95,8 +98,9 @@ private:
     
     QMap<QString, ExtensionInfo> extensions_;
     core::CapabilityManager* capability_manager_;
+    core::config::ConfigManager* config_manager_;
     QString extensions_dir_;
 };
 
 }  // namespace extensions
-}  // namespace openauto
+}  // namespace opencardev::crankshaft

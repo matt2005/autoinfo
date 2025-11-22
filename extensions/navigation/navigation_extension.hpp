@@ -25,7 +25,7 @@
 #include <QString>
 #include <QVector>
 
-namespace openauto {
+namespace opencardev::crankshaft {
 namespace extensions {
 namespace navigation {
 
@@ -53,6 +53,9 @@ public:
     QString version() const override { return "1.0.0"; }
     ExtensionType type() const override { return ExtensionType::UI; }
 
+    // Configuration
+    void registerConfigItems(core::config::ConfigManager* manager) override;
+
 private:
     void setupEventHandlers();
     void handleNavigateToCommand(const QVariantMap& data);
@@ -74,4 +77,4 @@ private:
 
 }  // namespace navigation
 }  // namespace extensions
-}  // namespace openauto
+}  // namespace opencardev::crankshaft

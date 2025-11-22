@@ -40,7 +40,7 @@
 #include "../../extensions/navigation/GeocodingProviderFactory.hpp"
 class openauto_capability_manager_forward_decl;
 
-namespace openauto {
+namespace opencardev::crankshaft {
 namespace core { class CapabilityManager; }
 }
 
@@ -57,7 +57,7 @@ class NavigationBridge : public QObject {
 public:
     static NavigationBridge* instance();
 
-    static void initialise(openauto::core::CapabilityManager* capabilityManager);
+    static void initialise(opencardev::crankshaft::core::CapabilityManager* capabilityManager);
     static void registerQmlType();
 
     QString gpsDevice() const { return gpsDevice_; }
@@ -92,10 +92,10 @@ private:
     void initializeProviders();
     void switchProvider(const QString& providerId);
     
-    openauto::core::CapabilityManager* capability_manager_ = nullptr;
+    opencardev::crankshaft::core::CapabilityManager* capability_manager_ = nullptr;
     QString gpsDevice_ = "Internal";
     QString geocodingProviderId_ = "nominatim";
     QString settingsPath_;
     QString favouritesPath_;
-    openauto::extensions::navigation::GeocodingProvider* currentProvider_ = nullptr;
+    opencardev::crankshaft::extensions::navigation::GeocodingProvider* currentProvider_ = nullptr;
 };

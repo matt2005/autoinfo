@@ -22,7 +22,7 @@
 #include <QQmlEngine>
 #include <QDebug>
 
-namespace openauto {
+namespace opencardev::crankshaft {
 namespace ui {
 
 ExtensionRegistry* ExtensionRegistry::instance_ = nullptr;
@@ -162,4 +162,4 @@ QVariantMap ExtensionRegistry::getComponent(const QString& componentId) const {
 }
 
 }  // namespace ui
-}  // namespace openauto
+}  // namespace opencardev::crankshaft

@@ -1,0 +1,31 @@
+{
+  "id": "wireless",
+  "name": "Wireless Manager",
+  "version": "1.0.0",
+  "description": "WiFi network management with NetworkManager integration",
+  "author": "OpenCarDev Team",
+  "type": "ui",
+  "domain": "core",
+  "dependencies": [],
+  "platforms": ["linux"],
+  "entry_point": "wireless.so",
+  "requirements": {
+    "min_core_version": "1.0.0",
+    "required_permissions": [
+      "wireless",
+      "ui",
+      "event"
+    ]
+  },
+  "metadata": {
+    "category": "connectivity",
+    "icon": "assets/icon.png",
+    "features": [
+      "wifi_scanning",
+      "network_connection",
+      "access_point_mode",
+      "saved_networks",
+      "signal_monitoring"
+    ]
+  }
+}

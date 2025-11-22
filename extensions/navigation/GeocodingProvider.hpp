@@ -27,7 +27,7 @@
 #include <QNetworkReply>
 #include <QUrl>
 
-namespace openauto {
+namespace opencardev::crankshaft {
 namespace extensions {
 namespace navigation {
 

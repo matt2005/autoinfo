@@ -1,2 +1,7 @@
 module CrankshaftReborn.UI
 singleton Theme 1.0 Theme.qml
+StyledButton 1.0 StyledButton.qml
+ThemeDemo 1.0 ThemeDemo.qml
+ConfigScreen 1.0 ConfigScreen.qml
+ConfigPageView 1.0 ConfigPageView.qml
+ConfigItemView 1.0 ConfigItemView.qml

@@ -21,7 +21,7 @@
 
 #include "core/ui/UIRegistrar.hpp"
 
-namespace openauto {
+namespace opencardev::crankshaft {
 namespace ui {
 
 class UIRegistrarImpl : public core::ui::UIRegistrar {

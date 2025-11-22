@@ -20,7 +20,7 @@
 #include "websocket_server.hpp"
 #include <QDebug>
 
-namespace openauto {
+namespace opencardev::crankshaft {
 namespace core {
 
 WebSocketServer::WebSocketServer(QObject *parent)
@@ -123,4 +123,4 @@ void WebSocketServer::onClientDisconnected() {
 }
 
 }  // namespace core
-}  // namespace openauto
+}  // namespace opencardev::crankshaft

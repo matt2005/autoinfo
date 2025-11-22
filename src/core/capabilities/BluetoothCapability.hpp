@@ -26,7 +26,7 @@
 #include <functional>
 #include <memory>
 
-namespace openauto {
+namespace opencardev::crankshaft {
 namespace core {
 namespace capabilities {
 

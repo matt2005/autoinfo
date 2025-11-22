@@ -25,7 +25,7 @@
 #include <QVariantMap>
 #include <QVariantList>
 
-namespace openauto {
+namespace opencardev::crankshaft {
 namespace extensions {
 namespace navigation {
 

@@ -25,7 +25,8 @@
 #include <QFileInfo>
 #include <QStandardPaths>
 #include <QUrl>
-#include "core/application.hpp"
+#include "core/application/application.hpp"
+#include "extensions/extension_manager.hpp"
 #include "ui/ThemeManager.hpp"
 #include "ui/ExtensionRegistry.hpp"
 #include "ui/NavigationBridge.hpp"
@@ -43,10 +44,10 @@ int main(int argc, char *argv[]) {
     app.setApplicationName("Crankshaft Reborn");
     app.setApplicationVersion("1.0.0");
 
-    openauto::core::Application application;
+    opencardev::crankshaft::core::Application application;
     
     // Register built-in extensions BEFORE initialize()
-    auto navigationExtension = std::make_shared<openauto::extensions::navigation::NavigationExtension>();
+    auto navigationExtension = std::make_shared<opencardev::crankshaft::extensions::navigation::NavigationExtension>();
     QString navExtensionPath = QDir(QCoreApplication::applicationDirPath()).filePath("extensions/navigation");
     if (!QFile::exists(navExtensionPath + "/manifest.json")) {
         // Try build directory path
@@ -71,11 +72,11 @@ int main(int argc, char *argv[]) {
     // BluetoothBridge::initialise(&application);
     
     // Create ExtensionRegistry BEFORE starting extensions so they can register views
-    openauto::ui::ExtensionRegistry extensionRegistry(application.extensionManager());
-    openauto::ui::ExtensionRegistry::registerQmlType();
+    opencardev::crankshaft::ui::ExtensionRegistry extensionRegistry(application.extensionManager());
+    opencardev::crankshaft::ui::ExtensionRegistry::registerQmlType();
 
     // Inject UI registrar implementation into core (decouples core from UI)
-    openauto::ui::UIRegistrarImpl uiRegistrar;
+    opencardev::crankshaft::ui::UIRegistrarImpl uiRegistrar;
     application.capabilityManager()->setUIRegistrar(&uiRegistrar);
     
     // Now register the built-in extension (after ExtensionRegistry is created)

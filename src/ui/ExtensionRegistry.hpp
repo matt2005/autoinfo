@@ -26,7 +26,7 @@
 #include <QQmlEngine>
 #include <QJSEngine>
 
-namespace openauto {
+namespace opencardev::crankshaft {
 namespace extensions {
     class ExtensionManager;
 }
@@ -151,4 +151,4 @@ private:
 };
 
 }  // namespace ui
-}  // namespace openauto
+}  // namespace opencardev::crankshaft

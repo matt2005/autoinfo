@@ -21,12 +21,20 @@
 
 #include <memory>
 #include <QObject>
-#include "event_bus.hpp"
-#include "websocket_server.hpp"
-#include "CapabilityManager.hpp"
-#include "../extensions/extension_manager.hpp"
+#include "../events/event_bus.hpp"
+#include "../network/websocket_server.hpp"
+#include "../capabilities/CapabilityManager.hpp"
 
-namespace openauto {
+// Forward declarations
+namespace opencardev::crankshaft::core::config {
+    class ConfigManager;
+}
+
+namespace opencardev::crankshaft::extensions {
+    class ExtensionManager;
+}
+
+namespace opencardev::crankshaft {
 namespace core {
 
 class Application : public QObject {
@@ -43,19 +51,22 @@ public:
     EventBus* eventBus() const { return event_bus_.get(); }
     WebSocketServer* webSocketServer() const { return websocket_server_.get(); }
     CapabilityManager* capabilityManager() const { return capability_manager_.get(); }
-    extensions::ExtensionManager* extensionManager() const { return extension_manager_.get(); }
+    config::ConfigManager* configManager() const;
+    extensions::ExtensionManager* extensionManager() const;
 
 private:
     void setupEventBus();
     void setupWebSocketServer();
     void setupCapabilityManager();
+    void setupConfigManager();
     void loadExtensions();
 
     std::unique_ptr<EventBus> event_bus_;
     std::unique_ptr<WebSocketServer> websocket_server_;
     std::unique_ptr<CapabilityManager> capability_manager_;
-    std::unique_ptr<extensions::ExtensionManager> extension_manager_;
+    config::ConfigManager* config_manager_;
+    extensions::ExtensionManager* extension_manager_;
 };
 
 }  // namespace core
-}  // namespace openauto
+}  // namespace opencardev::crankshaft

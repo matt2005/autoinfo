@@ -95,7 +95,7 @@ public:
 
     bool initialize() override {
         // Acquire capabilities granted based on manifest permissions
-        eventCap_ = getCapability<openauto::core::capabilities::EventCapability>();
+        eventCap_ = getCapability<opencardev::crankshaft::core::capabilities::EventCapability>();
         if (!eventCap_) {
             return false; // Missing required permission
         }
@@ -121,7 +121,7 @@ public:
     ExtensionType type() const override { return ExtensionType::Service; }
 
 private:
-    std::shared_ptr<openauto::core::capabilities::EventCapability> eventCap_;
+    std::shared_ptr<opencardev::crankshaft::core::capabilities::EventCapability> eventCap_;
     void setupEventHandlers() {
         // Subscribe to namespaced events (full name: my_extension.my.event)
         eventCap_->subscribe("my_extension.my.event", [this](const QVariantMap& data){ handleEvent(data); });

@@ -24,8 +24,9 @@
 #include <QHash>
 #include <memory>
 #include "../core/capabilities/Capability.hpp"
+#include "../core/config/ConfigManager.hpp"
 
-namespace openauto {
+namespace opencardev::crankshaft {
 namespace core {
     namespace capabilities {
         // Forward declaration not needed - included above
@@ -70,6 +71,47 @@ public:
     virtual QString name() const = 0;
     virtual QString version() const = 0;
     virtual ExtensionType type() const = 0;
+
+    /**
+     * Register configuration items for this extension.
+     * Called by ExtensionManager during extension loading.
+     * 
+     * Extensions should create ConfigPage with their domain and extension name,
+     * add ConfigSection objects with grouped ConfigItem objects,
+     * then call manager->registerConfigPage(page).
+     * 
+     * Example:
+     *   ConfigPage page;
+     *   page.domain = "media";
+     *   page.extension = "player";
+     *   page.title = "Media Player Settings";
+     *   page.description = "Configure media playback options";
+     *   
+     *   ConfigSection audioSection;
+     *   audioSection.key = "audio";
+     *   audioSection.title = "Audio Settings";
+     *   audioSection.complexity = ConfigComplexity::Basic;
+     *   
+     *   ConfigItem volumeItem;
+     *   volumeItem.key = "volume";
+     *   volumeItem.label = "Default Volume";
+     *   volumeItem.type = ConfigItemType::Integer;
+     *   volumeItem.defaultValue = 50;
+     *   volumeItem.minValue = 0;
+     *   volumeItem.maxValue = 100;
+     *   volumeItem.unit = "%";
+     *   audioSection.items.append(volumeItem);
+     *   
+     *   page.sections.append(audioSection);
+     *   manager->registerConfigPage(page);
+     * 
+     * @param manager ConfigManager to register items with
+     */
+    virtual void registerConfigItems(core::config::ConfigManager* manager) {
+        // Default implementation does nothing
+        // Extensions override this to register their config items
+        Q_UNUSED(manager);
+    }
 
     /**
      * Grant a capability to this extension.
@@ -140,4 +182,4 @@ private:
 };
 
 }  // namespace extensions
-}  // namespace openauto
+}  // namespace opencardev::crankshaft

@@ -20,7 +20,7 @@
 #include "NominatimProvider.hpp"
 #include <QDebug>
 
-namespace openauto {
+namespace opencardev::crankshaft {
 namespace extensions {
 namespace navigation {
 

@@ -23,7 +23,7 @@
 #include <QGeoCoordinate>
 #include <functional>
 
-namespace openauto {
+namespace opencardev::crankshaft {
 namespace core {
 namespace capabilities {
 
@@ -100,4 +100,4 @@ protected:
 
 }  // namespace capabilities
 }  // namespace core
-}  // namespace openauto
+}  // namespace opencardev::crankshaft

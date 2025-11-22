@@ -18,9 +18,9 @@
 */
 
 #include <QtTest/QtTest>
-#include "core/event_bus.hpp"
+#include "core/events/event_bus.hpp"
 
-using namespace openauto::core;
+using namespace opencardev::crankshaft::core;
 
 class TestEventBus : public QObject {
     Q_OBJECT

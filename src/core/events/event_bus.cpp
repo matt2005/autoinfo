@@ -20,7 +20,7 @@
 #include "event_bus.hpp"
 #include <QDebug>
 
-namespace openauto {
+namespace opencardev::crankshaft {
 namespace core {
 
 EventBus::EventBus(QObject *parent)
@@ -78,4 +78,4 @@ void EventBus::publish(const QString& event_name, const QVariantMap& data) {
 }
 
 }  // namespace core
-}  // namespace openauto
+}  // namespace opencardev::crankshaft

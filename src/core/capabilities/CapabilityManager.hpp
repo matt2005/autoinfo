@@ -19,16 +19,16 @@
 
 #pragma once
 
-#include "capabilities/Capability.hpp"
-#include "capabilities/LocationCapability.hpp"
-#include "capabilities/NetworkCapability.hpp"
-#include "capabilities/FileSystemCapability.hpp"
-#include "capabilities/UICapability.hpp"
-#include "capabilities/EventCapability.hpp"
-#include "capabilities/BluetoothCapability.hpp"
-#include "capabilities/WirelessCapability.hpp"
-#include "capabilities/AudioCapability.hpp"
-#include "capabilities/VideoCapability.hpp"
+#include "Capability.hpp"
+#include "LocationCapability.hpp"
+#include "NetworkCapability.hpp"
+#include "FileSystemCapability.hpp"
+#include "UICapability.hpp"
+#include "EventCapability.hpp"
+#include "BluetoothCapability.hpp"
+#include "WirelessCapability.hpp"
+#include "AudioCapability.hpp"
+#include "VideoCapability.hpp"
 #include <QString>
 #include <QVariantMap>
 #include <QMap>
@@ -36,7 +36,7 @@
 #include <QMutexLocker>
 #include <memory>
 
-namespace openauto {
+namespace opencardev::crankshaft {
 namespace core {
 
 // Forward declarations
@@ -203,4 +203,4 @@ private:
 };
 
 }  // namespace core
-}  // namespace openauto
+}  // namespace opencardev::crankshaft

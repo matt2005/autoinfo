@@ -23,7 +23,7 @@
 #include <QStringList>
 #include <QVariantMap>
 
-namespace openauto {
+namespace opencardev::crankshaft {
 namespace extensions {
 
 struct ExtensionManifest {
@@ -53,4 +53,4 @@ struct ExtensionManifest {
 };
 
 }  // namespace extensions
-}  // namespace openauto
+}  // namespace opencardev::crankshaft

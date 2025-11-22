@@ -21,3 +21,13 @@ target_link_libraries(test_extension_manager
     CrankshaftExtensions
 )
 add_test(NAME test_extension_manager COMMAND test_extension_manager)
+
+# Test: Config Manager integration
+add_executable(test_config_manager integration/test_config_manager.cpp)
+target_link_libraries(test_config_manager
+    Qt6::Core
+    Qt6::Test
+    CrankshaftCore
+    CrankshaftExtensions
+)
+add_test(NAME test_config_manager COMMAND test_config_manager)

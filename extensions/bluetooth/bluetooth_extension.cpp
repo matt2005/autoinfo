@@ -18,10 +18,12 @@
  */
 
 #include "bluetooth_extension.hpp"
+#include "../../src/core/config/ConfigManager.hpp"
+#include "../../src/core/config/ConfigTypes.hpp"
 #include <QDebug>
 #include <QVariantMap>
 
-namespace openauto {
+namespace opencardev::crankshaft {
 namespace extensions {
 namespace bluetooth {
 
@@ -74,6 +76,137 @@ void BluetoothExtension::cleanup() {
     if (activeCall_) { delete activeCall_; activeCall_ = nullptr; }
     btCap_.reset();
     eventCap_.reset();
+}
+
+void BluetoothExtension::registerConfigItems(core::config::ConfigManager* manager) {
+    using namespace core::config;
+    
+    ConfigPage page;
+    page.domain = "connectivity";
+    page.extension = "bluetooth";
+    page.title = "Bluetooth Settings";
+    page.description = "Configure Bluetooth connectivity and pairing options";
+    page.icon = "qrc:/icons/bluetooth.svg";
+    
+    // Connection Settings Section
+    ConfigSection connectionSection;
+    connectionSection.key = "connection";
+    connectionSection.title = "Connection Settings";
+    connectionSection.description = "Manage Bluetooth connection behavior";
+    connectionSection.complexity = ConfigComplexity::Basic;
+    
+    ConfigItem autoConnectItem;
+    autoConnectItem.key = "auto_connect";
+    autoConnectItem.label = "Auto-connect to devices";
+    autoConnectItem.description = "Automatically connect to known devices when in range";
+    autoConnectItem.type = ConfigItemType::Boolean;
+    autoConnectItem.defaultValue = true;
+    autoConnectItem.complexity = ConfigComplexity::Basic;
+    autoConnectItem.required = false;
+    autoConnectItem.readOnly = false;
+    connectionSection.items.append(autoConnectItem);
+    
+    ConfigItem reconnectDelayItem;
+    reconnectDelayItem.key = "reconnect_delay";
+    reconnectDelayItem.label = "Reconnection delay";
+    reconnectDelayItem.description = "Time to wait before attempting reconnection";
+    reconnectDelayItem.type = ConfigItemType::Integer;
+    reconnectDelayItem.defaultValue = 5;
+    reconnectDelayItem.properties["minValue"] = 1;
+    reconnectDelayItem.properties["maxValue"] = 60;
+    reconnectDelayItem.unit = "seconds";
+    reconnectDelayItem.complexity = ConfigComplexity::Advanced;
+    reconnectDelayItem.required = false;
+    reconnectDelayItem.readOnly = false;
+    connectionSection.items.append(reconnectDelayItem);
+    
+    ConfigItem visibilityItem;
+    visibilityItem.key = "visibility";
+    visibilityItem.label = "Visibility mode";
+    visibilityItem.description = "Bluetooth visibility mode";
+    visibilityItem.type = ConfigItemType::Selection;
+    visibilityItem.properties["options"] = QStringList{"Hidden", "Visible", "Discoverable"};
+    visibilityItem.defaultValue = "Visible";
+    visibilityItem.complexity = ConfigComplexity::Basic;
+    visibilityItem.required = false;
+    visibilityItem.readOnly = false;
+    connectionSection.items.append(visibilityItem);
+    
+    page.sections.append(connectionSection);
+    
+    // Audio Settings Section
+    ConfigSection audioSection;
+    audioSection.key = "audio";
+    audioSection.title = "Audio Settings";
+    audioSection.description = "Configure Bluetooth audio quality and codecs";
+    audioSection.complexity = ConfigComplexity::Advanced;
+    
+    ConfigItem audioCodecItem;
+    audioCodecItem.key = "audio_codec";
+    audioCodecItem.label = "Preferred audio codec";
+    audioCodecItem.description = "Select the preferred audio codec for Bluetooth audio";
+    audioCodecItem.type = ConfigItemType::Selection;
+    audioCodecItem.properties["options"] = QStringList{"SBC", "AAC", "aptX", "aptX HD", "LDAC"};
+    audioCodecItem.defaultValue = "AAC";
+    audioCodecItem.complexity = ConfigComplexity::Advanced;
+    audioCodecItem.required = false;
+    audioCodecItem.readOnly = false;
+    audioSection.items.append(audioCodecItem);
+    
+    ConfigItem bitrateItem;
+    bitrateItem.key = "bitrate";
+    bitrateItem.label = "Audio bitrate";
+    bitrateItem.description = "Maximum bitrate for Bluetooth audio streaming";
+    bitrateItem.type = ConfigItemType::Integer;
+    bitrateItem.defaultValue = 320;
+    bitrateItem.properties["minValue"] = 128;
+    bitrateItem.properties["maxValue"] = 990;
+    bitrateItem.properties["step"] = 16;
+    bitrateItem.unit = "kbps";
+    bitrateItem.complexity = ConfigComplexity::Expert;
+    bitrateItem.required = false;
+    bitrateItem.readOnly = false;
+    audioSection.items.append(bitrateItem);
+    
+    page.sections.append(audioSection);
+    
+    // Phone Settings Section
+    ConfigSection phoneSection;
+    phoneSection.key = "phone";
+    phoneSection.title = "Phone Settings";
+    phoneSection.description = "Configure hands-free phone functionality";
+    phoneSection.complexity = ConfigComplexity::Basic;
+    
+    ConfigItem autoAnswerItem;
+    autoAnswerItem.key = "auto_answer";
+    autoAnswerItem.label = "Auto-answer calls";
+    autoAnswerItem.description = "Automatically answer incoming calls after specified delay";
+    autoAnswerItem.type = ConfigItemType::Boolean;
+    autoAnswerItem.defaultValue = false;
+    autoAnswerItem.complexity = ConfigComplexity::Basic;
+    autoAnswerItem.required = false;
+    autoAnswerItem.readOnly = false;
+    phoneSection.items.append(autoAnswerItem);
+    
+    ConfigItem autoAnswerDelayItem;
+    autoAnswerDelayItem.key = "auto_answer_delay";
+    autoAnswerDelayItem.label = "Auto-answer delay";
+    autoAnswerDelayItem.description = "Delay before auto-answering incoming calls";
+    autoAnswerDelayItem.type = ConfigItemType::Integer;
+    autoAnswerDelayItem.defaultValue = 0;
+    autoAnswerDelayItem.properties["minValue"] = 0;
+    autoAnswerDelayItem.properties["maxValue"] = 10;
+    autoAnswerDelayItem.unit = "seconds";
+    autoAnswerDelayItem.complexity = ConfigComplexity::Basic;
+    autoAnswerDelayItem.required = false;
+    autoAnswerDelayItem.readOnly = false;
+    phoneSection.items.append(autoAnswerDelayItem);
+    
+    page.sections.append(phoneSection);
+    
+    // Register the page
+    manager->registerConfigPage(page);
+    qInfo() << "Bluetooth extension registered config items";
 }
 
 void BluetoothExtension::setupEventHandlers() {}
@@ -215,4 +348,4 @@ void BluetoothExtension::publishCallStatus() {
 
 }  // namespace bluetooth
 }  // namespace extensions
-}  // namespace openauto
+}  // namespace opencardev::crankshaft

@@ -23,7 +23,7 @@
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 
-namespace openauto {
+namespace opencardev::crankshaft {
 namespace extensions {
 namespace navigation {
 

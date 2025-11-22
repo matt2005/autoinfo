@@ -26,7 +26,7 @@
 #include <QMap>
 #include <memory>
 
-namespace openauto {
+namespace opencardev::crankshaft {
 namespace extensions {
 namespace navigation {
 

@@ -21,7 +21,7 @@
 #include "ExtensionRegistry.hpp"
 #include <QDebug>
 
-namespace openauto {
+namespace opencardev::crankshaft {
 namespace ui {
 
 void UIRegistrarImpl::registerComponent(

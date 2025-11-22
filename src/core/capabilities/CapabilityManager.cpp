@@ -18,9 +18,9 @@
  */
 
 #include "CapabilityManager.hpp"
-#include "event_bus.hpp"
-#include "websocket_server.hpp"
-#include "ui/UIRegistrar.hpp"
+#include "../events/event_bus.hpp"
+#include "../network/websocket_server.hpp"
+#include "../ui/UIRegistrar.hpp"
 #include <QGeoPositionInfoSource>
 #include <QTimer>
 #include <QJsonDocument>
@@ -37,12 +37,12 @@
 #include <QDebug>
 
 // Forward declaration of Bluetooth capability factory to avoid header circular dependency.
-namespace openauto { namespace core { namespace capabilities {
+namespace opencardev::crankshaft { namespace core { namespace capabilities {
 class BluetoothCapability; // forward declare type
 std::shared_ptr<BluetoothCapability> createBluetoothCapabilityInstance(const QString& extensionId, CapabilityManager* manager);
 }}}
 
-namespace openauto {
+namespace opencardev::crankshaft {
 namespace core {
 
 // ============================================================================
@@ -1003,10 +1003,10 @@ std::shared_ptr<capabilities::Capability> CapabilityManager::createBluetoothCapa
 }
 
 }  // namespace core
-}  // namespace openauto
+}  // namespace opencardev::crankshaft
 
 // ===== CapabilityManager: UI registrar injection =====
-namespace openauto {
+namespace opencardev::crankshaft {
 namespace core {
 
 void CapabilityManager::setUIRegistrar(ui::UIRegistrar* registrar) {

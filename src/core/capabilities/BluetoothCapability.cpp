@@ -19,7 +19,7 @@
 
 #include "BluetoothCapability.hpp"
 #include "Capability.hpp"
-#include "../CapabilityManager.hpp"
+#include "CapabilityManager.hpp"
 #include <QBluetoothLocalDevice>
 #include <QBluetoothDeviceDiscoveryAgent>
 #include <QBluetoothDeviceInfo>
@@ -27,7 +27,7 @@
 #include <QDateTime>
 #include <QDebug>
 
-namespace openauto {
+namespace opencardev::crankshaft {
 namespace core {
 namespace capabilities {
 
@@ -215,10 +215,10 @@ private:
 };
 
 // Factory helper used by CapabilityManager.
-std::shared_ptr<BluetoothCapability> createBluetoothCapabilityInstance(const QString& extensionId, ::openauto::core::CapabilityManager* manager) {
+std::shared_ptr<BluetoothCapability> createBluetoothCapabilityInstance(const QString& extensionId, ::opencardev::crankshaft::core::CapabilityManager* manager) {
     return std::make_shared<BluetoothCapabilityImpl>(extensionId, manager);
 }
 
 } // namespace capabilities
 } // namespace core
-} // namespace openauto
+} // namespace opencardev::crankshaft

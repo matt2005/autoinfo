@@ -25,7 +25,7 @@
 #include <QUrl>
 #include <functional>
 
-namespace openauto {
+namespace opencardev::crankshaft {
 namespace core {
 namespace capabilities {
 
@@ -257,4 +257,4 @@ public:
 
 }  // namespace capabilities
 }  // namespace core
-}  // namespace openauto
+}  // namespace opencardev::crankshaft

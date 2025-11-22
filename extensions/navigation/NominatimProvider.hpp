@@ -29,7 +29,7 @@
 #include <QJsonArray>
 #include <QJsonObject>
 
-namespace openauto {
+namespace opencardev::crankshaft {
 namespace extensions {
 namespace navigation {
 

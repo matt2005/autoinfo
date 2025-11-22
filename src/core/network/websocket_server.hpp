@@ -20,47 +20,42 @@
 #pragma once
 
 #include <QObject>
-#include <QVariantMap>
-#include <QString>
-#include <functional>
-#include <QHash>
+#include <QWebSocketServer>
+#include <QWebSocket>
 #include <QList>
-#include <memory>
+#include <QString>
 
-namespace openauto {
+namespace opencardev::crankshaft {
 namespace core {
 
-using EventCallback = std::function<void(const QVariantMap&)>;
-
-class EventBus : public QObject {
+class WebSocketServer : public QObject {
     Q_OBJECT
 
 public:
-    explicit EventBus(QObject *parent = nullptr);
-    ~EventBus() override;
+    explicit WebSocketServer(QObject *parent = nullptr);
+    ~WebSocketServer() override;
 
-    // Subscribe to an event
-    int subscribe(const QString& event_name, EventCallback callback);
+    bool start(quint16 port);
+    void stop();
+    bool isRunning() const;
     
-    // Unsubscribe from an event
-    void unsubscribe(int subscription_id);
-    
-    // Publish an event
-    void publish(const QString& event_name, const QVariantMap& data = QVariantMap());
+    void broadcast(const QString& message);
+    void sendToClient(QWebSocket* client, const QString& message);
 
 signals:
-    void eventPublished(const QString& event_name, const QVariantMap& data);
+    void clientConnected(QWebSocket* client);
+    void clientDisconnected(QWebSocket* client);
+    void messageReceived(QWebSocket* client, const QString& message);
+
+private slots:
+    void onNewConnection();
+    void onTextMessageReceived(const QString& message);
+    void onClientDisconnected();
 
 private:
-    struct Subscription {
-        int id;
-        QString event_name;
-        EventCallback callback;
-    };
-
-    QHash<QString, QList<std::shared_ptr<Subscription>>> subscriptions_;
-    int next_subscription_id_;
+    QWebSocketServer* server_;
+    QList<QWebSocket*> clients_;
 };
 
 }  // namespace core
-}  // namespace openauto
+}  // namespace opencardev::crankshaft

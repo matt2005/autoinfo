@@ -26,7 +26,7 @@
 #include <QVector>
 #include <memory>
 
-namespace openauto {
+namespace opencardev::crankshaft {
 namespace extensions {
 namespace bluetooth {
 
@@ -53,6 +53,9 @@ public:
     QString name() const override { return "Bluetooth Manager"; }
     QString version() const override { return "1.0.0"; }
     ExtensionType type() const override { return ExtensionType::Service; }
+
+    // Configuration
+    void registerConfigItems(core::config::ConfigManager* manager) override;
 
 private:
     void setupEventHandlers();
@@ -81,4 +84,4 @@ private:
 
 }  // namespace bluetooth
 }  // namespace extensions
-}  // namespace openauto
+}  // namespace opencardev::crankshaft

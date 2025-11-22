@@ -1,18 +1,22 @@
 cmake_minimum_required(VERSION 3.16)
 
 set(CORE_SOURCES
-    application.cpp
-    event_bus.cpp
-    websocket_server.cpp
-    CapabilityManager.cpp
+    application/application.cpp
+    events/event_bus.cpp
+    network/websocket_server.cpp
+    capabilities/CapabilityManager.cpp
     capabilities/BluetoothCapability.cpp
+    config/ConfigManager.cpp
+    config/ConfigTypes.cpp
 )
 
 set(CORE_HEADERS
-    application.hpp
-    event_bus.hpp
-    websocket_server.hpp
-    CapabilityManager.hpp
+    application/application.hpp
+    events/event_bus.hpp
+    network/websocket_server.hpp
+    capabilities/CapabilityManager.hpp
+    config/ConfigManager.hpp
+    config/ConfigTypes.hpp
     ui/UIRegistrar.hpp
     capabilities/Capability.hpp
     capabilities/LocationCapability.hpp

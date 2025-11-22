@@ -24,9 +24,11 @@
 #include "../../src/core/capabilities/FileSystemCapability.hpp"
 #include "../../src/core/capabilities/UICapability.hpp"
 #include "../../src/core/capabilities/EventCapability.hpp"
+#include "../../src/core/config/ConfigManager.hpp"
+#include "../../src/core/config/ConfigTypes.hpp"
 #include <QDebug>
 
-namespace openauto {
+namespace opencardev::crankshaft {
 namespace extensions {
 namespace navigation {
 
@@ -99,6 +101,203 @@ void NavigationExtension::stop() {
 void NavigationExtension::cleanup() {
     qInfo() << "Cleaning up Navigation extension...";
     currentRoute_.clear();
+}
+
+void NavigationExtension::registerConfigItems(core::config::ConfigManager* manager) {
+    using namespace core::config;
+    
+    ConfigPage page;
+    page.domain = "navigation";
+    page.extension = "core";
+    page.title = "Navigation Settings";
+    page.description = "Configure GPS navigation and routing preferences";
+    page.icon = "qrc:/icons/navigation.svg";
+    
+    // Route Settings Section
+    ConfigSection routeSection;
+    routeSection.key = "routing";
+    routeSection.title = "Route Settings";
+    routeSection.description = "Configure route calculation preferences";
+    routeSection.complexity = ConfigComplexity::Basic;
+    
+    ConfigItem routingModeItem;
+    routingModeItem.key = "routing_mode";
+    routingModeItem.label = "Routing mode";
+    routingModeItem.description = "Preferred routing mode for navigation";
+    routingModeItem.type = ConfigItemType::Selection;
+    routingModeItem.properties["options"] = QStringList{"Fastest", "Shortest", "Eco", "Avoid Highways", "Avoid Tolls"};
+    routingModeItem.defaultValue = "Fastest";
+    routingModeItem.complexity = ConfigComplexity::Basic;
+    routingModeItem.required = false;
+    routingModeItem.readOnly = false;
+    routeSection.items.append(routingModeItem);
+    
+    ConfigItem avoidItem;
+    avoidItem.key = "avoid_features";
+    avoidItem.label = "Avoid features";
+    avoidItem.description = "Route features to avoid";
+    avoidItem.type = ConfigItemType::MultiSelection;
+    avoidItem.properties["options"] = QStringList{"Highways", "Tolls", "Ferries", "Unpaved Roads"};
+    avoidItem.defaultValue = QStringList{};
+    avoidItem.complexity = ConfigComplexity::Basic;
+    avoidItem.required = false;
+    avoidItem.readOnly = false;
+    routeSection.items.append(avoidItem);
+    
+    ConfigItem autoRecalculateItem;
+    autoRecalculateItem.key = "auto_recalculate";
+    autoRecalculateItem.label = "Auto-recalculate route";
+    autoRecalculateItem.description = "Automatically recalculate route when deviating";
+    autoRecalculateItem.type = ConfigItemType::Boolean;
+    autoRecalculateItem.defaultValue = true;
+    autoRecalculateItem.complexity = ConfigComplexity::Basic;
+    autoRecalculateItem.required = false;
+    autoRecalculateItem.readOnly = false;
+    routeSection.items.append(autoRecalculateItem);
+    
+    ConfigItem recalculateThresholdItem;
+    recalculateThresholdItem.key = "recalculate_threshold";
+    recalculateThresholdItem.label = "Recalculation threshold";
+    recalculateThresholdItem.description = "Distance threshold before triggering recalculation";
+    recalculateThresholdItem.type = ConfigItemType::Integer;
+    recalculateThresholdItem.defaultValue = 100;
+    recalculateThresholdItem.properties["minValue"] = 50;
+    recalculateThresholdItem.properties["maxValue"] = 500;
+    recalculateThresholdItem.unit = "meters";
+    recalculateThresholdItem.complexity = ConfigComplexity::Advanced;
+    recalculateThresholdItem.required = false;
+    recalculateThresholdItem.readOnly = false;
+    routeSection.items.append(recalculateThresholdItem);
+    
+    page.sections.append(routeSection);
+    
+    // Display Settings Section
+    ConfigSection displaySection;
+    displaySection.key = "display";
+    displaySection.title = "Display Settings";
+    displaySection.description = "Configure map display and orientation";
+    displaySection.complexity = ConfigComplexity::Basic;
+    
+    ConfigItem mapOrientationItem;
+    mapOrientationItem.key = "map_orientation";
+    mapOrientationItem.label = "Map orientation";
+    mapOrientationItem.description = "How to orient the map display";
+    mapOrientationItem.type = ConfigItemType::Selection;
+    mapOrientationItem.properties["options"] = QStringList{"North Up", "Heading Up", "3D"};
+    mapOrientationItem.defaultValue = "Heading Up";
+    mapOrientationItem.complexity = ConfigComplexity::Basic;
+    mapOrientationItem.required = false;
+    mapOrientationItem.readOnly = false;
+    displaySection.items.append(mapOrientationItem);
+    
+    ConfigItem showTrafficItem;
+    showTrafficItem.key = "show_traffic";
+    showTrafficItem.label = "Show traffic";
+    showTrafficItem.description = "Display real-time traffic information";
+    showTrafficItem.type = ConfigItemType::Boolean;
+    showTrafficItem.defaultValue = true;
+    showTrafficItem.complexity = ConfigComplexity::Basic;
+    showTrafficItem.required = false;
+    showTrafficItem.readOnly = false;
+    displaySection.items.append(showTrafficItem);
+    
+    ConfigItem speedLimitItem;
+    speedLimitItem.key = "show_speed_limit";
+    speedLimitItem.label = "Show speed limit";
+    speedLimitItem.description = "Display current speed limit on route";
+    speedLimitItem.type = ConfigItemType::Boolean;
+    speedLimitItem.defaultValue = true;
+    speedLimitItem.complexity = ConfigComplexity::Basic;
+    speedLimitItem.required = false;
+    speedLimitItem.readOnly = false;
+    displaySection.items.append(speedLimitItem);
+    
+    page.sections.append(displaySection);
+    
+    // Voice Guidance Section
+    ConfigSection voiceSection;
+    voiceSection.key = "voice";
+    voiceSection.title = "Voice Guidance";
+    voiceSection.description = "Configure voice navigation instructions";
+    voiceSection.complexity = ConfigComplexity::Basic;
+    
+    ConfigItem voiceGuidanceItem;
+    voiceGuidanceItem.key = "enable_voice";
+    voiceGuidanceItem.label = "Enable voice guidance";
+    voiceGuidanceItem.description = "Provide turn-by-turn voice instructions";
+    voiceGuidanceItem.type = ConfigItemType::Boolean;
+    voiceGuidanceItem.defaultValue = true;
+    voiceGuidanceItem.complexity = ConfigComplexity::Basic;
+    voiceGuidanceItem.required = false;
+    voiceGuidanceItem.readOnly = false;
+    voiceSection.items.append(voiceGuidanceItem);
+    
+    ConfigItem voiceVolumeItem;
+    voiceVolumeItem.key = "voice_volume";
+    voiceVolumeItem.label = "Voice volume";
+    voiceVolumeItem.description = "Volume level for voice guidance";
+    voiceVolumeItem.type = ConfigItemType::Integer;
+    voiceVolumeItem.defaultValue = 80;
+    voiceVolumeItem.properties["minValue"] = 0;
+    voiceVolumeItem.properties["maxValue"] = 100;
+    voiceVolumeItem.unit = "%";
+    voiceVolumeItem.complexity = ConfigComplexity::Basic;
+    voiceVolumeItem.required = false;
+    voiceVolumeItem.readOnly = false;
+    voiceSection.items.append(voiceVolumeItem);
+    
+    ConfigItem voiceLanguageItem;
+    voiceLanguageItem.key = "voice_language";
+    voiceLanguageItem.label = "Voice language";
+    voiceLanguageItem.description = "Language for voice guidance";
+    voiceLanguageItem.type = ConfigItemType::Selection;
+    voiceLanguageItem.properties["options"] = QStringList{"English (UK)", "English (US)", "French", "German", "Spanish", "Italian"};
+    voiceLanguageItem.defaultValue = "English (UK)";
+    voiceLanguageItem.complexity = ConfigComplexity::Basic;
+    voiceLanguageItem.required = false;
+    voiceLanguageItem.readOnly = false;
+    voiceSection.items.append(voiceLanguageItem);
+    
+    page.sections.append(voiceSection);
+    
+    // Advanced Settings Section
+    ConfigSection advancedSection;
+    advancedSection.key = "advanced";
+    advancedSection.title = "Advanced Settings";
+    advancedSection.description = "Configure advanced routing and map options";
+    advancedSection.complexity = ConfigComplexity::Advanced;
+    
+    ConfigItem osrmServerItem;
+    osrmServerItem.key = "osrm_server";
+    osrmServerItem.label = "OSRM server URL";
+    osrmServerItem.description = "URL of the OSRM routing server";
+    osrmServerItem.type = ConfigItemType::String;
+    osrmServerItem.defaultValue = "http://router.project-osrm.org";
+    osrmServerItem.properties["placeholder"] = "http://server:port";
+    osrmServerItem.complexity = ConfigComplexity::Expert;
+    osrmServerItem.required = false;
+    osrmServerItem.readOnly = false;
+    advancedSection.items.append(osrmServerItem);
+    
+    ConfigItem cacheSizeItem;
+    cacheSizeItem.key = "map_cache_size";
+    cacheSizeItem.label = "Map cache size";
+    cacheSizeItem.description = "Maximum size for offline map cache";
+    cacheSizeItem.type = ConfigItemType::Integer;
+    cacheSizeItem.defaultValue = 500;
+    cacheSizeItem.properties["minValue"] = 100;
+    cacheSizeItem.properties["maxValue"] = 2000;
+    cacheSizeItem.unit = "MB";
+    cacheSizeItem.complexity = ConfigComplexity::Advanced;
+    cacheSizeItem.required = false;
+    cacheSizeItem.readOnly = false;
+    advancedSection.items.append(cacheSizeItem);
+    
+    page.sections.append(advancedSection);
+    
+    // Register the page
+    manager->registerConfigPage(page);
+    qInfo() << "Navigation extension registered config items";
 }
 
 void NavigationExtension::setupEventHandlers() {
@@ -296,4 +495,4 @@ void NavigationExtension::handleRouteError(const QString& error) {
 
 }  // namespace navigation
 }  // namespace extensions
-}  // namespace openauto
+}  // namespace opencardev::crankshaft

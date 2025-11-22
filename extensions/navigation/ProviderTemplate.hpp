@@ -22,7 +22,7 @@
 #include "GeocodingProvider.hpp"
 #include <QNetworkAccessManager>
 
-namespace openauto {
+namespace opencardev::crankshaft {
 namespace extensions {
 namespace navigation {
 

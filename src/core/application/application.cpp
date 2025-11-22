@@ -19,8 +19,10 @@
 
 #include "application.hpp"
 #include <QDebug>
+#include "../config/ConfigManager.hpp"
+#include "../../extensions/extension_manager.hpp"
 
-namespace openauto {
+namespace opencardev::crankshaft {
 namespace core {
 
 Application::Application(QObject *parent)
@@ -28,11 +30,14 @@ Application::Application(QObject *parent)
       event_bus_(std::make_unique<EventBus>()),
       websocket_server_(std::make_unique<WebSocketServer>()),
       capability_manager_(nullptr),
-      extension_manager_(std::make_unique<extensions::ExtensionManager>()) {
+      config_manager_(nullptr),
+      extension_manager_(nullptr) {
 }
 
 Application::~Application() {
     shutdown();
+    delete config_manager_;
+    delete extension_manager_;
 }
 
 bool Application::initialize() {
@@ -41,6 +46,7 @@ bool Application::initialize() {
     setupEventBus();
     setupWebSocketServer();
     setupCapabilityManager();
+    setupConfigManager();
     loadExtensions();
 
     qInfo() << "Application initialized successfully";
@@ -75,17 +81,40 @@ void Application::setupCapabilityManager() {
     qInfo() << "Capability manager initialized - extensions will use capability-based security";
 }
 
+void Application::setupConfigManager() {
+    qDebug() << "Setting up config manager...";
+    config_manager_ = new opencardev::crankshaft::core::config::ConfigManager();
+    config_manager_->load();
+    qInfo() << "Config manager initialized";
+}
+
+opencardev::crankshaft::core::config::ConfigManager* Application::configManager() const {
+    return config_manager_;
+}
+
+opencardev::crankshaft::extensions::ExtensionManager* Application::extensionManager() const {
+    return extension_manager_;
+}
+
 void Application::registerBuiltInExtensions() {
     qDebug() << "Registering built-in extensions...";
+    // Create extension manager if not already created
+    if (!extension_manager_) {
+        extension_manager_ = new opencardev::crankshaft::extensions::ExtensionManager();
+    }
     // Built-in extensions will be registered here before loadAll() is called
     // This is called from main.cpp before initialize()
 }
 
 void Application::loadExtensions() {
     qDebug() << "Loading extensions with capability-based security...";
-    extension_manager_->initialize(capability_manager_.get());
+    // Create extension manager if not already created
+    if (!extension_manager_) {
+        extension_manager_ = new opencardev::crankshaft::extensions::ExtensionManager();
+    }
+    extension_manager_->initialize(capability_manager_.get(), config_manager_);
     extension_manager_->loadAll();
 }
 
 }  // namespace core
-}  // namespace openauto
+}  // namespace opencardev::crankshaft

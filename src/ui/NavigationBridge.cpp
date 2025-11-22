@@ -18,7 +18,7 @@
  */
 
 #include "NavigationBridge.hpp"
-#include "../core/CapabilityManager.hpp"
+#include "../core/capabilities/CapabilityManager.hpp"
 #include <QQmlEngine>
 #include <QJSEngine>
 
@@ -46,7 +46,7 @@ NavigationBridge* NavigationBridge::instance() {
     return s_instance;
 }
 
-void NavigationBridge::initialise(openauto::core::CapabilityManager* capabilityManager) {
+void NavigationBridge::initialise(opencardev::crankshaft::core::CapabilityManager* capabilityManager) {
     instance()->capability_manager_ = capabilityManager;
     instance()->applyToCapability();
 }
@@ -90,7 +90,7 @@ void NavigationBridge::applyToCapability() {
     if (!capability_manager_) return;
     auto locCap = capability_manager_->getLocationCapability("navigation");
     if (!locCap) return;
-    using DM = openauto::core::capabilities::LocationCapability::DeviceMode;
+    using DM = opencardev::crankshaft::core::capabilities::LocationCapability::DeviceMode;
     DM mode = DM::Internal;
     if (gpsDevice_ == "USB Receiver") mode = DM::USB;
     else if (gpsDevice_ == "GNSS Hat") mode = DM::Hat;
@@ -124,7 +124,7 @@ void NavigationBridge::searchLocation(const QString& query) {
 }
 
 void NavigationBridge::initializeProviders() {
-    using namespace openauto::extensions::navigation;
+    using namespace opencardev::crankshaft::extensions::navigation;
     
     // Register all built-in providers
     GeocodingProviderFactory::registerBuiltInProviders();
@@ -137,7 +137,7 @@ void NavigationBridge::initializeProviders() {
 }
 
 void NavigationBridge::switchProvider(const QString& providerId) {
-    using namespace openauto::extensions::navigation;
+    using namespace opencardev::crankshaft::extensions::navigation;
     
     // Disconnect old provider
     if (currentProvider_) {
@@ -169,7 +169,7 @@ void NavigationBridge::switchProvider(const QString& providerId) {
 }
 
 QVariantList NavigationBridge::availableProviders() const {
-    using namespace openauto::extensions::navigation;
+    using namespace opencardev::crankshaft::extensions::navigation;
     
     QVariantList providers;
     auto infoList = GeocodingProviderFactory::instance().getAllProviderInfo();

@@ -21,7 +21,7 @@
 
 #include "../../src/extensions/extension.hpp"
 
-namespace openauto {
+namespace opencardev::crankshaft {
 namespace extensions {
 namespace media {
 
@@ -42,6 +42,9 @@ public:
     QString version() const override { return "1.0.0"; }
     ExtensionType type() const override { return ExtensionType::UI; }
 
+    // Configuration
+    void registerConfigItems(core::config::ConfigManager* manager) override;
+
 private:
     void setupEventHandlers();
     void handlePlayCommand(const QVariantMap& data);
@@ -53,4 +56,4 @@ private:
 
 }  // namespace media
 }  // namespace extensions
-}  // namespace openauto
+}  // namespace opencardev::crankshaft

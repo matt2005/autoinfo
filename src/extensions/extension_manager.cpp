@@ -18,7 +18,7 @@
  */
 
 #include "extension_manager.hpp"
-#include "../core/CapabilityManager.hpp"
+#include "../core/capabilities/CapabilityManager.hpp"
 #include "../core/capabilities/Capability.hpp"
 #include <QDir>
 #include <QCoreApplication>
@@ -28,12 +28,13 @@
 #include <QDebug>
 #include <QQueue>
 
-namespace openauto {
+namespace opencardev::crankshaft {
 namespace extensions {
 
 ExtensionManager::ExtensionManager(QObject *parent)
         : QObject(parent),
             capability_manager_(nullptr),
+            config_manager_(nullptr),
             extensions_dir_("extensions") {
 }
 
@@ -41,8 +42,9 @@ ExtensionManager::~ExtensionManager() {
     unloadAll();
 }
 
-void ExtensionManager::initialize(core::CapabilityManager* capability_manager) {
+void ExtensionManager::initialize(core::CapabilityManager* capability_manager, core::config::ConfigManager* config_manager) {
     capability_manager_ = capability_manager;
+    config_manager_ = config_manager;
     qInfo() << "Extension manager initialized with capability-based security";
 }
 
@@ -121,6 +123,10 @@ bool ExtensionManager::registerBuiltInExtension(std::shared_ptr<Extension> exten
         
         // Initialize and start extension
         if (extension->initialize()) {
+            // Register config items if ConfigManager is available
+            if (config_manager_) {
+                extension->registerConfigItems(config_manager_);
+            }
             extension->start();
             info.is_running = true;
             qInfo() << "Built-in extension started:" << manifest.id;
@@ -145,6 +151,10 @@ bool ExtensionManager::registerBuiltInExtension(std::shared_ptr<Extension> exten
     
     // Initialize and start extension
     if (extension->initialize()) {
+        // Register config items if ConfigManager is available
+        if (config_manager_) {
+            extension->registerConfigItems(config_manager_);
+        }
         extension->start();
         extensions_[manifest.id].is_running = true;
         qInfo() << "Built-in extension registered and started:" << manifest.id;
@@ -467,4 +477,4 @@ QStringList ExtensionManager::resolveLoadOrder(const QMap<QString, ExtensionMani
 }
 
 }  // namespace extensions
-}  // namespace openauto
+}  // namespace opencardev::crankshaft

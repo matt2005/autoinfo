@@ -22,7 +22,7 @@
 #include <QString>
 #include <QVariantMap>
 
-namespace openauto {
+namespace opencardev::crankshaft {
 namespace core {
 namespace ui {
 

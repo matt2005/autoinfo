@@ -24,7 +24,7 @@
 #include "extensions/extension_manager.hpp"
 #include "extensions/extension_manifest.hpp"
 
-using namespace openauto::extensions;
+using namespace opencardev::crankshaft::extensions;
 
 class TestExtensionManager : public QObject {
     Q_OBJECT

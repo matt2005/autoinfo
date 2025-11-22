@@ -26,10 +26,10 @@
 #include <QString>
 #include <QList>
 #include <QPointer>
-#include "../core/application.hpp"
-#include "../core/event_bus.hpp"
+#include "../core/application/application.hpp"
+#include "../core/events/event_bus.hpp"
 
-namespace openauto { namespace core { class Application; } }
+namespace opencardev::crankshaft { namespace core { class Application; } }
 
 /**
  * BluetoothBridge exposes BluetoothExtension events into QML and converts
@@ -39,7 +39,7 @@ class BluetoothBridge : public QObject {
     Q_OBJECT
 public:
     static BluetoothBridge* instance();
-    static void initialise(openauto::core::Application* app);
+    static void initialise(opencardev::crankshaft::core::Application* app);
     static void registerQmlType();
 
     Q_INVOKABLE void scan(int timeoutMs);
@@ -65,6 +65,6 @@ private:
     void publish(const QString& name, const QVariantMap& data = {});
 
     static BluetoothBridge* s_instance_;
-    openauto::core::Application* app_ = nullptr;
+    opencardev::crankshaft::core::Application* app_ = nullptr;
     QList<int> subscriptions_;
 };

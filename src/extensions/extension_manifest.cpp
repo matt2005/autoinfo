@@ -19,7 +19,7 @@
 
 #include "extension_manifest.hpp"
 
-namespace openauto {
+namespace opencardev::crankshaft {
 namespace extensions {
 
 ExtensionManifest ExtensionManifest::fromJson(const QVariantMap& json) {
@@ -107,4 +107,4 @@ bool ExtensionManifest::isValid() const {
 }
 
 }  // namespace extensions
-}  // namespace openauto
+}  // namespace opencardev::crankshaft
