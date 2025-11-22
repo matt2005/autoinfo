@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.16)
 
+find_package(Qt6 REQUIRED COMPONENTS Test)
+
 enable_testing()
 
 # Test: Event Bus
