@@ -21,6 +21,9 @@ set(CORE_HEADERS
     capabilities/UICapability.hpp
     capabilities/EventCapability.hpp
     capabilities/BluetoothCapability.hpp
+    capabilities/WirelessCapability.hpp
+    capabilities/AudioCapability.hpp
+    capabilities/VideoCapability.hpp
 )
 
 add_library(CrankshaftCore STATIC

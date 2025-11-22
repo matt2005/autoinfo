@@ -26,6 +26,9 @@
 #include "capabilities/UICapability.hpp"
 #include "capabilities/EventCapability.hpp"
 #include "capabilities/BluetoothCapability.hpp"
+#include "capabilities/WirelessCapability.hpp"
+#include "capabilities/AudioCapability.hpp"
+#include "capabilities/VideoCapability.hpp"
 #include <QString>
 #include <QVariantMap>
 #include <QMap>
