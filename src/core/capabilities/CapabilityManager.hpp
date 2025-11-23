@@ -177,6 +177,18 @@ private:
         const QString& extensionId,
         const QVariantMap& options
     );
+
+    // New capability factories
+    std::shared_ptr<capabilities::AudioCapability> createAudioCapability(
+        const QString& extensionId,
+        const QVariantMap& options
+    );
+
+    // Generic token-style capability for simple permission flags (e.g., contacts/phone)
+    std::shared_ptr<capabilities::Capability> createTokenCapability(
+        const QString& extensionId,
+        const QString& capabilityId
+    );
     
     // Core services (non-owned)
     EventBus* event_bus_;

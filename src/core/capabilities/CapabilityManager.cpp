@@ -359,6 +359,124 @@ private:
 };
 
 /**
+ * Minimal AudioCapability implementation (stub/mock backend).
+ * Provides a valid capability token and basic state holders so extensions can
+ * be granted "audio" without errors. Real audio backend can replace this.
+ */
+class AudioCapabilityImpl : public capabilities::AudioCapability {
+public:
+    AudioCapabilityImpl(const QString& extension_id, CapabilityManager* manager)
+        : extension_id_(extension_id)
+        , manager_(manager)
+        , is_valid_(true)
+        , next_playback_id_(1)
+        , master_volume_(1.0f)
+        , muted_(false) {}
+
+    QString extensionId() const override { return extension_id_; }
+    bool isValid() const override { return is_valid_; }
+    void invalidate() { is_valid_ = false; }
+
+    void play(const QUrl& source, StreamType streamType,
+              std::function<void(int, const QString&)> callback) override {
+        if (!is_valid_) { callback(-1, QStringLiteral("invalid capability")); return; }
+        manager_->logCapabilityUsage(extension_id_, "audio", "play", source.toString());
+        const int id = next_playback_id_++;
+        playback_state_[id] = PlaybackState::Playing;
+        playback_volume_[id] = 1.0f;
+        // Stub: no real playback; immediately report success
+        callback(id, QString());
+    }
+
+    void stop(int playbackId) override {
+        playback_state_[playbackId] = PlaybackState::Stopped;
+        manager_->logCapabilityUsage(extension_id_, "audio", "stop", QString::number(playbackId));
+    }
+    void pause(int playbackId) override {
+        playback_state_[playbackId] = PlaybackState::Paused;
+        manager_->logCapabilityUsage(extension_id_, "audio", "pause", QString::number(playbackId));
+    }
+    void resume(int playbackId) override {
+        playback_state_[playbackId] = PlaybackState::Playing;
+        manager_->logCapabilityUsage(extension_id_, "audio", "resume", QString::number(playbackId));
+    }
+    void seek(int playbackId, qint64 positionMs) override {
+        Q_UNUSED(positionMs);
+        manager_->logCapabilityUsage(extension_id_, "audio", "seek", QString::number(playbackId));
+    }
+    PlaybackState getPlaybackState(int playbackId) const override {
+        return playback_state_.value(playbackId, PlaybackState::Stopped);
+    }
+    qint64 getPosition(int playbackId) const override {
+        Q_UNUSED(playbackId);
+        return 0;
+    }
+    qint64 getDuration(int playbackId) const override {
+        Q_UNUSED(playbackId);
+        return 0;
+    }
+    void setVolume(int playbackId, float volume) override {
+        playback_volume_[playbackId] = volume;
+    }
+    float getVolume(int playbackId) const override {
+        return playback_volume_.value(playbackId, 1.0f);
+    }
+    void setMasterVolume(float volume) override { master_volume_ = volume; }
+    float getMasterVolume() const override { return master_volume_; }
+    void setMuted(bool muted) override { muted_ = muted; }
+    bool isMuted() const override { return muted_; }
+    QList<AudioDevice> getOutputDevices() const override { return {}; }
+    QList<AudioDevice> getInputDevices() const override { return {}; }
+    void setOutputDevice(const QString& deviceId) override { Q_UNUSED(deviceId); }
+    void setInputDevice(const QString& deviceId) override { Q_UNUSED(deviceId); }
+    void startRecording(const QString& outputPath, int sampleRate, int channels,
+                        std::function<void(int, const QString&)> callback) override {
+        Q_UNUSED(outputPath); Q_UNUSED(sampleRate); Q_UNUSED(channels);
+        // Stub: recording not supported; report error
+        callback(-1, QStringLiteral("audio recording not available"));
+    }
+    void stopRecording(int recordingId) override { Q_UNUSED(recordingId); }
+    int subscribeToPlaybackState(int playbackId, std::function<void(PlaybackState)> callback) override {
+        const int subId = ++next_subscription_id_;
+        state_subscribers_[subId] = callback;
+        Q_UNUSED(playbackId);
+        return subId;
+    }
+    void unsubscribe(int subscriptionId) override {
+        state_subscribers_.remove(subscriptionId);
+    }
+
+private:
+    QString extension_id_;
+    CapabilityManager* manager_;
+    bool is_valid_;
+    int next_playback_id_;
+    int next_subscription_id_ = 0;
+    QHash<int, PlaybackState> playback_state_;
+    QHash<int, float> playback_volume_;
+    QHash<int, std::function<void(PlaybackState)>> state_subscribers_;
+    float master_volume_;
+    bool muted_;
+};
+
+/**
+ * Simple token capability used for lightweight permissions (e.g., contacts/phone).
+ */
+class TokenCapabilityImpl : public capabilities::Capability {
+public:
+    TokenCapabilityImpl(const QString& extension_id, const QString& cap_id)
+        : extension_id_(extension_id), cap_id_(cap_id), valid_(true) {}
+    QString id() const override { return cap_id_; }
+    bool isValid() const override { return valid_; }
+    QString extensionId() const override { return extension_id_; }
+    void invalidate() { valid_ = false; }
+private:
+    QString extension_id_;
+    QString cap_id_;
+    bool valid_;
+};
+
+/**
  * Concrete FileSystemCapability implementation.
  */
 class FileSystemCapabilityImpl : public capabilities::FileSystemCapability {
@@ -750,6 +868,10 @@ CapabilityManager::~CapabilityManager() {
                 uiCap->invalidate();
             } else if (auto evCap = std::dynamic_pointer_cast<EventCapabilityImpl>(cap)) {
                 evCap->invalidate();
+            } else if (auto audCap = std::dynamic_pointer_cast<AudioCapabilityImpl>(cap)) {
+                audCap->invalidate();
+            } else if (auto tokCap = std::dynamic_pointer_cast<TokenCapabilityImpl>(cap)) {
+                tokCap->invalidate();
             }
         }
     }
@@ -789,6 +911,10 @@ std::shared_ptr<capabilities::Capability> CapabilityManager::grantCapability(
         capability = createEventCapability(extensionId, options);
     } else if (capabilityType == "bluetooth") {
         capability = createBluetoothCapability(extensionId, options);
+    } else if (capabilityType == "audio") {
+        capability = createAudioCapability(extensionId, options);
+    } else if (capabilityType == "contacts" || capabilityType == "phone") {
+        capability = createTokenCapability(extensionId, capabilityType);
     } else {
         qWarning() << "Unknown capability type:" << capabilityType;
         return nullptr;
@@ -830,6 +956,10 @@ void CapabilityManager::revokeCapability(
             uiCap->invalidate();
         } else if (auto evCap = std::dynamic_pointer_cast<EventCapabilityImpl>(cap)) {
             evCap->invalidate();
+        } else if (auto audCap = std::dynamic_pointer_cast<AudioCapabilityImpl>(cap)) {
+            audCap->invalidate();
+        } else if (auto tokCap = std::dynamic_pointer_cast<TokenCapabilityImpl>(cap)) {
+            tokCap->invalidate();
         }
         
         granted_capabilities_[extensionId].remove(capabilityType);
@@ -999,6 +1129,23 @@ std::shared_ptr<capabilities::Capability> CapabilityManager::createBluetoothCapa
 ) {
     return std::static_pointer_cast<capabilities::Capability>(
         capabilities::createBluetoothCapabilityInstance(extensionId, this)
+    );
+}
+
+std::shared_ptr<capabilities::AudioCapability> CapabilityManager::createAudioCapability(
+    const QString& extensionId,
+    const QVariantMap& options
+) {
+    Q_UNUSED(options);
+    return std::make_shared<AudioCapabilityImpl>(extensionId, this);
+}
+
+std::shared_ptr<capabilities::Capability> CapabilityManager::createTokenCapability(
+    const QString& extensionId,
+    const QString& capabilityId
+) {
+    return std::static_pointer_cast<capabilities::Capability>(
+        std::make_shared<TokenCapabilityImpl>(extensionId, capabilityId)
     );
 }
 
