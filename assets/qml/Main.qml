@@ -121,9 +121,14 @@ ApplicationWindow {
             RowLayout {
                 spacing: Theme.spacing
                 
-                Text {
-                    text: "🚗"
-                    font.pixelSize: 32
+                Image {
+                    source: IconRegistry.iconUrl("mdi:home")
+                    width: 32
+                    height: 32
+                    fillMode: Image.PreserveAspectFit
+                    smooth: true
+                    sourceSize.width: 32
+                    sourceSize.height: 32
                 }
                 
                 Column {
@@ -292,13 +297,21 @@ ApplicationWindow {
             
             // Theme toggle
             Button {
-                text: Theme.isDark ? "☀️" : "🌙"
-                font.pixelSize: 20
                 flat: true
                 onClicked: Theme.toggleTheme()
                 
                 ToolTip.visible: hovered
                 ToolTip.text: qsTr("Toggle ") + (Theme.isDark ? qsTr("light") : qsTr("dark")) + qsTr(" mode")
+                
+                contentItem: Image {
+                    source: IconRegistry.iconUrl("mdi:theme")
+                    width: 20
+                    height: 20
+                    fillMode: Image.PreserveAspectFit
+                    smooth: true
+                    sourceSize.width: 20
+                    sourceSize.height: 20
+                }
             }
         }
     }
@@ -369,14 +382,26 @@ ApplicationWindow {
                         anchors.margins: Theme.padding * 2
                         spacing: Theme.spacing * 2
                         
-                        Text {
-                            text: "📦 " + qsTr("Loaded Extensions")
-                            font.pixelSize: 20
-                            font.bold: true
-                            color: Theme.text
+                        RowLayout {
+                            spacing: Theme.spacing
                             
-                            Behavior on color {
-                                ColorAnimation { duration: 200 }
+                            Image {
+                                source: IconRegistry.iconUrl("mdi:package")
+                                width: 20
+                                height: 20
+                                fillMode: Image.PreserveAspectFit
+                                smooth: true
+                            }
+                            
+                            Text {
+                                text: qsTr("Loaded Extensions")
+                                font.pixelSize: 20
+                                font.bold: true
+                                color: Theme.text
+                                
+                                Behavior on color {
+                                    ColorAnimation { duration: 200 }
+                                }
                             }
                         }
                         
@@ -452,11 +477,23 @@ ApplicationWindow {
                         anchors.margins: Theme.padding * 2
                         spacing: Theme.spacing
                         
-                        Text {
-                            text: "🔒 " + qsTr("Security Features")
-                            font.pixelSize: 16
-                            font.bold: true
-                            color: Theme.text
+                        RowLayout {
+                            spacing: Theme.spacing
+                            
+                            Image {
+                                source: IconRegistry.iconUrl("mdi:shield")
+                                width: 16
+                                height: 16
+                                fillMode: Image.PreserveAspectFit
+                                smooth: true
+                            }
+                            
+                            Text {
+                                text: qsTr("Security Features")
+                                font.pixelSize: 16
+                                font.bold: true
+                                color: Theme.text
+                            }
                         }
                         
                         Column {
@@ -540,9 +577,12 @@ ApplicationWindow {
                         anchors.centerIn: parent
                         spacing: Theme.spacing * 2
                         
-                        Text {
-                            text: "⚠️"
-                            font.pixelSize: 48
+                        Image {
+                            source: IconRegistry.iconUrl("mdi:alert")
+                            width: 48
+                            height: 48
+                            fillMode: Image.PreserveAspectFit
+                            smooth: true
                             Layout.alignment: Qt.AlignHCenter
                         }
                         
@@ -598,10 +638,22 @@ ApplicationWindow {
             anchors.rightMargin: Theme.padding
             spacing: Theme.spacing * 2
             
-            Text {
-                text: "🚗 " + qsTr("Crankshaft Reborn v1.0.0")
-                color: Theme.textSecondary
-                font.pixelSize: 10
+            RowLayout {
+                spacing: 4
+                
+                Image {
+                    source: IconRegistry.iconUrl("mdi:home")
+                    width: 10
+                    height: 10
+                    fillMode: Image.PreserveAspectFit
+                    smooth: true
+                }
+                
+                Text {
+                    text: qsTr("Crankshaft Reborn v1.0.0")
+                    color: Theme.textSecondary
+                    font.pixelSize: 10
+                }
             }
             
             Rectangle {

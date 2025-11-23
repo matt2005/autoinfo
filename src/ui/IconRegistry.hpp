@@ -24,6 +24,7 @@
 #include <QString>
 #include <QStringList>
 #include <QUrl>
+#include <QMap>
 
 namespace opencardev::crankshaft::ui {
 
@@ -36,13 +37,19 @@ public:
     Q_INVOKABLE QUrl iconUrl(const QString& name) const; // returns qrc:/ url for given icon name
     Q_INVOKABLE bool exists(const QString& name) const;
     Q_INVOKABLE QStringList listAvailable() const { return available_; }
+    
+    // Register extension-provided icons (namespace:name -> qrc path)
+    void registerExtensionIcon(const QString& extensionId, const QString& iconName, const QUrl& iconUrl);
+    void unregisterExtensionIcons(const QString& extensionId);
 
 private:
     explicit IconRegistry(QObject* parent = nullptr);
     void buildIndex();
     QString normalise(const QString& name) const;
+    QString extractNamespace(const QString& name, QString& outName) const;
 
     QStringList available_;
+    QMap<QString, QUrl> extensionIcons_; // full key (ext:name) -> url
 };
 
 } // namespace opencardev::crankshaft::ui

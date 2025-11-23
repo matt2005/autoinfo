@@ -1,5 +1,5 @@
 <RCC>
-  <qresource prefix="/icons/mdi">
+  <qresource prefix="/icons">
     <file>mdi/home.svg</file>
     <file>mdi/cog.svg</file>
     <file>mdi/map.svg</file>
@@ -10,5 +10,11 @@
     <file>mdi/stop.svg</file>
     <file>mdi/skip_next.svg</file>
     <file>mdi/skip_previous.svg</file>
+    <file>mdi/placeholder.svg</file>
+    <file>mdi/theme.svg</file>
+    <file>mdi/shield.svg</file>
+    <file>mdi/loading.svg</file>
+    <file>mdi/alert.svg</file>
+    <file>mdi/package.svg</file>
   </qresource>
 </RCC>

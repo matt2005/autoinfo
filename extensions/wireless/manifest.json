@@ -19,7 +19,7 @@
   },
   "metadata": {
     "category": "connectivity",
-    "icon": "assets/icon.png",
+    "icon": "mdi:cog",
     "features": [
       "wifi_scanning",
       "network_connection",

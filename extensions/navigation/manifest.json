@@ -21,7 +21,7 @@
   },
   "metadata": {
     "category": "navigation",
-    "icon": "assets/icon.png",
+    "icon": "mdi:map",
     "features": [
       "turn_by_turn_navigation",
       "traffic_updates",

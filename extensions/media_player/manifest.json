@@ -20,7 +20,7 @@
   },
   "metadata": {
     "category": "multimedia",
-    "icon": "assets/icon.png",
+    "icon": "mdi:music",
     "supported_formats": ["mp3", "flac", "wav", "ogg", "aac", "mp4", "mkv", "avi"],
     "features": [
       "playlist_management",

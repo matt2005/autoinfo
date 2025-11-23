@@ -21,6 +21,7 @@
 #include <QDir>
 #include <QQmlEngine>
 #include <QDebug>
+#include <QFileInfo>
 
 namespace opencardev::crankshaft::ui {
 
@@ -43,13 +44,15 @@ void IconRegistry::registerQmlType() {
 
 void IconRegistry::buildIndex() {
     // Scan compiled resources under /icons/mdi
+    QDir rootDir(":/icons");
+    qDebug() << "IconRegistry: Root exists:" << rootDir.exists();
+    qDebug() << "IconRegistry: Root entries:" << rootDir.entryList();
+    
     QDir dir(":/icons/mdi");
+    qDebug() << "IconRegistry: mdi dir exists:" << dir.exists();
     const QStringList files = dir.entryList(QStringList() << "*.svg", QDir::Files);
+    qDebug() << "IconRegistry: Found" << files.size() << "icon files";
     available_.clear();
-    for (const QString& f : files) {
-        QString base = f;
-        base.remove('.'); // keep name with dot removed for direct match? We'll keep full without extension
-    }
     for (const QString& f : files) {
         QString name = f;
         if (name.endsWith(".svg")) {
@@ -58,6 +61,7 @@ void IconRegistry::buildIndex() {
         available_.append(name);
     }
     available_.sort();
+    qDebug() << "IconRegistry: Registered" << available_.size() << "icons:" << available_;
 }
 
 QString IconRegistry::normalise(const QString& name) const {
@@ -71,16 +75,70 @@ QString IconRegistry::normalise(const QString& name) const {
     return n;
 }
 
-QUrl IconRegistry::iconUrl(const QString& name) const {
-    const QString n = normalise(name);
-    if (!available_.contains(n)) {
-        return QUrl();
+QString IconRegistry::extractNamespace(const QString& name, QString& outName) const {
+    const int colon = name.indexOf(':');
+    if (colon > 0) {
+        outName = name.mid(colon + 1);
+        return name.left(colon);
     }
-    return QUrl(QStringLiteral("qrc:/icons/mdi/%1.svg").arg(n));
+    outName = name;
+    return QStringLiteral("mdi"); // default namespace
+}
+
+QUrl IconRegistry::iconUrl(const QString& name) const {
+    QString iconName;
+    const QString ns = extractNamespace(name, iconName);
+    
+    // Check extension icons first
+    const QString fullKey = ns + ":" + iconName;
+    if (extensionIcons_.contains(fullKey)) {
+        return extensionIcons_.value(fullKey);
+    }
+    
+    // Check MDI built-in icons
+    if (ns == "mdi") {
+        const QString normalized = normalise(iconName);
+        if (available_.contains(normalized)) {
+            return QUrl(QStringLiteral("qrc:/icons/mdi/%1.svg").arg(normalized));
+        }
+    }
+    
+    // Fallback to placeholder
+    return QUrl(QStringLiteral("qrc:/icons/mdi/placeholder.svg"));
 }
 
 bool IconRegistry::exists(const QString& name) const {
-    return available_.contains(normalise(name));
+    QString iconName;
+    const QString ns = extractNamespace(name, iconName);
+    const QString fullKey = ns + ":" + iconName;
+    
+    if (extensionIcons_.contains(fullKey)) {
+        return true;
+    }
+    
+    if (ns == "mdi") {
+        return available_.contains(normalise(iconName));
+    }
+    
+    return false;
+}
+
+void IconRegistry::registerExtensionIcon(const QString& extensionId, const QString& iconName, const QUrl& iconUrl) {
+    const QString key = extensionId + ":" + iconName;
+    extensionIcons_[key] = iconUrl;
+    qDebug() << "Registered extension icon:" << key << "->" << iconUrl;
+}
+
+void IconRegistry::unregisterExtensionIcons(const QString& extensionId) {
+    const QString prefix = extensionId + ":";
+    QMutableMapIterator<QString, QUrl> it(extensionIcons_);
+    while (it.hasNext()) {
+        it.next();
+        if (it.key().startsWith(prefix)) {
+            qDebug() << "Unregistered extension icon:" << it.key();
+            it.remove();
+        }
+    }
 }
 
 } // namespace opencardev::crankshaft::ui

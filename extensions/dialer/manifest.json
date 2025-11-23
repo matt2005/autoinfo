@@ -20,7 +20,7 @@
   },
   "metadata": {
     "category": "communications",
-    "icon": "assets/icon.png",
+    "icon": "mdi:bluetooth",
     "features": [
       "keypad",
       "recent_calls",

@@ -20,7 +20,7 @@
   },
   "metadata": {
     "category": "connectivity",
-    "icon": "assets/icon.png",
+    "icon": "mdi:bluetooth",
     "features": [
       "hands_free_calling",
       "audio_streaming",

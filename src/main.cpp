@@ -112,6 +112,9 @@ int main(int argc, char *argv[]) {
         return 1;
     }
     
+    // Initialize icon resources from static library
+    Q_INIT_RESOURCE(icons);
+    
     // Register QML singletons and initialize managers
     CrankshaftReborn::UI::ThemeManager::registerQmlType();
     CrankshaftReborn::UI::ThemeManager::instance()->initialize();
