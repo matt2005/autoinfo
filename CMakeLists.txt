@@ -75,6 +75,7 @@ target_link_libraries(${PROJECT_NAME}
         BluetoothExtension
         MediaPlayerExtension
         DialerExtension
+        WirelessExtension
 )
 
 # Copy assets to build directory for development

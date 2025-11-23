@@ -54,6 +54,9 @@ public:
     QString version() const override { return "1.0.0"; }
     ExtensionType type() const override { return ExtensionType::UI; }
 
+    // Configuration
+    void registerConfigItems(core::config::ConfigManager* manager) override;
+
 private:
     void setupEventHandlers();
     void setupNetworkManager();

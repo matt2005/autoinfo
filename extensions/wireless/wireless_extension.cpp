@@ -46,21 +46,21 @@ WirelessExtension::~WirelessExtension() {
 bool WirelessExtension::initialize() {
     qInfo() << "Initializing Wireless extension...";
     
-    // Check required capabilities
+    // Check required capabilities (but allow initialization to proceed for config registration)
     if (!hasCapability("wireless")) {
-        qWarning() << "Wireless: Wireless capability not granted!";
-        return false;
+        qWarning() << "Wireless: Wireless capability not granted - will operate in limited mode";
     }
     if (!hasCapability("event")) {
-        qWarning() << "Wireless: Event capability not granted!";
-        return false;
+        qWarning() << "Wireless: Event capability not granted - event communication disabled";
     }
     if (!hasCapability("ui")) {
-        qWarning() << "Wireless: UI capability not granted!";
-        return false;
+        qWarning() << "Wireless: UI capability not granted - UI registration disabled";
     }
     
-    setupNetworkManager();
+    // Only setup NetworkManager if we have the wireless capability
+    if (hasCapability("wireless")) {
+        setupNetworkManager();
+    }
     
     return true;
 }
@@ -138,6 +138,155 @@ void WirelessExtension::cleanup() {
         delete settingsInterface_;
         settingsInterface_ = nullptr;
     }
+}
+
+void WirelessExtension::registerConfigItems(core::config::ConfigManager* manager) {
+    using namespace core::config;
+    
+    ConfigPage page;
+    page.domain = "connectivity";
+    page.extension = "wireless";
+    page.title = "WiFi Settings";
+    page.description = "Configure wireless network connections and access point mode";
+    page.icon = "qrc:/icons/wifi.svg";
+    
+    // Network Settings Section
+    ConfigSection networkSection;
+    networkSection.key = "network";
+    networkSection.title = "Network Settings";
+    networkSection.description = "WiFi network connection settings";
+    networkSection.complexity = ConfigComplexity::Basic;
+    
+    ConfigItem autoConnectItem;
+    autoConnectItem.key = "auto_connect";
+    autoConnectItem.label = "Auto-connect to known networks";
+    autoConnectItem.description = "Automatically connect to saved networks when in range";
+    autoConnectItem.type = ConfigItemType::Boolean;
+    autoConnectItem.defaultValue = true;
+    autoConnectItem.complexity = ConfigComplexity::Basic;
+    autoConnectItem.required = false;
+    autoConnectItem.readOnly = false;
+    networkSection.items.append(autoConnectItem);
+    
+    ConfigItem scanIntervalItem;
+    scanIntervalItem.key = "scan_interval";
+    scanIntervalItem.label = "Network scan interval";
+    scanIntervalItem.description = "How often to scan for available networks";
+    scanIntervalItem.type = ConfigItemType::Integer;
+    scanIntervalItem.defaultValue = 15;
+    scanIntervalItem.properties["minValue"] = 5;
+    scanIntervalItem.properties["maxValue"] = 60;
+    scanIntervalItem.unit = "seconds";
+    scanIntervalItem.complexity = ConfigComplexity::Advanced;
+    scanIntervalItem.required = false;
+    scanIntervalItem.readOnly = false;
+    networkSection.items.append(scanIntervalItem);
+    
+    ConfigItem powerSaveItem;
+    powerSaveItem.key = "power_save";
+    powerSaveItem.label = "WiFi power saving mode";
+    powerSaveItem.description = "Enable power saving to reduce battery consumption";
+    powerSaveItem.type = ConfigItemType::Boolean;
+    powerSaveItem.defaultValue = true;
+    powerSaveItem.complexity = ConfigComplexity::Advanced;
+    powerSaveItem.required = false;
+    powerSaveItem.readOnly = false;
+    networkSection.items.append(powerSaveItem);
+    
+    page.sections.append(networkSection);
+    
+    // Access Point Settings Section
+    ConfigSection apSection;
+    apSection.key = "access_point";
+    apSection.title = "Access Point Mode";
+    apSection.description = "Configure device as a WiFi access point";
+    apSection.complexity = ConfigComplexity::Advanced;
+    
+    ConfigItem apEnabledItem;
+    apEnabledItem.key = "ap_enabled";
+    apEnabledItem.label = "Enable access point mode";
+    apEnabledItem.description = "Allow other devices to connect to this device";
+    apEnabledItem.type = ConfigItemType::Boolean;
+    apEnabledItem.defaultValue = false;
+    apEnabledItem.complexity = ConfigComplexity::Advanced;
+    apEnabledItem.required = false;
+    apEnabledItem.readOnly = false;
+    apSection.items.append(apEnabledItem);
+    
+    ConfigItem apSsidItem;
+    apSsidItem.key = "ap_ssid";
+    apSsidItem.label = "Access point name (SSID)";
+    apSsidItem.description = "Network name visible to other devices";
+    apSsidItem.type = ConfigItemType::String;
+    apSsidItem.defaultValue = "Crankshaft-AP";
+    apSsidItem.complexity = ConfigComplexity::Advanced;
+    apSsidItem.required = false;
+    apSsidItem.readOnly = false;
+    apSection.items.append(apSsidItem);
+    
+    ConfigItem apPasswordItem;
+    apPasswordItem.key = "ap_password";
+    apPasswordItem.label = "Access point password";
+    apPasswordItem.description = "Password for access point (minimum 8 characters)";
+    apPasswordItem.type = ConfigItemType::String;
+    apPasswordItem.defaultValue = "";
+    apPasswordItem.properties["minLength"] = 8;
+    apPasswordItem.properties["maxLength"] = 63;
+    apPasswordItem.properties["secret"] = true;
+    apPasswordItem.complexity = ConfigComplexity::Advanced;
+    apPasswordItem.required = false;
+    apPasswordItem.readOnly = false;
+    apSection.items.append(apPasswordItem);
+    
+    ConfigItem apChannelItem;
+    apChannelItem.key = "ap_channel";
+    apChannelItem.label = "WiFi channel";
+    apChannelItem.description = "WiFi channel for access point (1-11)";
+    apChannelItem.type = ConfigItemType::Integer;
+    apChannelItem.defaultValue = 6;
+    apChannelItem.properties["minValue"] = 1;
+    apChannelItem.properties["maxValue"] = 11;
+    apChannelItem.complexity = ConfigComplexity::Expert;
+    apChannelItem.required = false;
+    apChannelItem.readOnly = false;
+    apSection.items.append(apChannelItem);
+    
+    page.sections.append(apSection);
+    
+    // Security Settings Section
+    ConfigSection securitySection;
+    securitySection.key = "security";
+    securitySection.title = "Security Settings";
+    securitySection.description = "Advanced security and encryption options";
+    securitySection.complexity = ConfigComplexity::Expert;
+    
+    ConfigItem hiddenNetworksItem;
+    hiddenNetworksItem.key = "show_hidden";
+    hiddenNetworksItem.label = "Show hidden networks";
+    hiddenNetworksItem.description = "Display networks that don't broadcast SSID";
+    hiddenNetworksItem.type = ConfigItemType::Boolean;
+    hiddenNetworksItem.defaultValue = false;
+    hiddenNetworksItem.complexity = ConfigComplexity::Expert;
+    hiddenNetworksItem.required = false;
+    hiddenNetworksItem.readOnly = false;
+    securitySection.items.append(hiddenNetworksItem);
+    
+    ConfigItem randomMacItem;
+    randomMacItem.key = "random_mac";
+    randomMacItem.label = "Randomize MAC address";
+    randomMacItem.description = "Use random MAC address for improved privacy";
+    randomMacItem.type = ConfigItemType::Boolean;
+    randomMacItem.defaultValue = false;
+    randomMacItem.complexity = ConfigComplexity::Expert;
+    randomMacItem.required = false;
+    randomMacItem.readOnly = false;
+    securitySection.items.append(randomMacItem);
+    
+    page.sections.append(securitySection);
+    
+    // Register the page
+    manager->registerConfigPage(page);
+    qInfo() << "Wireless extension registered config items";
 }
 
 void WirelessExtension::setupNetworkManager() {

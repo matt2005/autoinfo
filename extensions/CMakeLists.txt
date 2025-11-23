@@ -8,6 +8,7 @@ if(BUILD_EXTENSIONS)
     add_subdirectory(media_player)
     add_subdirectory(navigation)
     add_subdirectory(dialer)
+    add_subdirectory(wireless)
     
     message(STATUS "Extensions configured successfully")
 endif()
