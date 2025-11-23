@@ -1,0 +1,30 @@
+{
+  "id": "dialer",
+  "name": "Dialler",
+  "version": "1.0.0",
+  "description": "Phone dialler UI for initiating calls via Bluetooth",
+  "author": "OpenCarDev Team",
+  "type": "ui",
+  "dependencies": [],
+  "platforms": ["linux", "all"],
+  "entry_point": "dialer.so",
+  "config_schema": "config_schema.json",
+  "requirements": {
+    "min_core_version": "1.0.0",
+    "required_permissions": [
+      "ui",
+      "event",
+      "phone",
+      "contacts"
+    ]
+  },
+  "metadata": {
+    "category": "communications",
+    "icon": "assets/icon.png",
+    "features": [
+      "keypad",
+      "recent_calls",
+      "bluetooth_dial"
+    ]
+  }
+}

@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/dialer">
+        <file>qml/DialerView.qml</file>
+    </qresource>
+</RCC>
