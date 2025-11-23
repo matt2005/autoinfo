@@ -27,6 +27,7 @@
 #include <QJsonObject>
 #include <QDebug>
 #include <QQueue>
+#include "../core/config/ConfigManager.hpp"
 
 namespace opencardev::crankshaft {
 namespace extensions {
@@ -50,6 +51,21 @@ void ExtensionManager::initialize(core::CapabilityManager* capability_manager, c
     const QString defaultExtDir = QCoreApplication::applicationDirPath() + "/extensions";
     if (QDir(defaultExtDir).exists()) {
         extensions_dir_ = defaultExtDir;
+    }
+    if (config_manager_) {
+        QObject::connect(config_manager_, &core::config::ConfigManager::configValueChanged,
+                         this, [this](const QString& domain, const QString& extension,
+                                      const QString& section, const QString& key,
+                                      const QVariant& value) {
+            if (domain == "system" && extension == "extensions" && section == "manage") {
+                const bool enable = value.toBool();
+                if (enable) {
+                    enableExtension(key);
+                } else {
+                    disableExtension(key);
+                }
+            }
+        });
     }
 }
 
@@ -160,9 +176,20 @@ bool ExtensionManager::registerBuiltInExtension(std::shared_ptr<Extension> exten
         if (config_manager_) {
             extension->registerConfigItems(config_manager_);
         }
-        extension->start();
-        extensions_[manifest.id].is_running = true;
-        qInfo() << "Built-in extension registered and started:" << manifest.id;
+        bool shouldStart = true;
+        if (config_manager_) {
+            // Check system.extensions.manage.<id> toggle
+            QVariant v = config_manager_->getValue("system", "extensions", "manage", manifest.id);
+            if (v.isValid()) shouldStart = v.toBool();
+        }
+        if (shouldStart) {
+            extension->start();
+            extensions_[manifest.id].is_running = true;
+            qInfo() << "Built-in extension registered and started:" << manifest.id;
+        } else {
+            extensions_[manifest.id].is_running = false;
+            qInfo() << "Built-in extension registered but disabled by config:" << manifest.id;
+        }
         emit extensionLoaded(manifest.id);
         return true;
     } else {
@@ -189,6 +216,30 @@ bool ExtensionManager::unloadExtension(const QString& extension_id) {
     extensions_.remove(extension_id);
     emit extensionUnloaded(extension_id);
     
+    return true;
+}
+
+bool ExtensionManager::enableExtension(const QString& extension_id) {
+    if (!extensions_.contains(extension_id)) return false;
+    auto &info = extensions_[extension_id];
+    if (info.is_running) return true;
+    if (!info.extension) return false;
+    info.extension->start();
+    info.is_running = true;
+    qInfo() << "Enabled extension:" << extension_id;
+    emit extensionLoaded(extension_id);
+    return true;
+}
+
+bool ExtensionManager::disableExtension(const QString& extension_id) {
+    if (!extensions_.contains(extension_id)) return false;
+    auto &info = extensions_[extension_id];
+    if (!info.is_running) return true;
+    if (!info.extension) return false;
+    info.extension->stop();
+    info.is_running = false;
+    qInfo() << "Disabled extension:" << extension_id;
+    emit extensionUnloaded(extension_id);
     return true;
 }
 

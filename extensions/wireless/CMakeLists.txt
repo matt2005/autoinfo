@@ -26,6 +26,13 @@ target_include_directories(WirelessExtension
         ${CMAKE_SOURCE_DIR}/src
 )
 
+# Add QRC resources to expose QML via qrc:/wireless/qml/WirelessView.qml
+qt_add_resources(WirelessExtension "wireless_resources"
+    PREFIX "/"
+    FILES
+        resources.qrc
+)
+
 # Copy manifest.json to build directory for development
 add_custom_command(TARGET WirelessExtension POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy

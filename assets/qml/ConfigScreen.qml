@@ -174,6 +174,7 @@ Rectangle {
                         Layout.fillHeight: true
                         clip: true
                         model: domainsData
+                        ScrollBar.vertical: ScrollBar { }
 
                         delegate: ColumnLayout {
                             width: parent ? parent.width : 0

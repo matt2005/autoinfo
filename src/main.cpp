@@ -29,6 +29,7 @@
 #include "extensions/extension_manager.hpp"
 #include "ui/ThemeManager.hpp"
 #include "ui/ExtensionRegistry.hpp"
+#include "ui/I18nManager.hpp"
 #include "ui/NavigationBridge.hpp"
 #include "ui/EventBridge.hpp"
 // Config UI bridge
@@ -113,6 +114,8 @@ int main(int argc, char *argv[]) {
     // Register QML singletons and initialize managers
     CrankshaftReborn::UI::ThemeManager::registerQmlType();
     CrankshaftReborn::UI::ThemeManager::instance()->initialize();
+    // I18n manager for translations
+    opencardev::crankshaft::ui::I18nManager::registerQmlType();
     NavigationBridge::registerQmlType();
     NavigationBridge::initialise(application.capabilityManager());
     // QML Event bridge for simple publish from UI
@@ -129,16 +132,33 @@ int main(int argc, char *argv[]) {
     opencardev::crankshaft::ui::ExtensionRegistry extensionRegistry(application.extensionManager());
     opencardev::crankshaft::ui::ExtensionRegistry::registerQmlType();
 
-    // Register core UI shortcuts configuration page so users can customise key mappings
+    // Register core UI settings page
     {
         using namespace opencardev::crankshaft::core::config;
         ConfigPage page;
         page.domain = "system";
         page.extension = "ui";
-        page.title = "User Interface";
-        page.description = "Global UI preferences including keyboard shortcuts";
-        page.icon = "qrc:/icons/settings.svg";
+        page.title = QObject::tr("User Interface");
+        page.description = QObject::tr("Global UI preferences including keyboard shortcuts");
+        page.icon = "Settings"; // icon name or path; translation not required
         page.complexity = ConfigComplexity::Basic;
+
+        // General section
+        ConfigSection general;
+        general.key = "general";
+        general.title = QObject::tr("General");
+        general.description = QObject::tr("General user interface preferences");
+        general.complexity = ConfigComplexity::Basic;
+
+        ConfigItem language;
+        language.key = "language";
+        language.label = QObject::tr("Language");
+        language.description = QObject::tr("Application language (requires translation files)");
+        language.type = ConfigItemType::Selection;
+        language.properties["options"] = QStringList{"en_GB"};
+        language.defaultValue = QStringLiteral("en_GB");
+        language.complexity = ConfigComplexity::Basic;
+        general.items.append(language);
 
         ConfigSection shortcuts;
         shortcuts.key = "shortcuts";
@@ -200,7 +220,46 @@ int main(int argc, char *argv[]) {
         showHelp.complexity = ConfigComplexity::Basic;
         shortcuts.items.append(showHelp);
 
+        page.sections.append(general);
         page.sections.append(shortcuts);
+        application.configManager()->registerConfigPage(page);
+    }
+
+    // Register system.extensions management page (enable/disable + hot reload)
+    {
+        using namespace opencardev::crankshaft::core::config;
+        ConfigPage page;
+        page.domain = "system";
+        page.extension = "extensions";
+        page.title = "Extensions";
+        page.description = "Enable or disable built-in extensions";
+        page.icon = "Extensions";
+        page.complexity = ConfigComplexity::Basic;
+
+        ConfigSection manage;
+        manage.key = "manage";
+        manage.title = "Manage Extensions";
+        manage.description = "Toggle extensions on or off";
+        manage.complexity = ConfigComplexity::Basic;
+
+        auto makeToggle = [](const QString& key, const QString& label, const QString& desc) {
+            ConfigItem item;
+            item.key = key;
+            item.label = label;
+            item.description = desc;
+            item.type = ConfigItemType::Boolean;
+            item.defaultValue = true;
+            item.complexity = ConfigComplexity::Basic;
+            return item;
+        };
+
+        manage.items.append(makeToggle("navigation", "Enable Navigation", "Show the Navigation tab and services"));
+        manage.items.append(makeToggle("bluetooth", "Enable Bluetooth", "Enable Bluetooth integration"));
+        manage.items.append(makeToggle("media_player", "Enable Media Player", "Enable media playback controls"));
+        manage.items.append(makeToggle("dialer", "Enable Dialler", "Enable phone dialler integration"));
+        manage.items.append(makeToggle("wireless", "Enable Wireless", "Enable wireless settings integration"));
+
+        page.sections.append(manage);
         application.configManager()->registerConfigPage(page);
     }
 
@@ -217,6 +276,14 @@ int main(int argc, char *argv[]) {
 
     // Set up QML engine and import paths
     QQmlApplicationEngine engine;
+    // Initialise i18n with engine and ext manager
+    opencardev::crankshaft::ui::I18nManager::initialise(&engine, application.extensionManager());
+    // Apply language from config (default en_GB)
+    {
+        const QVariant lang = application.configManager()->getValue("system", "ui", "general", "language");
+        const QString locale = lang.isValid() ? lang.toString() : QStringLiteral("en_GB");
+        opencardev::crankshaft::ui::I18nManager::instance()->setLocale(locale);
+    }
     
     // Expose ThemeManager as a context property so it's available in all QML files
     engine.rootContext()->setContextProperty("ThemeManager", CrankshaftReborn::UI::ThemeManager::instance());

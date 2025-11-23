@@ -39,7 +39,7 @@ ApplicationWindow {
     visible: true
     width: 1024
     height: 600
-    title: "Crankshaft Reborn - Capability-Based Extensions"
+    title: qsTr("Crankshaft Reborn - Capability-Based Extensions")
     
     color: Theme.background
         // Shortcut configuration (live-updated)
@@ -130,7 +130,7 @@ ApplicationWindow {
                     spacing: 2
                     
                     Text {
-                        text: "Crankshaft Reborn"
+                        text: qsTr("Crankshaft Reborn")
                         font.pixelSize: 18
                         font.bold: true
                         color: Theme.text
@@ -141,7 +141,7 @@ ApplicationWindow {
                     }
                     
                     Text {
-                        text: "Capability-Based Extensions"
+                        text: qsTr("Capability-Based Extensions")
                         font.pixelSize: 10
                         color: Theme.textSecondary
                         
@@ -169,7 +169,7 @@ ApplicationWindow {
                 
                 // Home tab (always present)
                 TabButton {
-                    text: "🏠 Home"
+                    text: "🏠 " + qsTr("Home")
                     font.pixelSize: 14
                     
                     background: Rectangle {
@@ -200,7 +200,8 @@ ApplicationWindow {
                     model: ExtensionRegistry.mainComponents
                     
                     TabButton {
-                        text: (modelData.icon ? modelData.icon + " " : "") + modelData.title
+                        // Render icon separately to avoid raw icon names in text
+                        text: modelData.title
                         font.pixelSize: 14
                         
                         required property var modelData
@@ -217,15 +218,33 @@ ApplicationWindow {
                             }
                         }
                         
-                        contentItem: Text {
-                            text: parent.text
-                            font: parent.font
-                            color: tabBar.currentIndex === tabIndex ? Theme.accent : Theme.text
-                            horizontalAlignment: Text.AlignHCenter
-                            verticalAlignment: Text.AlignVCenter
+                        contentItem: Row {
+                            spacing: 6
+                            anchors.centerIn: parent
                             
-                            Behavior on color {
-                                ColorAnimation { duration: 150 }
+                            // Show image icon if modelData.icon looks like a path/qrc/svg
+                            Image {
+                                visible: !!modelData.icon && (modelData.icon.indexOf(":/") >= 0 || modelData.icon.endsWith(".svg") || modelData.icon.endsWith(".png"))
+                                source: modelData.icon || ""
+                                width: 18
+                                height: 18
+                                fillMode: Image.PreserveAspectFit
+                                smooth: true
+                                sourceSize.width: 18
+                                sourceSize.height: 18
+                                opacity: tabBar.currentIndex === tabIndex ? 1.0 : 0.8
+                            }
+                            
+                            Text {
+                                text: parent.parent.text
+                                font: parent.parent.font
+                                color: tabBar.currentIndex === tabIndex ? Theme.accent : Theme.text
+                                horizontalAlignment: Text.AlignHCenter
+                                verticalAlignment: Text.AlignVCenter
+                                
+                                Behavior on color {
+                                    ColorAnimation { duration: 150 }
+                                }
                             }
                         }
                     }
@@ -234,7 +253,7 @@ ApplicationWindow {
                 // Settings tab (appears after dynamic extensions)
                 TabButton {
                     readonly property int tabIndex: 1 + ExtensionRegistry.mainComponents.length
-                    text: "⚙ Settings"
+                    text: "⚙ " + qsTr("Settings")
                     font.pixelSize: 14
 
                     background: Rectangle {
@@ -279,7 +298,7 @@ ApplicationWindow {
                 onClicked: Theme.toggleTheme()
                 
                 ToolTip.visible: hovered
-                ToolTip.text: "Toggle " + (Theme.isDark ? "light" : "dark") + " mode"
+                ToolTip.text: qsTr("Toggle ") + (Theme.isDark ? qsTr("light") : qsTr("dark")) + qsTr(" mode")
             }
         }
     }
@@ -308,8 +327,8 @@ ApplicationWindow {
                     Layout.alignment: Qt.AlignHCenter
                     spacing: Theme.spacing
                     
-                    Text {
-                        text: "Welcome to Crankshaft Reborn"
+                        Text {
+                            text: qsTr("Welcome to Crankshaft Reborn")
                         font.pixelSize: 32
                         font.bold: true
                         color: Theme.text
@@ -320,8 +339,8 @@ ApplicationWindow {
                         }
                     }
                     
-                    Text {
-                        text: "Capability-Based Extension Architecture Demo"
+                        Text {
+                            text: qsTr("Capability-Based Extension Architecture Demo")
                         font.pixelSize: 16
                         color: Theme.textSecondary
                         anchors.horizontalCenter: parent.horizontalCenter
@@ -351,7 +370,7 @@ ApplicationWindow {
                         spacing: Theme.spacing * 2
                         
                         Text {
-                            text: "📦 Loaded Extensions"
+                            text: "📦 " + qsTr("Loaded Extensions")
                             font.pixelSize: 20
                             font.bold: true
                             color: Theme.text
@@ -368,7 +387,7 @@ ApplicationWindow {
                             Layout.fillWidth: true
                             
                             Text {
-                                text: "Main Views:"
+                                text: qsTr("Main Views:")
                                 color: Theme.textSecondary
                                 font.pixelSize: 14
                             }
@@ -380,7 +399,7 @@ ApplicationWindow {
                             }
                             
                             Text {
-                                text: "Widgets:"
+                                text: qsTr("Widgets:")
                                 color: Theme.textSecondary
                                 font.pixelSize: 14
                             }
@@ -392,7 +411,7 @@ ApplicationWindow {
                             }
                             
                             Text {
-                                text: "Total Components:"
+                                text: qsTr("Total Components:")
                                 color: Theme.textSecondary
                                 font.pixelSize: 14
                             }
@@ -407,7 +426,7 @@ ApplicationWindow {
                         Item { Layout.fillHeight: true }
                         
                         Text {
-                            text: "Click extension tabs above to view"
+                            text: qsTr("Click extension tabs above to view")
                             color: Theme.textSecondary
                             font.pixelSize: 12
                             Layout.alignment: Qt.AlignHCenter
@@ -434,7 +453,7 @@ ApplicationWindow {
                         spacing: Theme.spacing
                         
                         Text {
-                            text: "🔒 Security Features"
+                            text: "🔒 " + qsTr("Security Features")
                             font.pixelSize: 16
                             font.bold: true
                             color: Theme.text
@@ -446,10 +465,10 @@ ApplicationWindow {
                             
                             Repeater {
                                 model: [
-                                    "✓ Capability-based access control",
-                                    "✓ Extensions cannot access core services directly",
-                                    "✓ All extension operations are audited",
-                                    "✓ Capabilities can be revoked at runtime"
+                                    "✓ " + qsTr("Capability-based access control"),
+                                    "✓ " + qsTr("Extensions cannot access core services directly"),
+                                    "✓ " + qsTr("All extension operations are audited"),
+                                    "✓ " + qsTr("Capabilities can be revoked at runtime")
                                 ]
                                 
                                 Text {
@@ -484,7 +503,7 @@ ApplicationWindow {
                     if (status === Loader.Error) {
                         console.error("Failed to load extension view:", modelData.qmlPath);
                     } else if (status === Loader.Ready) {
-                        console.log("Loaded extension view:", modelData.title);
+                        console.log(qsTr("Loaded extension view:"), modelData.title);
                     }
                 }
                 
@@ -528,7 +547,7 @@ ApplicationWindow {
                         }
                         
                         Text {
-                            text: "Failed to load extension"
+                            text: qsTr("Failed to load extension")
                             color: Theme.error
                             font.pixelSize: 16
                             font.bold: true
@@ -580,7 +599,7 @@ ApplicationWindow {
             spacing: Theme.spacing * 2
             
             Text {
-                text: "🚗 Crankshaft Reborn v1.0.0"
+                text: "🚗 " + qsTr("Crankshaft Reborn v1.0.0")
                 color: Theme.textSecondary
                 font.pixelSize: 10
             }
@@ -592,7 +611,7 @@ ApplicationWindow {
             }
             
             Text {
-                text: "Extensions: " + ExtensionRegistry.componentCount
+                text: qsTr("Extensions: ") + ExtensionRegistry.componentCount
                 color: Theme.textSecondary
                 font.pixelSize: 10
             }

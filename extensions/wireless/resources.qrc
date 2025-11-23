@@ -1,0 +1,5 @@
+<RCC>
+  <qresource prefix="/wireless">
+    <file alias="qml/WirelessView.qml">assets/WirelessView.qml</file>
+  </qresource>
+</RCC>

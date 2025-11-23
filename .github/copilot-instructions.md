@@ -157,6 +157,8 @@ The project will have a additional extension to support AndroidAuto using AASDK,
 - Save fix summaries and other documentation files in markdown format and save in to the docs/fix_summaries folder.
 - use lowercase filenames with underscores for fix summary files, e.g., touch_fix_summary.md.
 - use lf for all files
+- make i18n ready using appropriate libraries and frameworks. use a standard approach for translations and localization. make it easy to add new languages in the future. Default to en-gb.
+- extensions should provide i18n for any user visible strings in ui, if localization framework is used in core then extensions should use same framework.
 
 ## File Headers
 

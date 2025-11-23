@@ -53,6 +53,8 @@ public:
     bool loadExtension(const QString& extension_path);
     bool registerBuiltInExtension(std::shared_ptr<Extension> extension, const QString& extension_path);
     bool unloadExtension(const QString& extension_id);
+    bool enableExtension(const QString& extension_id);
+    bool disableExtension(const QString& extension_id);
     void loadAll();
     void unloadAll();
     
