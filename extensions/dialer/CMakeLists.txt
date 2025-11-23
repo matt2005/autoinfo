@@ -48,10 +48,6 @@ install(FILES manifest.json
     DESTINATION share/${PROJECT_NAME}/extensions/dialer
 )
 
-install(DIRECTORY assets/
-    DESTINATION share/${PROJECT_NAME}/extensions/dialer/assets
-)
-
 install(DIRECTORY qml/
     DESTINATION share/${PROJECT_NAME}/extensions/dialer/qml
 )
