@@ -185,7 +185,7 @@ Rectangle {
                                 Rectangle {
                                     Layout.fillWidth: true
                                     height: 40
-                                    color: (currentExtension === modelData.extension && 
+                                    color: (modelData && modelData.extension && currentExtension === modelData.extension && 
                                            currentDomain === domain) ? 
                                            ThemeManager.accentColor : "transparent"
                                     radius: 3
@@ -194,7 +194,8 @@ Rectangle {
                                         anchors.fill: parent
                                         onClicked: {
                                             currentDomain = domain
-                                            currentExtension = modelData.extension
+                                            if (modelData && modelData.extension)
+                                                currentExtension = modelData.extension
                                         }
                                     }
                                     
@@ -202,9 +203,9 @@ Rectangle {
                                         anchors.left: parent.left
                                         anchors.leftMargin: 15
                                         anchors.verticalCenter: parent.verticalCenter
-                                        text: modelData.title
+                                        text: (modelData && modelData.title) ? modelData.title : ""
                                         font.pixelSize: 13
-                                        color: (currentExtension === modelData.extension && 
+                                        color: (modelData && modelData.extension && currentExtension === modelData.extension && 
                                                currentDomain === domain) ? 
                                                "white" : ThemeManager.textColor
                                     }
