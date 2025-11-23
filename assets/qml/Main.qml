@@ -30,6 +30,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import Crankshaft.ConfigManagerBridge 1.0
 import CrankshaftReborn.UI 1.0
 import CrankshaftReborn.Extensions 1.0
 
@@ -41,6 +42,43 @@ ApplicationWindow {
     title: "Crankshaft Reborn - Capability-Based Extensions"
     
     color: Theme.background
+        // Shortcut configuration (live-updated)
+        property string shortcutOpenSettings: (ConfigManagerBridge.getValue("system.ui.shortcuts.open_settings") || "S").toString()
+        property string shortcutToggleTheme: (ConfigManagerBridge.getValue("system.ui.shortcuts.toggle_theme") || "T").toString()
+        property string shortcutGoHome: (ConfigManagerBridge.getValue("system.ui.shortcuts.go_home") || "H").toString()
+
+        Connections {
+            target: ConfigManagerBridge
+            function onConfigValueChanged(domain, extension, section, key, value) {
+                if (domain === "system" && extension === "ui" && section === "shortcuts") {
+                    if (key === "open_settings") root.shortcutOpenSettings = (value || "S").toString();
+                    else if (key === "toggle_theme") root.shortcutToggleTheme = (value || "T").toString();
+                    else if (key === "go_home") root.shortcutGoHome = (value || "H").toString();
+                }
+            }
+        }
+
+        // Global key catcher overlay (focusable Item to receive key events)
+        Item {
+            id: keyCatcher
+            anchors.fill: parent
+            focus: true
+            Keys.onPressed: {
+                if (!event.text)
+                    return;
+                const k = event.text.toUpperCase();
+                if (k === root.shortcutOpenSettings.toUpperCase()) {
+                    tabBar.currentIndex = 1 + ExtensionRegistry.mainComponents.length;
+                    event.accepted = true;
+                } else if (k === root.shortcutToggleTheme.toUpperCase()) {
+                    Theme.toggleTheme();
+                    event.accepted = true;
+                } else if (k === root.shortcutGoHome.toUpperCase()) {
+                    tabBar.currentIndex = 0;
+                    event.accepted = true;
+                }
+            }
+        }
     
     Behavior on color {
         ColorAnimation { duration: 200 }
@@ -550,6 +588,7 @@ ApplicationWindow {
     }
     
     Component.onCompleted: {
+        keyCatcher.forceActiveFocus();
         console.log("Main UI loaded");
         console.log("Registered extensions:", ExtensionRegistry.componentCount);
     }

@@ -103,6 +103,53 @@ int main(int argc, char *argv[]) {
     opencardev::crankshaft::ui::ExtensionRegistry extensionRegistry(application.extensionManager());
     opencardev::crankshaft::ui::ExtensionRegistry::registerQmlType();
 
+    // Register core UI shortcuts configuration page so users can customise key mappings
+    {
+        using namespace opencardev::crankshaft::core::config;
+        ConfigPage page;
+        page.domain = "system";
+        page.extension = "ui";
+        page.title = "User Interface";
+        page.description = "Global UI preferences including keyboard shortcuts";
+        page.icon = "qrc:/icons/settings.svg";
+
+        ConfigSection shortcuts;
+        shortcuts.key = "shortcuts";
+        shortcuts.title = "Keyboard Shortcuts";
+        shortcuts.description = "Configure global shortcut keys";
+        shortcuts.complexity = ConfigComplexity::Basic;
+
+        ConfigItem openSettings;
+        openSettings.key = "open_settings";
+        openSettings.label = "Open settings";
+        openSettings.description = "Shortcut key to open the Settings page";
+        openSettings.type = ConfigItemType::String;
+        openSettings.defaultValue = QStringLiteral("S");
+        openSettings.complexity = ConfigComplexity::Basic;
+        shortcuts.items.append(openSettings);
+
+        ConfigItem toggleTheme;
+        toggleTheme.key = "toggle_theme";
+        toggleTheme.label = "Toggle theme";
+        toggleTheme.description = "Shortcut key to toggle light/dark theme";
+        toggleTheme.type = ConfigItemType::String;
+        toggleTheme.defaultValue = QStringLiteral("T");
+        toggleTheme.complexity = ConfigComplexity::Basic;
+        shortcuts.items.append(toggleTheme);
+
+        ConfigItem goHome;
+        goHome.key = "go_home";
+        goHome.label = "Go to Home";
+        goHome.description = "Shortcut key to switch to the Home tab";
+        goHome.type = ConfigItemType::String;
+        goHome.defaultValue = QStringLiteral("H");
+        goHome.complexity = ConfigComplexity::Basic;
+        shortcuts.items.append(goHome);
+
+        page.sections.append(shortcuts);
+        application.configManager()->registerConfigPage(page);
+    }
+
     // Inject UI registrar implementation into core (decouples core from UI)
     opencardev::crankshaft::ui::UIRegistrarImpl uiRegistrar;
     application.capabilityManager()->setUIRegistrar(&uiRegistrar);
