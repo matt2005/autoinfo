@@ -38,6 +38,10 @@ namespace core {
     }
 }
 
+namespace ui {
+    class ExtensionRegistry;
+}
+
 namespace extensions {
 
 class ExtensionManager : public QObject {
@@ -70,6 +74,7 @@ signals:
     void extensionLoaded(const QString& extension_id);
     void extensionUnloaded(const QString& extension_id);
     void extensionError(const QString& extension_id, const QString& error);
+    void requestUnregisterComponents(const QString& extension_id);
 
 private:
     struct ExtensionInfo {

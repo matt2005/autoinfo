@@ -52,6 +52,11 @@ if(BUILD_EXTENSIONS)
     add_subdirectory(extensions)
 endif()
 
+# Translation support
+if(BUILD_EXTENSIONS)
+    include(cmake/Translations.cmake)
+endif()
+
 # Main application
 set(MAIN_SOURCES
     src/main.cpp

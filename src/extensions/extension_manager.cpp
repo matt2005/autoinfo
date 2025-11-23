@@ -239,6 +239,8 @@ bool ExtensionManager::disableExtension(const QString& extension_id) {
     info.extension->stop();
     info.is_running = false;
     qInfo() << "Disabled extension:" << extension_id;
+    // Unregister UI components
+    emit requestUnregisterComponents(extension_id);
     emit extensionUnloaded(extension_id);
     return true;
 }

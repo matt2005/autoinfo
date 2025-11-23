@@ -123,6 +123,34 @@ void ExtensionRegistry::unregisterComponent(const QString& componentId) {
     }
 }
 
+void ExtensionRegistry::unregisterExtensionComponents(const QString& extensionId) {
+    bool hadMain = false;
+    bool hadWidget = false;
+    int removedCount = 0;
+    
+    for (int i = components_.size() - 1; i >= 0; --i) {
+        if (components_[i].extension_id == extensionId) {
+            QString slotType = components_[i].slot_type;
+            QString componentId = components_[i].component_id;
+            components_.removeAt(i);
+            removedCount++;
+            
+            if (slotType == "main") hadMain = true;
+            else if (slotType == "widget") hadWidget = true;
+            
+            emit componentUnregistered(componentId);
+        }
+    }
+    
+    if (removedCount > 0) {
+        qInfo() << "ExtensionRegistry: Unregistered" << removedCount 
+                << "component(s) for extension" << extensionId;
+        emit componentCountChanged();
+        if (hadMain) emit mainComponentsChanged();
+        if (hadWidget) emit widgetsChanged();
+    }
+}
+
 QVariantList ExtensionRegistry::mainComponents() const {
     QVariantList result;
     

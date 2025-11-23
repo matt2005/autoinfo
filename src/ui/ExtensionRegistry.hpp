@@ -101,6 +101,14 @@ public:
     Q_INVOKABLE void unregisterComponent(const QString& componentId);
     
     /**
+     * Unregister all UI components for an extension.
+     * Called when extension is disabled or unloaded.
+     * 
+     * @param extensionId Extension whose components should be removed
+     */
+    Q_INVOKABLE void unregisterExtensionComponents(const QString& extensionId);
+    
+    /**
      * Get all registered main view components.
      * 
      * @return List of component metadata maps

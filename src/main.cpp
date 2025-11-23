@@ -131,6 +131,11 @@ int main(int argc, char *argv[]) {
     // Create ExtensionRegistry BEFORE starting extensions so they can register views
     opencardev::crankshaft::ui::ExtensionRegistry extensionRegistry(application.extensionManager());
     opencardev::crankshaft::ui::ExtensionRegistry::registerQmlType();
+    // Wire signal/slot for UI component cleanup when extensions disabled
+    QObject::connect(application.extensionManager(), 
+                     &opencardev::crankshaft::extensions::ExtensionManager::requestUnregisterComponents,
+                     &extensionRegistry,
+                     &opencardev::crankshaft::ui::ExtensionRegistry::unregisterExtensionComponents);
 
     // Register core UI settings page
     {
