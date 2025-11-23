@@ -7,6 +7,7 @@ set(UI_SOURCES
     NavigationBridge.cpp
     ConfigManagerBridge.cpp
     UIRegistrarImpl.cpp
+    EventBridge.cpp
 )
 
 set(UI_HEADERS
@@ -16,6 +17,7 @@ set(UI_HEADERS
     NavigationBridge.hpp
     ConfigManagerBridge.hpp
     UIRegistrarImpl.hpp
+    EventBridge.hpp
 )
 
 add_library(CrankshaftUI STATIC

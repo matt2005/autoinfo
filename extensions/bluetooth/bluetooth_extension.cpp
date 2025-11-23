@@ -222,6 +222,9 @@ void BluetoothExtension::subscribeCommandEvents() {
     eventCap_->subscribe("bluetooth.rejectCall", [this](const QVariantMap& data){ handleRejectCallCommand(data); });
     eventCap_->subscribe("bluetooth.endCall", [this](const QVariantMap& data){ handleEndCallCommand(data); });
     eventCap_->subscribe("bluetooth.dial", [this](const QVariantMap& data){ handleDialCommand(data); });
+
+    // Public dial events from any extension (e.g., "dialer.phone.dial")
+    eventCap_->subscribe("*.phone.dial", [this](const QVariantMap& data){ handleDialCommand(data); });
 }
 
 void BluetoothExtension::handleScanCommand(const QVariantMap& data) {

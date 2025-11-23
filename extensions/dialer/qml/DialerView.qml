@@ -21,6 +21,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import CrankshaftReborn.UI 1.0
+import CrankshaftReborn.Events 1.0
 
 Item {
   id: root
@@ -99,7 +100,11 @@ Item {
       Button {
         text: "Call"
         Layout.fillWidth: true
-        onClicked: console.log("Dialler: Call requested", numberField.text)
+        onClicked: {
+          console.log("Dialler: Call requested", numberField.text)
+          // Emit a public dial event; Bluetooth listens on "*.phone.dial"
+          EventBridge.publish("dialer.phone.dial", { number: numberField.text })
+        }
       }
       Button {
         text: "Clear"

@@ -30,6 +30,7 @@
 #include "ui/ThemeManager.hpp"
 #include "ui/ExtensionRegistry.hpp"
 #include "ui/NavigationBridge.hpp"
+#include "ui/EventBridge.hpp"
 // Config UI bridge
 #include "ui/ConfigManagerBridge.hpp"
 // Registrar decoupling: inject UI registrar into core
@@ -92,6 +93,9 @@ int main(int argc, char *argv[]) {
     CrankshaftReborn::UI::ThemeManager::instance()->initialize();
     NavigationBridge::registerQmlType();
     NavigationBridge::initialise(application.capabilityManager());
+    // QML Event bridge for simple publish from UI
+    opencardev::crankshaft::ui::EventBridge::registerQmlType();
+    opencardev::crankshaft::ui::EventBridge::initialise(application.eventBus());
     // Config Manager bridge for QML Config UI
     opencardev::crankshaft::ui::ConfigManagerBridge::registerQmlType();
     opencardev::crankshaft::ui::ConfigManagerBridge::initialise(application.configManager());

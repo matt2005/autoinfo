@@ -157,22 +157,153 @@ The project will have a additional extension to support AndroidAuto using AASDK,
 - Save fix summaries and other documentation files in markdown format and save in to the docs/fix_summaries folder.
 - use lowercase filenames with underscores for fix summary files, e.g., touch_fix_summary.md.
 - use lf for all files
-- For new files do not use the existing header information, instead use the following template:
-[]: # ```plaintext
-[]: #  * Project: Crankshaft
-[]: #  * This file is part of Crankshaft project.
-[]: #  * Copyright (C) 2025 OpenCarDev Team
-[]: #  *
-[]: #  *  Crankshaft is free software: you can redistribute it and/or modify
-[]: #  *  it under the terms of the GNU General Public License as published by
-[]: #  *  the Free Software Foundation; either version 3 of the License, or
-[]: #  *  (at your option) any later version.
-[]: #  *
-[]: #  *  Crankshaft is distributed in the hope that it will be useful,
-[]: #  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
-[]: #  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-[]: #  *  GNU General Public License for more details.
-[]: #  *
-[]: #  *  You should have received a copy of the GNU General Public License
-[]: #  *  along with Crankshaft. If not, see <http://www.gnu.org/licenses/>.
-[]: # ```
+
+## File Headers
+
+For new files, always include the appropriate header comment block based on file type:
+
+### C++ Files (.cpp, .hpp, .h, .cc)
+```cpp
+/*
+ * Project: Crankshaft
+ * This file is part of Crankshaft project.
+ * Copyright (C) 2025 OpenCarDev Team
+ *
+ *  Crankshaft is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  Crankshaft is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with Crankshaft. If not, see <http://www.gnu.org/licenses/>.
+ */
+```
+
+### QML Files (.qml)
+```qml
+/*
+ * Project: Crankshaft
+ * This file is part of Crankshaft project.
+ * Copyright (C) 2025 OpenCarDev Team
+ *
+ *  Crankshaft is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  Crankshaft is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with Crankshaft. If not, see <http://www.gnu.org/licenses/>.
+ */
+```
+
+### Python Files (.py)
+```python
+# Project: Crankshaft
+# This file is part of Crankshaft project.
+# Copyright (C) 2025 OpenCarDev Team
+#
+#  Crankshaft is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation; either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  Crankshaft is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with Crankshaft. If not, see <http://www.gnu.org/licenses/>.
+```
+
+### Shell Scripts (.sh, .bash)
+```bash
+# Project: Crankshaft
+# This file is part of Crankshaft project.
+# Copyright (C) 2025 OpenCarDev Team
+#
+#  Crankshaft is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation; either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  Crankshaft is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with Crankshaft. If not, see <http://www.gnu.org/licenses/>.
+```
+
+### PowerShell Scripts (.ps1)
+```powershell
+# Project: Crankshaft
+# This file is part of Crankshaft project.
+# Copyright (C) 2025 OpenCarDev Team
+#
+#  Crankshaft is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation; either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  Crankshaft is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with Crankshaft. If not, see <http://www.gnu.org/licenses/>.
+```
+
+### CMake Files (CMakeLists.txt, .cmake)
+```cmake
+# Project: Crankshaft
+# This file is part of Crankshaft project.
+# Copyright (C) 2025 OpenCarDev Team
+#
+#  Crankshaft is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation; either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  Crankshaft is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with Crankshaft. If not, see <http://www.gnu.org/licenses/>.
+```
+
+### JavaScript/TypeScript Files (.js, .ts, .jsx, .tsx)
+```javascript
+/*
+ * Project: Crankshaft
+ * This file is part of Crankshaft project.
+ * Copyright (C) 2025 OpenCarDev Team
+ *
+ *  Crankshaft is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  Crankshaft is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with Crankshaft. If not, see <http://www.gnu.org/licenses/>.
+ */
+```
