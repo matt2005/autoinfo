@@ -46,6 +46,11 @@ void ExtensionManager::initialize(core::CapabilityManager* capability_manager, c
     capability_manager_ = capability_manager;
     config_manager_ = config_manager;
     qInfo() << "Extension manager initialized with capability-based security";
+    // Prefer extensions located next to the executable by default
+    const QString defaultExtDir = QCoreApplication::applicationDirPath() + "/extensions";
+    if (QDir(defaultExtDir).exists()) {
+        extensions_dir_ = defaultExtDir;
+    }
 }
 
 bool ExtensionManager::loadExtension(const QString& extension_path) {
@@ -188,18 +193,20 @@ bool ExtensionManager::unloadExtension(const QString& extension_id) {
 }
 
 void ExtensionManager::loadAll() {
-    // 1. Aggregate candidate directories
+    // 1. Aggregate candidate directories (prefer runtime/app dirs over source)
     QStringList searchPaths;
-    if (!extensions_dir_.isEmpty()) {
-        searchPaths << extensions_dir_;
-    }
+    const QString envExt = qEnvironmentVariable("CRANKSHAFT_EXTENSIONS_PATH");
+    if (!envExt.isEmpty()) searchPaths << envExt;
+    if (!extensions_dir_.isEmpty()) searchPaths << extensions_dir_;
+    // Application dir (e.g., installed bundle or build/bin layout)
     searchPaths << (QCoreApplication::applicationDirPath() + "/extensions");
-    searchPaths << (QDir::currentPath() + "/extensions");
+    // System install paths
     searchPaths << QString::fromUtf8("/usr/share/CrankshaftReborn/extensions");
     searchPaths << QString::fromUtf8("/usr/share/crankshaft_reborn/extensions");
-    const QString envExt = qEnvironmentVariable("CRANKSHAFT_EXTENSIONS_PATH");
-    if (!envExt.isEmpty()) {
-        searchPaths.prepend(envExt);
+    // Optionally include source-tree extensions for developer runs
+    const bool scanSource = qEnvironmentVariableIntValue("CRANKSHAFT_SCAN_SOURCE_EXTENSIONS") != 0;
+    if (scanSource) {
+        searchPaths << (QDir::currentPath() + "/extensions");
     }
 
     // 2. Discover paths (unique)
@@ -323,7 +330,7 @@ QStringList ExtensionManager::discoverExtensions(const QString& search_path) {
         }
     }
     
-    qInfo() << "Discovered" << extension_paths.size() << "extensions";
+    qDebug() << "Discovered" << extension_paths.size() << "extensions";
     return extension_paths;
 }
 

@@ -72,6 +72,8 @@ target_link_libraries(${PROJECT_NAME}
         CrankshaftUI
         CrankshaftExtensions
         NavigationExtension
+        BluetoothExtension
+        MediaPlayerExtension
 )
 
 # Copy assets to build directory for development

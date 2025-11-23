@@ -38,6 +38,8 @@
 // Temporarily disabled due to GCC 14/Qt6 ABI incompatibility
 // #include "ui/BluetoothBridge.hpp"
 #include "../extensions/navigation/navigation_extension.hpp"
+#include "../extensions/bluetooth/bluetooth_extension.hpp"
+#include "../extensions/media_player/media_player_extension.hpp"
 
 int main(int argc, char *argv[]) {
     QApplication app(argc, argv);
@@ -49,6 +51,7 @@ int main(int argc, char *argv[]) {
     opencardev::crankshaft::core::Application application;
     
     // Register built-in extensions BEFORE initialize()
+    // Navigation extension
     auto navigationExtension = std::make_shared<opencardev::crankshaft::extensions::navigation::NavigationExtension>();
     QString navExtensionPath = QDir(QCoreApplication::applicationDirPath()).filePath("extensions/navigation");
     if (!QFile::exists(navExtensionPath + "/manifest.json")) {
@@ -57,6 +60,26 @@ int main(int argc, char *argv[]) {
         if (!QFile::exists(navExtensionPath + "/manifest.json")) {
             // Try relative to executable
             navExtensionPath = "../extensions/navigation";
+        }
+    }
+    
+    // Bluetooth extension
+    auto bluetoothExtension = std::make_shared<opencardev::crankshaft::extensions::bluetooth::BluetoothExtension>();
+    QString btExtensionPath = QDir(QCoreApplication::applicationDirPath()).filePath("extensions/bluetooth");
+    if (!QFile::exists(btExtensionPath + "/manifest.json")) {
+        btExtensionPath = QDir::currentPath() + "/build/extensions/bluetooth";
+        if (!QFile::exists(btExtensionPath + "/manifest.json")) {
+            btExtensionPath = "../extensions/bluetooth";
+        }
+    }
+    
+    // Media Player extension
+    auto mediaPlayerExtension = std::make_shared<opencardev::crankshaft::extensions::media::MediaPlayerExtension>();
+    QString mpExtensionPath = QDir(QCoreApplication::applicationDirPath()).filePath("extensions/media_player");
+    if (!QFile::exists(mpExtensionPath + "/manifest.json")) {
+        mpExtensionPath = QDir::currentPath() + "/build/extensions/media_player";
+        if (!QFile::exists(mpExtensionPath + "/manifest.json")) {
+            mpExtensionPath = "../extensions/media_player";
         }
     }
     
@@ -86,6 +109,8 @@ int main(int argc, char *argv[]) {
     
     // Now register the built-in extension (after ExtensionRegistry is created)
     application.extensionManager()->registerBuiltInExtension(navigationExtension, navExtensionPath);
+    application.extensionManager()->registerBuiltInExtension(bluetoothExtension, btExtensionPath);
+    application.extensionManager()->registerBuiltInExtension(mediaPlayerExtension, mpExtensionPath);
 
     // Set up QML engine and import paths
     QQmlApplicationEngine engine;

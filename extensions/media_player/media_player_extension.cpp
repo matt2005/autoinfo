@@ -18,7 +18,6 @@
  */
 
 #include "media_player_extension.hpp"
-#include "../../src/core/event_bus.hpp"
 #include "../../src/core/config/ConfigManager.hpp"
 #include "../../src/core/config/ConfigTypes.hpp"
 #include <QDebug>
@@ -29,6 +28,13 @@ namespace media {
 
 bool MediaPlayerExtension::initialize() {
     qInfo() << "Initializing Media Player extension...";
+    
+    eventCap_ = getCapability<core::capabilities::EventCapability>();
+    if (!eventCap_) {
+        qWarning() << "Event capability not granted; extension will be disabled.";
+        return false;
+    }
+    
     setupEventHandlers();
     return true;
 }
@@ -43,6 +49,7 @@ void MediaPlayerExtension::stop() {
 
 void MediaPlayerExtension::cleanup() {
     qInfo() << "Cleaning up Media Player extension...";
+    eventCap_.reset();
 }
 
 void MediaPlayerExtension::registerConfigItems(core::config::ConfigManager* manager) {
@@ -193,28 +200,52 @@ void MediaPlayerExtension::registerConfigItems(core::config::ConfigManager* mana
 }
 
 void MediaPlayerExtension::setupEventHandlers() {
-    if (!event_bus_) {
-        qWarning() << "Event bus not available";
+    if (!eventCap_) {
+        qWarning() << "Event capability not available";
         return;
     }
 
-    event_bus_->subscribe("media.play", [this](const QVariantMap& data) {
+    // Private namespace (extension's own)
+    eventCap_->subscribe("media_player.play", [this](const QVariantMap& data) {
         handlePlayCommand(data);
     });
 
-    event_bus_->subscribe("media.pause", [this](const QVariantMap& data) {
+    eventCap_->subscribe("media_player.pause", [this](const QVariantMap& data) {
         handlePauseCommand(data);
     });
 
-    event_bus_->subscribe("media.stop", [this](const QVariantMap& data) {
+    eventCap_->subscribe("media_player.stop", [this](const QVariantMap& data) {
         handleStopCommand(data);
     });
 
-    event_bus_->subscribe("media.next", [this](const QVariantMap& data) {
+    eventCap_->subscribe("media_player.next", [this](const QVariantMap& data) {
         handleNextCommand(data);
     });
 
-    event_bus_->subscribe("media.previous", [this](const QVariantMap& data) {
+    eventCap_->subscribe("media_player.previous", [this](const QVariantMap& data) {
+        handlePreviousCommand(data);
+    });
+
+    // Public control namespace: allow any extension to control playback by
+    // emitting "<their_extension_id>.media.*" events. Wildcard subscription is
+    // permitted by EventCapability.
+    eventCap_->subscribe("*.media.play", [this](const QVariantMap& data) {
+        handlePlayCommand(data);
+    });
+
+    eventCap_->subscribe("*.media.pause", [this](const QVariantMap& data) {
+        handlePauseCommand(data);
+    });
+
+    eventCap_->subscribe("*.media.stop", [this](const QVariantMap& data) {
+        handleStopCommand(data);
+    });
+
+    eventCap_->subscribe("*.media.next", [this](const QVariantMap& data) {
+        handleNextCommand(data);
+    });
+
+    eventCap_->subscribe("*.media.previous", [this](const QVariantMap& data) {
         handlePreviousCommand(data);
     });
 }

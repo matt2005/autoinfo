@@ -209,11 +209,59 @@ The manifest `dependencies` field declares other extensions that must be loaded 
 3. Implement your extension
 4. Build and install
 
+## Extensions Discovery (Development vs Install)
+
+Extensions are discovered from a set of directories. To minimise duplicate manifest noise during development, the runtime prefers the build/runtime locations.
+
+Search order:
+
+1. `CRANKSHAFT_EXTENSIONS_PATH` (if set)
+2. `<appDir>/extensions` (e.g. `build/extensions` during development)
+3. `/usr/share/CrankshaftReborn/extensions`
+4. `/usr/share/crankshaft_reborn/extensions`
+5. `<cwd>/extensions` only if explicitly enabled
+
+Enable scanning of the source-tree `extensions/` directory with an environment variable:
+
+```bash
+# Enable scanning repository source extensions (off by default)
+export CRANKSHAFT_SCAN_SOURCE_EXTENSIONS=1
+```
+
+When packaging/installed, manifests and entry points are expected under `/usr/share/...` and `<appDir>/extensions`.
+
+## Public Media Control Events
+
+Extensions may control the media player via a public control namespace without tight coupling. The media player subscribes to wildcard patterns and reacts to the following control events:
+
+- `<your_extension_id>.media.play`
+- `<your_extension_id>.media.pause`
+- `<your_extension_id>.media.stop`
+- `<your_extension_id>.media.next`
+- `<your_extension_id>.media.previous`
+
+Guidelines:
+
+- Emit from your own namespace; the runtime prefixes events you emit with your extension id.
+- The media player listens to `*.media.*` as well as its private `media_player.*` channel.
+
+
+Example (C++ with `EventCapability`):
+
+```cpp
+auto ev = getCapability<core::capabilities::EventCapability>();
+if (ev) {
+    // Emits "<your_extension_id>.media.play"
+    ev->emitEvent("media.play", { {"source", "my_feature"} });
+}
+```
+
 ## Base Extensions
 
 ### Media Player
 
 Full-featured audio and video player with support for:
+
 - Multiple audio formats (MP3, FLAC, WAV, OGG, AAC)
 - Video playback (MP4, MKV, AVI)
 - Playlist management
@@ -224,6 +272,7 @@ Full-featured audio and video player with support for:
 ### Navigation
 
 GPS navigation system featuring:
+
 - Turn-by-turn navigation
 - Real-time traffic updates
 - Points of interest
@@ -246,12 +295,14 @@ Bluetooth connectivity for:
 
 Enable on Raspberry Pi OS:
 
+
 ```bash
 sudo apt-get install -y bluez bluez-tools libbluetooth-dev qt6-connectivity-dev
 sudo systemctl enable bluetooth.service
 sudo systemctl start bluetooth.service
 ```
 Verify:
+
 
 ```bash
 systemctl status bluetooth.service | grep Active

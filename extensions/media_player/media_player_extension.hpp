@@ -20,6 +20,8 @@
 #pragma once
 
 #include "../../src/extensions/extension.hpp"
+#include "../../src/core/capabilities/EventCapability.hpp"
+#include <memory>
 
 namespace opencardev::crankshaft {
 namespace extensions {
@@ -52,6 +54,8 @@ private:
     void handleStopCommand(const QVariantMap& data);
     void handleNextCommand(const QVariantMap& data);
     void handlePreviousCommand(const QVariantMap& data);
+    
+    std::shared_ptr<core::capabilities::EventCapability> eventCap_;
 };
 
 }  // namespace media

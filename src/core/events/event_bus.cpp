@@ -19,6 +19,7 @@
 
 #include "event_bus.hpp"
 #include <QDebug>
+#include <QRegularExpression>
 
 namespace opencardev::crankshaft {
 namespace core {
@@ -68,9 +69,33 @@ void EventBus::publish(const QString& event_name, const QVariantMap& data) {
     
     emit eventPublished(event_name, data);
     
+    // First deliver exact-match subscriptions
     auto it = subscriptions_.find(event_name);
     if (it != subscriptions_.end()) {
         const auto &subs = it.value();
+        for (const auto &subscription : subs) {
+            subscription->callback(data);
+        }
+    }
+
+    // Then deliver wildcard pattern subscriptions (e.g., "*.media.play", "navigation.*")
+    auto matchesPattern = [](const QString& pattern, const QString& text) -> bool {
+        // Fast path: no wildcard in pattern => no match handling here
+        if (!pattern.contains('*') && !pattern.contains('?')) return false;
+        // Escape regex special chars, then replace glob wildcards
+        QString rx = QRegularExpression::escape(pattern);
+        rx.replace("\\*", ".*");
+        rx.replace("\\?", ".");
+        QRegularExpression re("^" + rx + "$", QRegularExpression::UseUnicodePropertiesOption);
+        return re.match(text).hasMatch();
+    };
+
+    for (auto it2 = subscriptions_.cbegin(); it2 != subscriptions_.cend(); ++it2) {
+        const QString& pattern = it2.key();
+        // Skip exact key already delivered
+        if (pattern == event_name) continue;
+        if (!matchesPattern(pattern, event_name)) continue;
+        const auto &subs = it2.value();
         for (const auto &subscription : subs) {
             subscription->callback(data);
         }

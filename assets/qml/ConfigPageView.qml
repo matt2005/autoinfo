@@ -96,7 +96,7 @@ Item {
             Text {
                 id: pageDescription
                 font.pixelSize: 13
-                color: ThemeManager.secondaryTextColor
+                color: ThemeManager.textSecondaryColor
                 wrapMode: Text.WordWrap
                 Layout.fillWidth: true
             }
@@ -182,7 +182,7 @@ Item {
                         Text {
                             text: section ? section.description : ""
                             font.pixelSize: 12
-                            color: ThemeManager.secondaryTextColor
+                            color: ThemeManager.textSecondaryColor
                             wrapMode: Text.WordWrap
                             Layout.fillWidth: true
                             visible: section && section.description !== ""
@@ -223,7 +223,7 @@ Item {
                           "No configuration options available at this complexity level." :
                           "Select an extension to view its configuration."
                     font.pixelSize: 14
-                    color: ThemeManager.secondaryTextColor
+                    color: ThemeManager.textSecondaryColor
                     horizontalAlignment: Text.AlignHCenter
                     Layout.fillWidth: true
                     Layout.topMargin: 50

@@ -33,3 +33,14 @@ target_link_libraries(test_config_manager
     CrankshaftExtensions
 )
 add_test(NAME test_config_manager COMMAND test_config_manager)
+
+# Test: Media public control events
+add_executable(test_media_public_controls integration/test_media_public_controls.cpp)
+target_link_libraries(test_media_public_controls
+    Qt6::Core
+    Qt6::Test
+    CrankshaftCore
+    CrankshaftExtensions
+    MediaPlayerExtension
+)
+add_test(NAME test_media_public_controls COMMAND test_media_public_controls)
