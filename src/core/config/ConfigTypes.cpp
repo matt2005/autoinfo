@@ -153,6 +153,7 @@ QVariantMap ConfigPage::toMap() const {
     map["title"] = title;
     map["description"] = description;
     map["icon"] = icon;
+    map["complexity"] = configComplexityToString(complexity);
     
     QVariantList sectionsList;
     for (const ConfigSection& section : sections) {
@@ -170,6 +171,7 @@ ConfigPage ConfigPage::fromMap(const QVariantMap& map) {
     page.title = map.value("title").toString();
     page.description = map.value("description").toString();
     page.icon = map.value("icon").toString();
+    page.complexity = stringToConfigComplexity(map.value("complexity").toString());
     
     QVariantList sectionsList = map.value("sections").toList();
     for (const QVariant& sectionVar : sectionsList) {

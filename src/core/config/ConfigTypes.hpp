@@ -101,7 +101,11 @@ struct ConfigPage {
     QString title;                  // Page title
     QString description;            // Page description
     QString icon;                   // Page icon
+    ConfigComplexity complexity;    // Minimum complexity level to show page
     QList<ConfigSection> sections;  // Configuration sections
+    
+    ConfigPage()
+        : complexity(ConfigComplexity::Basic) {}
     
     // Helper to get full key: domain.extension
     QString getFullKey() const {

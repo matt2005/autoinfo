@@ -149,6 +149,7 @@ void WirelessExtension::registerConfigItems(core::config::ConfigManager* manager
     page.title = "WiFi Settings";
     page.description = "Configure wireless network connections and access point mode";
     page.icon = "qrc:/icons/wifi.svg";
+    page.complexity = ConfigComplexity::Basic;
     
     // Network Settings Section
     ConfigSection networkSection;

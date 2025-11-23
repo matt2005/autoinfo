@@ -44,13 +44,25 @@ Rectangle {
     // Domain/page data for sidebar; array of { domain, pages: [{extension,title}] }
     property var domainsData: []
 
+    function complexityToIndex(c) {
+        var v = (c || "basic").toString().toLowerCase()
+        if (v === "advanced") return 1
+        if (v === "expert") return 2
+        if (v === "developer" || v === "dev") return 3
+        return 0
+    }
+
     function loadConfigPages() {
         var pages = ConfigManagerBridge.getAllConfigPages()
         var grouped = {}
 
-        // Group pages by domain (as plain JS arrays to avoid ListModel nesting limits)
+        // Group pages by domain, filtering by complexity level
         for (var i = 0; i < pages.length; i++) {
             var page = pages[i]
+            // Filter pages by complexity level
+            if (complexityToIndex(page.complexity) > currentComplexity) {
+                continue
+            }
             if (!grouped[page.domain]) {
                 grouped[page.domain] = []
             }
@@ -116,6 +128,8 @@ Rectangle {
                     onCurrentIndexChanged: {
                         currentComplexity = currentIndex
                         ConfigManagerBridge.setComplexityLevel(model[currentIndex])
+                        // Reload pages when complexity changes
+                        loadConfigPages()
                     }
                 }
             }

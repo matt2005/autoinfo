@@ -554,6 +554,7 @@ ApplicationWindow {
 
             // Full configuration screen
             ConfigScreen {
+                id: configScreen
                 anchors.fill: parent
                 onClosed: {
                     // When closed from within, return to Home tab
@@ -610,6 +611,19 @@ ApplicationWindow {
         shortcuts.forceActiveFocus();
         console.log("Main UI loaded");
         console.log("Registered extensions:", ExtensionRegistry.componentCount);
+        
+        // Connect navigation settings request
+        if (NavigationBridge) {
+            NavigationBridge.openNavigationSettings.connect(function() {
+                // Navigate to Settings tab
+                tabBar.currentIndex = 1 + ExtensionRegistry.mainComponents.length
+                // Set the config page to navigation
+                configScreen.initialDomain = "core"
+                configScreen.initialExtension = "navigation"
+                configScreen.currentDomain = "core"
+                configScreen.currentExtension = "navigation"
+            })
+        }
     }
 
     // Helper to cycle tabs left/right including Home and Settings

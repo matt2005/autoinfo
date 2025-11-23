@@ -138,6 +138,7 @@ int main(int argc, char *argv[]) {
         page.title = "User Interface";
         page.description = "Global UI preferences including keyboard shortcuts";
         page.icon = "qrc:/icons/settings.svg";
+        page.complexity = ConfigComplexity::Basic;
 
         ConfigSection shortcuts;
         shortcuts.key = "shortcuts";

@@ -74,6 +74,9 @@ public slots:
     // Favourites management
     QVariantList loadFavourites();
     void saveFavourites(const QVariantList& favourites);
+    
+    // Settings UI
+    void requestOpenSettings() { emit openNavigationSettings(); }
 
 signals:
     void gpsDeviceChanged();
@@ -83,6 +86,7 @@ signals:
     void searchError(const QString& error);
     void routeCalculated(const QVariantMap& routeData);
     void routeError(const QString& error);
+    void openNavigationSettings();
 
 private:
     explicit NavigationBridge(QObject* parent = nullptr);
