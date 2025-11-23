@@ -31,51 +31,55 @@ Rectangle {
     property string currentExtension: ""
     property int currentComplexity: 0  // 0=Basic, 1=Advanced, 2=Expert, 3=Developer
     
+    // Allow setting initial page from outside
+    property string initialDomain: ""
+    property string initialExtension: ""
+    
     signal closed()
     
     Component.onCompleted: {
         loadConfigPages()
     }
     
+    // Domain/page data for sidebar; array of { domain, pages: [{extension,title}] }
+    property var domainsData: []
+
     function loadConfigPages() {
         var pages = ConfigManagerBridge.getAllConfigPages()
-        domainModel.clear()
-        
-        // Group pages by domain
-        var domains = {}
+        var grouped = {}
+
+        // Group pages by domain (as plain JS arrays to avoid ListModel nesting limits)
         for (var i = 0; i < pages.length; i++) {
             var page = pages[i]
-            if (!domains[page.domain]) {
-                domains[page.domain] = []
+            if (!grouped[page.domain]) {
+                grouped[page.domain] = []
             }
-            // Store only lightweight fields needed in the sidebar to avoid
-            // role-type conflicts from nested objects
-            domains[page.domain].push({
-                extension: page.extension,
-                title: page.title
-            })
+            grouped[page.domain].push({ extension: page.extension, title: page.title })
         }
-        
-        // Add domains to model
-        for (var domain in domains) {
-            domainModel.append({
-                "domain": domain,
-                "pages": domains[domain]
-            })
+
+        // Convert to ordered array for UI
+        var result = []
+        for (var d in grouped) {
+            result.push({ domain: d, pages: grouped[d] })
         }
-        
-        // Select first domain and extension
-        if (domainModel.count > 0) {
-            currentDomain = domainModel.get(0).domain
-            var firstPages = domainModel.get(0).pages
+        domainsData = result
+
+        // Select initial or first domain and extension
+        if (initialDomain !== "" && initialExtension !== "") {
+            currentDomain = initialDomain
+            currentExtension = initialExtension
+        } else if (domainsData.length > 0) {
+            currentDomain = domainsData[0].domain
+            var firstPages = domainsData[0].pages || []
             if (firstPages.length > 0) {
                 currentExtension = firstPages[0].extension
+            } else {
+                currentExtension = ""
             }
+        } else {
+            currentDomain = ""
+            currentExtension = ""
         }
-    }
-    
-    ListModel {
-        id: domainModel
     }
     
     ColumnLayout {
@@ -137,77 +141,76 @@ Rectangle {
                 border.color: ThemeManager.borderColor
                 border.width: 1
                 radius: 5
-                
+
                 ColumnLayout {
                     anchors.fill: parent
                     anchors.margins: 10
                     spacing: 5
-                    
+
                     Text {
                         text: "Categories"
                         font.pixelSize: 16
                         font.bold: true
                         color: ThemeManager.textColor
                     }
-                    
+
+                    // Use JS-array-backed model to support nested pages without ListModel role limits
                     ListView {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                         clip: true
-                        
-                        model: domainModel
-                        
+                        model: domainsData
+
                         delegate: ColumnLayout {
                             width: parent ? parent.width : 0
                             spacing: 2
-                            
+                            property string domainName: (modelData && modelData.domain) ? modelData.domain : ""
+
                             // Domain header
                             Rectangle {
                                 Layout.fillWidth: true
                                 height: 35
                                 color: "transparent"
-                                
+
                                 Text {
                                     anchors.left: parent.left
                                     anchors.leftMargin: 5
                                     anchors.verticalCenter: parent.verticalCenter
-                                    text: model.domain.toUpperCase()
+                                    text: (domainName || "").toUpperCase()
                                     font.pixelSize: 14
                                     font.bold: true
                                     color: ThemeManager.accentColor
                                 }
                             }
-                            
+
                             // Extension list for this domain
                             Repeater {
-                                model: pages
-                                
+                                model: (modelData && modelData.pages) ? modelData.pages : []
+
                                 Rectangle {
                                     Layout.fillWidth: true
                                     height: 40
-                                    color: (modelData && modelData.extension && currentExtension === modelData.extension && 
-                                           currentDomain === domain) ? 
-                                           ThemeManager.accentColor : "transparent"
+                                    color: (modelData && modelData.extension && currentExtension === modelData.extension &&
+                                           currentDomain === domainName) ? ThemeManager.accentColor : "transparent"
                                     radius: 3
-                                    
+
                                     MouseArea {
                                         anchors.fill: parent
                                         onClicked: {
-                                            currentDomain = domain
+                                            currentDomain = domainName
                                             if (modelData && modelData.extension)
                                                 currentExtension = modelData.extension
                                         }
                                     }
-                                    
+
                                     Text {
                                         anchors.left: parent.left
                                         anchors.leftMargin: 15
                                         anchors.verticalCenter: parent.verticalCenter
                                         text: (modelData && modelData.title) ? modelData.title : ""
                                         font.pixelSize: 13
-                                        color: (modelData && modelData.extension && currentExtension === modelData.extension && 
-                                               currentDomain === domain) ? 
-                                               "white" : ThemeManager.textColor
+                                        color: (modelData && modelData.extension && currentExtension === modelData.extension &&
+                                               currentDomain === domainName) ? "white" : ThemeManager.textColor
                                     }
                                 }
                             }
