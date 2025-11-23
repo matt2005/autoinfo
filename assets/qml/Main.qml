@@ -169,7 +169,7 @@ ApplicationWindow {
                 
                 // Home tab (always present)
                 TabButton {
-                    text: "🏠 " + qsTr("Home")
+                    text: qsTr("Home")
                     font.pixelSize: 14
                     
                     background: Rectangle {
@@ -253,7 +253,7 @@ ApplicationWindow {
                 // Settings tab (appears after dynamic extensions)
                 TabButton {
                     readonly property int tabIndex: 1 + ExtensionRegistry.mainComponents.length
-                    text: "⚙ " + qsTr("Settings")
+                    text: qsTr("Settings")
                     font.pixelSize: 14
 
                     background: Rectangle {

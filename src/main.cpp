@@ -32,6 +32,7 @@
 #include "ui/I18nManager.hpp"
 #include "ui/NavigationBridge.hpp"
 #include "ui/EventBridge.hpp"
+#include "ui/IconRegistry.hpp"
 // Config UI bridge
 #include "ui/ConfigManagerBridge.hpp"
 // Registrar decoupling: inject UI registrar into core
@@ -116,6 +117,8 @@ int main(int argc, char *argv[]) {
     CrankshaftReborn::UI::ThemeManager::instance()->initialize();
     // I18n manager for translations
     opencardev::crankshaft::ui::I18nManager::registerQmlType();
+    // Icon registry singleton
+    opencardev::crankshaft::ui::IconRegistry::registerQmlType();
     NavigationBridge::registerQmlType();
     NavigationBridge::initialise(application.capabilityManager());
     // QML Event bridge for simple publish from UI

@@ -9,6 +9,8 @@ set(UI_SOURCES
     UIRegistrarImpl.cpp
     EventBridge.cpp
     I18nManager.cpp
+    IconRegistry.cpp
+    ${CMAKE_SOURCE_DIR}/assets/icons/icons.qrc
 )
 
 set(UI_HEADERS
@@ -20,6 +22,7 @@ set(UI_HEADERS
     UIRegistrarImpl.hpp
     EventBridge.hpp
     I18nManager.hpp
+    IconRegistry.hpp
 )
 
 add_library(CrankshaftUI STATIC

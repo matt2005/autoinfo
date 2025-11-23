@@ -1,0 +1,14 @@
+<RCC>
+  <qresource prefix="/icons/mdi">
+    <file>mdi/home.svg</file>
+    <file>mdi/cog.svg</file>
+    <file>mdi/map.svg</file>
+    <file>mdi/music.svg</file>
+    <file>mdi/bluetooth.svg</file>
+    <file>mdi/play.svg</file>
+    <file>mdi/pause.svg</file>
+    <file>mdi/stop.svg</file>
+    <file>mdi/skip_next.svg</file>
+    <file>mdi/skip_previous.svg</file>
+  </qresource>
+</RCC>
