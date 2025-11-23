@@ -21,6 +21,9 @@
 #include "../../src/core/config/ConfigManager.hpp"
 #include "../../src/core/config/ConfigTypes.hpp"
 #include <QDebug>
+#include <QDir>
+#include <QFile>
+#include <QCoreApplication>
 
 namespace opencardev::crankshaft {
 namespace extensions {
@@ -48,7 +51,15 @@ void DialerExtension::start() {
         meta["title"] = "Dialler";
         meta["icon"] = "📞"; // simple emoji icon placeholder
         meta["description"] = "Make and manage calls";
-        uiCap->registerMainView("qrc:/dialer/qml/DialerView.qml", meta);
+        
+        // Use file path - extension QML files are copied to build/extensions/{ext}/qml
+        QString qmlPath = QDir(QCoreApplication::applicationDirPath()).filePath("extensions/dialer/qml/DialerView.qml");
+        if (!QFile::exists(qmlPath)) {
+            // Try current working directory
+            qmlPath = "extensions/dialer/qml/DialerView.qml";
+        }
+        qInfo() << "Dialler: Registering view at" << qmlPath;
+        uiCap->registerMainView(qmlPath, meta);
     } else {
         qWarning() << "Dialler: UI capability not granted; cannot register view";
     }

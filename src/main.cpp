@@ -41,6 +41,7 @@
 #include "../extensions/navigation/navigation_extension.hpp"
 #include "../extensions/bluetooth/bluetooth_extension.hpp"
 #include "../extensions/media_player/media_player_extension.hpp"
+#include "../extensions/dialer/dialer_extension.hpp"
 
 int main(int argc, char *argv[]) {
     QApplication app(argc, argv);
@@ -81,6 +82,16 @@ int main(int argc, char *argv[]) {
         mpExtensionPath = QDir::currentPath() + "/build/extensions/media_player";
         if (!QFile::exists(mpExtensionPath + "/manifest.json")) {
             mpExtensionPath = "../extensions/media_player";
+        }
+    }
+    
+    // Dialer extension
+    auto dialerExtension = std::make_shared<opencardev::crankshaft::extensions::dialer::DialerExtension>();
+    QString dialerExtensionPath = QDir(QCoreApplication::applicationDirPath()).filePath("extensions/dialer");
+    if (!QFile::exists(dialerExtensionPath + "/manifest.json")) {
+        dialerExtensionPath = QDir::currentPath() + "/build/extensions/dialer";
+        if (!QFile::exists(dialerExtensionPath + "/manifest.json")) {
+            dialerExtensionPath = "../extensions/dialer";
         }
     }
     
@@ -189,6 +200,7 @@ int main(int argc, char *argv[]) {
     application.extensionManager()->registerBuiltInExtension(navigationExtension, navExtensionPath);
     application.extensionManager()->registerBuiltInExtension(bluetoothExtension, btExtensionPath);
     application.extensionManager()->registerBuiltInExtension(mediaPlayerExtension, mpExtensionPath);
+    application.extensionManager()->registerBuiltInExtension(dialerExtension, dialerExtensionPath);
 
     // Set up QML engine and import paths
     QQmlApplicationEngine engine;

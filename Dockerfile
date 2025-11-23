@@ -84,10 +84,10 @@ COPY . .
 RUN mkdir -p /output
 
 # Make build script executable
-RUN chmod +x build.sh
+RUN chmod +x ./scripts/build.sh
 
 # Build the project
-RUN ./build.sh ${BUILD_TYPE} OFF build ON && \
+RUN ./scripts/build.sh ${BUILD_TYPE} OFF build ON && \
     # Copy binaries to output
     (cp -r build/CrankshaftReborn /output/ || true) && \
     (cp -r build/*.a /output/ || true) && \

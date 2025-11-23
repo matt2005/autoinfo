@@ -20,7 +20,6 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-import CrankshaftReborn.UI 1.0
 import CrankshaftReborn.Events 1.0
 
 Item {
@@ -29,19 +28,19 @@ Item {
 
   Rectangle {
     anchors.fill: parent
-    color: Theme.background
+    color: ThemeManager.backgroundColor
   }
 
   ColumnLayout {
     anchors.centerIn: parent
-    spacing: Theme.spacing * 2
+    spacing: ThemeManager.spacing * 2
     width: 360
 
     Text {
       text: "Dialler"
       font.pixelSize: 24
       font.bold: true
-      color: Theme.text
+      color: ThemeManager.textColor
       horizontalAlignment: Text.AlignHCenter
       Layout.alignment: Qt.AlignHCenter
     }
@@ -49,15 +48,15 @@ Item {
     Rectangle {
       Layout.fillWidth: true
       height: 56
-      radius: Theme.cornerRadius
-      color: Theme.surface
-      border.color: Theme.border
+      radius: ThemeManager.cornerRadius
+      color: ThemeManager.surfaceColor
+      border.color: ThemeManager.borderColor
       border.width: 1
 
       RowLayout {
         anchors.fill: parent
-        anchors.margins: Theme.padding
-        spacing: Theme.spacing
+        anchors.margins: ThemeManager.padding
+        spacing: ThemeManager.spacing
 
         TextField {
           id: numberField
@@ -75,8 +74,8 @@ Item {
 
     GridLayout {
       columns: 3
-      columnSpacing: Theme.spacing
-      rowSpacing: Theme.spacing
+      columnSpacing: ThemeManager.spacing
+      rowSpacing: ThemeManager.spacing
       Layout.fillWidth: true
 
       function key(label) {
@@ -96,7 +95,7 @@ Item {
 
     RowLayout {
       Layout.fillWidth: true
-      spacing: Theme.spacing
+      spacing: ThemeManager.spacing
       Button {
         text: "Call"
         Layout.fillWidth: true
