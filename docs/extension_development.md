@@ -223,7 +223,7 @@ Extensions must declare required permissions in their manifest:
 - `filesystem`: File system access
 - `audio`: Audio device access
 - `video`: Video device access
--- `bluetooth`: Bluetooth access (adapter discovery, pairing, connect/disconnect)
+- `bluetooth`: Bluetooth access (adapter discovery, pairing, connect/disconnect)
 Dependencies declared in `manifest.json` are validated before load. All referenced extensions must be loaded and running; cycles cause errors for every member of the cycle and prevent loading. The core computes a topological ordering for safe initialization.
 
 ## Capability List
@@ -237,10 +237,7 @@ Dependencies declared in `manifest.json` are validated before load. All referenc
 | `ui` | UI view registration (future) |
 | `bluetooth` | Adapter/device discovery, pairing, connection |
 
-- `location`: GPS/location access
-- `contacts`: Contact list access
-- `phone`: Phone functionality
-- `system`: System-level operations
+<!-- Removed duplicated capability bullets; see table above for canonical list. -->
 
 ## Best Practices
 
