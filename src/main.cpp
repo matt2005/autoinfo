@@ -146,6 +146,33 @@ int main(int argc, char *argv[]) {
         goHome.complexity = ConfigComplexity::Basic;
         shortcuts.items.append(goHome);
 
+        ConfigItem cycleLeft;
+        cycleLeft.key = "cycle_left";
+        cycleLeft.label = "Cycle tabs left";
+        cycleLeft.description = "Shortcut key to cycle to the previous tab";
+        cycleLeft.type = ConfigItemType::String;
+        cycleLeft.defaultValue = QStringLiteral("A");
+        cycleLeft.complexity = ConfigComplexity::Basic;
+        shortcuts.items.append(cycleLeft);
+
+        ConfigItem cycleRight;
+        cycleRight.key = "cycle_right";
+        cycleRight.label = "Cycle tabs right";
+        cycleRight.description = "Shortcut key to cycle to the next tab";
+        cycleRight.type = ConfigItemType::String;
+        cycleRight.defaultValue = QStringLiteral("D");
+        cycleRight.complexity = ConfigComplexity::Basic;
+        shortcuts.items.append(cycleRight);
+
+        ConfigItem showHelp;
+        showHelp.key = "show_help";
+        showHelp.label = "Show shortcuts help";
+        showHelp.description = "Shortcut key to toggle the on-screen shortcuts help overlay";
+        showHelp.type = ConfigItemType::String;
+        showHelp.defaultValue = QStringLiteral("?");
+        showHelp.complexity = ConfigComplexity::Basic;
+        shortcuts.items.append(showHelp);
+
         page.sections.append(shortcuts);
         application.configManager()->registerConfigPage(page);
     }

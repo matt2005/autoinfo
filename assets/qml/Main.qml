@@ -46,6 +46,12 @@ ApplicationWindow {
         property string shortcutOpenSettings: (ConfigManagerBridge.getValue("system.ui.shortcuts.open_settings") || "S").toString()
         property string shortcutToggleTheme: (ConfigManagerBridge.getValue("system.ui.shortcuts.toggle_theme") || "T").toString()
         property string shortcutGoHome: (ConfigManagerBridge.getValue("system.ui.shortcuts.go_home") || "H").toString()
+        property string shortcutCycleLeft: (ConfigManagerBridge.getValue("system.ui.shortcuts.cycle_left") || "A").toString()
+        property string shortcutCycleRight: (ConfigManagerBridge.getValue("system.ui.shortcuts.cycle_right") || "D").toString()
+        property string shortcutShowHelp: (ConfigManagerBridge.getValue("system.ui.shortcuts.show_help") || "?").toString()
+
+        // Help overlay visibility
+        property bool showShortcutsHelp: false
 
         Connections {
             target: ConfigManagerBridge
@@ -54,31 +60,44 @@ ApplicationWindow {
                     if (key === "open_settings") root.shortcutOpenSettings = (value || "S").toString();
                     else if (key === "toggle_theme") root.shortcutToggleTheme = (value || "T").toString();
                     else if (key === "go_home") root.shortcutGoHome = (value || "H").toString();
+                    else if (key === "cycle_left") root.shortcutCycleLeft = (value || "A").toString();
+                    else if (key === "cycle_right") root.shortcutCycleRight = (value || "D").toString();
+                    else if (key === "show_help") root.shortcutShowHelp = (value || "?").toString();
                 }
             }
         }
 
-        // Global key catcher overlay (focusable Item to receive key events)
-        Item {
-            id: keyCatcher
+        // Global shortcut handler component (separated for reuse and clarity)
+        GlobalShortcutHandler {
+            id: shortcuts
             anchors.fill: parent
-            focus: true
-            Keys.onPressed: {
-                if (!event.text)
-                    return;
-                const k = event.text.toUpperCase();
-                if (k === root.shortcutOpenSettings.toUpperCase()) {
-                    tabBar.currentIndex = 1 + ExtensionRegistry.mainComponents.length;
-                    event.accepted = true;
-                } else if (k === root.shortcutToggleTheme.toUpperCase()) {
-                    Theme.toggleTheme();
-                    event.accepted = true;
-                } else if (k === root.shortcutGoHome.toUpperCase()) {
-                    tabBar.currentIndex = 0;
-                    event.accepted = true;
-                }
-            }
+            openSettings: root.shortcutOpenSettings
+            toggleTheme: root.shortcutToggleTheme
+            goHome: root.shortcutGoHome
+            cycleLeft: root.shortcutCycleLeft
+            cycleRight: root.shortcutCycleRight
+            showHelp: root.shortcutShowHelp
+
+            onOpenSettingsRequested: tabBar.currentIndex = 1 + ExtensionRegistry.mainComponents.length
+            onToggleThemeRequested: Theme.toggleTheme()
+            onGoHomeRequested: tabBar.currentIndex = 0
+            onCycleLeftRequested: root.cycleTab(-1)
+            onCycleRightRequested: root.cycleTab(1)
+            onToggleHelpRequested: root.showShortcutsHelp = !root.showShortcutsHelp
         }
+
+    // On-screen shortcuts help overlay
+    ShortcutsHelpOverlay {
+        id: helpOverlay
+        anchors.fill: parent
+        visible: root.showShortcutsHelp
+        keyOpenSettings: root.shortcutOpenSettings
+        keyToggleTheme: root.shortcutToggleTheme
+        keyGoHome: root.shortcutGoHome
+        keyCycleLeft: root.shortcutCycleLeft
+        keyCycleRight: root.shortcutCycleRight
+        keyShowHelp: root.shortcutShowHelp
+    }
     
     Behavior on color {
         ColorAnimation { duration: 200 }
@@ -588,8 +607,16 @@ ApplicationWindow {
     }
     
     Component.onCompleted: {
-        keyCatcher.forceActiveFocus();
+        shortcuts.forceActiveFocus();
         console.log("Main UI loaded");
         console.log("Registered extensions:", ExtensionRegistry.componentCount);
+    }
+
+    // Helper to cycle tabs left/right including Home and Settings
+    function cycleTab(direction) {
+        const total = 2 + ExtensionRegistry.mainComponents.length; // Home + extensions + Settings
+        if (total <= 1) return;
+        const next = (tabBar.currentIndex + (direction < 0 ? -1 : 1) + total) % total;
+        tabBar.currentIndex = next;
     }
 }

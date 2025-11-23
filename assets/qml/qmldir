@@ -5,3 +5,5 @@ ThemeDemo 1.0 ThemeDemo.qml
 ConfigScreen 1.0 ConfigScreen.qml
 ConfigPageView 1.0 ConfigPageView.qml
 ConfigItemView 1.0 ConfigItemView.qml
+GlobalShortcutHandler 1.0 GlobalShortcutHandler.qml
+ShortcutsHelpOverlay 1.0 ShortcutsHelpOverlay.qml
