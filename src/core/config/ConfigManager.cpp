@@ -645,9 +645,9 @@ bool ConfigManager::compressToFile(const QByteArray& data, const QString& filePa
     file.write(compressed);
     file.close();
 
-    qInfo() << "Backed up config to compressed file:" << filePath << "Original:" << data.size()
-            << "bytes"
-            << "Compressed:" << compressed.size() << "bytes";
+    qInfo() << "Backed up config to compressed file:" << filePath
+             << "Original:" << data.size() << "bytes"
+             << "Compressed:" << compressed.size() << "bytes";
     return true;
 }
 
@@ -669,8 +669,8 @@ QByteArray ConfigManager::decompressFromFile(const QString& filePath, bool& succ
         return QByteArray();
     }
 
-    qDebug() << "Decompressed config from:" << filePath << "Compressed:" << compressed.size()
-             << "bytes"
+    qDebug() << "Decompressed config from:" << filePath
+             << "Compressed:" << compressed.size() << "bytes"
              << "Decompressed:" << decompressed.size() << "bytes";
 
     success = true;
