@@ -43,7 +43,7 @@ set(CORE_SOURCES
 
 # Create translation source files (.ts) from sources
 qt6_create_translation(CORE_QM_FILES ${CORE_SOURCES} ${CORE_TS_FILES}
-    OPTIONS -no-obsolete -idbased
+    OPTIONS -no-obsolete
 )
 
 # Install .qm files
@@ -67,7 +67,7 @@ function(add_extension_translations EXTENSION_NAME EXTENSION_DIR)
     if(EXT_SOURCES)
         set(EXT_QM_FILES)
         qt6_create_translation(EXT_QM_FILES ${EXT_SOURCES} ${EXT_TS_FILE}
-            OPTIONS -no-obsolete -idbased
+            OPTIONS -no-obsolete
         )
         
         install(FILES ${EXT_QM_FILES}
