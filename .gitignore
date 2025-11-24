@@ -7,7 +7,7 @@ cmake_install.cmake
 Makefile
 *.cmake
 !CMakeLists.txt
-
+!cmake/*.cmake
 # Qt generated files
 *.moc
 moc_*.cpp
