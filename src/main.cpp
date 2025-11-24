@@ -19,20 +19,20 @@
 
 #include <QApplication>
 #include <QCoreApplication>
-#include <QQmlApplicationEngine>
-#include <QQmlContext>
 #include <QDir>
 #include <QFileInfo>
+#include <QQmlApplicationEngine>
+#include <QQmlContext>
 #include <QStandardPaths>
 #include <QUrl>
 #include "core/application/application.hpp"
 #include "extensions/extension_manager.hpp"
-#include "ui/ThemeManager.hpp"
+#include "ui/EventBridge.hpp"
 #include "ui/ExtensionRegistry.hpp"
 #include "ui/I18nManager.hpp"
-#include "ui/NavigationBridge.hpp"
-#include "ui/EventBridge.hpp"
 #include "ui/IconRegistry.hpp"
+#include "ui/NavigationBridge.hpp"
+#include "ui/ThemeManager.hpp"
 // Config UI bridge
 #include "ui/ConfigManagerBridge.hpp"
 // Registrar decoupling: inject UI registrar into core
@@ -40,13 +40,13 @@
 #include "ui/UIRegistrarImpl.hpp"
 // Temporarily disabled due to GCC 14/Qt6 ABI incompatibility
 // #include "ui/BluetoothBridge.hpp"
-#include "../extensions/navigation/navigation_extension.hpp"
 #include "../extensions/bluetooth/bluetooth_extension.hpp"
-#include "../extensions/media_player/media_player_extension.hpp"
 #include "../extensions/dialer/dialer_extension.hpp"
+#include "../extensions/media_player/media_player_extension.hpp"
+#include "../extensions/navigation/navigation_extension.hpp"
 #include "../extensions/wireless/wireless_extension.hpp"
 
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[]) {
     QApplication app(argc, argv);
     app.setOrganizationName("OpenCarDev");
     app.setOrganizationDomain("getcrankshaft.com");
@@ -54,11 +54,13 @@ int main(int argc, char *argv[]) {
     app.setApplicationVersion("1.0.0");
 
     opencardev::crankshaft::core::Application application;
-    
+
     // Register built-in extensions BEFORE initialize()
     // Navigation extension
-    auto navigationExtension = std::make_shared<opencardev::crankshaft::extensions::navigation::NavigationExtension>();
-    QString navExtensionPath = QDir(QCoreApplication::applicationDirPath()).filePath("extensions/navigation");
+    auto navigationExtension =
+        std::make_shared<opencardev::crankshaft::extensions::navigation::NavigationExtension>();
+    QString navExtensionPath =
+        QDir(QCoreApplication::applicationDirPath()).filePath("extensions/navigation");
     if (!QFile::exists(navExtensionPath + "/manifest.json")) {
         // Try build directory path
         navExtensionPath = QDir::currentPath() + "/build/extensions/navigation";
@@ -67,54 +69,62 @@ int main(int argc, char *argv[]) {
             navExtensionPath = "../extensions/navigation";
         }
     }
-    
+
     // Bluetooth extension
-    auto bluetoothExtension = std::make_shared<opencardev::crankshaft::extensions::bluetooth::BluetoothExtension>();
-    QString btExtensionPath = QDir(QCoreApplication::applicationDirPath()).filePath("extensions/bluetooth");
+    auto bluetoothExtension =
+        std::make_shared<opencardev::crankshaft::extensions::bluetooth::BluetoothExtension>();
+    QString btExtensionPath =
+        QDir(QCoreApplication::applicationDirPath()).filePath("extensions/bluetooth");
     if (!QFile::exists(btExtensionPath + "/manifest.json")) {
         btExtensionPath = QDir::currentPath() + "/build/extensions/bluetooth";
         if (!QFile::exists(btExtensionPath + "/manifest.json")) {
             btExtensionPath = "../extensions/bluetooth";
         }
     }
-    
+
     // Media Player extension
-    auto mediaPlayerExtension = std::make_shared<opencardev::crankshaft::extensions::media::MediaPlayerExtension>();
-    QString mpExtensionPath = QDir(QCoreApplication::applicationDirPath()).filePath("extensions/media_player");
+    auto mediaPlayerExtension =
+        std::make_shared<opencardev::crankshaft::extensions::media::MediaPlayerExtension>();
+    QString mpExtensionPath =
+        QDir(QCoreApplication::applicationDirPath()).filePath("extensions/media_player");
     if (!QFile::exists(mpExtensionPath + "/manifest.json")) {
         mpExtensionPath = QDir::currentPath() + "/build/extensions/media_player";
         if (!QFile::exists(mpExtensionPath + "/manifest.json")) {
             mpExtensionPath = "../extensions/media_player";
         }
     }
-    
+
     // Dialer extension
-    auto dialerExtension = std::make_shared<opencardev::crankshaft::extensions::dialer::DialerExtension>();
-    QString dialerExtensionPath = QDir(QCoreApplication::applicationDirPath()).filePath("extensions/dialer");
+    auto dialerExtension =
+        std::make_shared<opencardev::crankshaft::extensions::dialer::DialerExtension>();
+    QString dialerExtensionPath =
+        QDir(QCoreApplication::applicationDirPath()).filePath("extensions/dialer");
     if (!QFile::exists(dialerExtensionPath + "/manifest.json")) {
         dialerExtensionPath = QDir::currentPath() + "/build/extensions/dialer";
         if (!QFile::exists(dialerExtensionPath + "/manifest.json")) {
             dialerExtensionPath = "../extensions/dialer";
         }
     }
-    
+
     // Wireless extension
-    auto wirelessExtension = std::make_shared<opencardev::crankshaft::extensions::wireless::WirelessExtension>();
-    QString wirelessExtensionPath = QDir(QCoreApplication::applicationDirPath()).filePath("extensions/wireless");
+    auto wirelessExtension =
+        std::make_shared<opencardev::crankshaft::extensions::wireless::WirelessExtension>();
+    QString wirelessExtensionPath =
+        QDir(QCoreApplication::applicationDirPath()).filePath("extensions/wireless");
     if (!QFile::exists(wirelessExtensionPath + "/manifest.json")) {
         wirelessExtensionPath = QDir::currentPath() + "/build/extensions/wireless";
         if (!QFile::exists(wirelessExtensionPath + "/manifest.json")) {
             wirelessExtensionPath = "../extensions/wireless";
         }
     }
-    
+
     if (!application.initialize()) {
         return 1;
     }
-    
+
     // Initialize icon resources from static library
     Q_INIT_RESOURCE(icons);
-    
+
     // Register QML singletons and initialize managers
     CrankshaftReborn::UI::ThemeManager::registerQmlType();
     CrankshaftReborn::UI::ThemeManager::instance()->initialize();
@@ -133,15 +143,16 @@ int main(int argc, char *argv[]) {
     // Temporarily disabled due to GCC 14/Qt6 ABI incompatibility
     // BluetoothBridge::registerQmlType();
     // BluetoothBridge::initialise(&application);
-    
+
     // Create ExtensionRegistry BEFORE starting extensions so they can register views
     opencardev::crankshaft::ui::ExtensionRegistry extensionRegistry(application.extensionManager());
     opencardev::crankshaft::ui::ExtensionRegistry::registerQmlType();
     // Wire signal/slot for UI component cleanup when extensions disabled
-    QObject::connect(application.extensionManager(), 
-                     &opencardev::crankshaft::extensions::ExtensionManager::requestUnregisterComponents,
-                     &extensionRegistry,
-                     &opencardev::crankshaft::ui::ExtensionRegistry::unregisterExtensionComponents);
+    QObject::connect(
+        application.extensionManager(),
+        &opencardev::crankshaft::extensions::ExtensionManager::requestUnregisterComponents,
+        &extensionRegistry,
+        &opencardev::crankshaft::ui::ExtensionRegistry::unregisterExtensionComponents);
 
     // Register core UI settings page
     {
@@ -151,7 +162,7 @@ int main(int argc, char *argv[]) {
         page.extension = "ui";
         page.title = QObject::tr("User Interface");
         page.description = QObject::tr("Global UI preferences including keyboard shortcuts");
-        page.icon = "Settings"; // icon name or path; translation not required
+        page.icon = "Settings";  // icon name or path; translation not required
         page.complexity = ConfigComplexity::Basic;
 
         // General section
@@ -264,11 +275,16 @@ int main(int argc, char *argv[]) {
             return item;
         };
 
-        manage.items.append(makeToggle("navigation", "Enable Navigation", "Show the Navigation tab and services"));
-        manage.items.append(makeToggle("bluetooth", "Enable Bluetooth", "Enable Bluetooth integration"));
-        manage.items.append(makeToggle("media_player", "Enable Media Player", "Enable media playback controls"));
-        manage.items.append(makeToggle("dialer", "Enable Dialler", "Enable phone dialler integration"));
-        manage.items.append(makeToggle("wireless", "Enable Wireless", "Enable wireless settings integration"));
+        manage.items.append(
+            makeToggle("navigation", "Enable Navigation", "Show the Navigation tab and services"));
+        manage.items.append(
+            makeToggle("bluetooth", "Enable Bluetooth", "Enable Bluetooth integration"));
+        manage.items.append(
+            makeToggle("media_player", "Enable Media Player", "Enable media playback controls"));
+        manage.items.append(
+            makeToggle("dialer", "Enable Dialler", "Enable phone dialler integration"));
+        manage.items.append(
+            makeToggle("wireless", "Enable Wireless", "Enable wireless settings integration"));
 
         page.sections.append(manage);
         application.configManager()->registerConfigPage(page);
@@ -277,13 +293,14 @@ int main(int argc, char *argv[]) {
     // Inject UI registrar implementation into core (decouples core from UI)
     opencardev::crankshaft::ui::UIRegistrarImpl uiRegistrar;
     application.capabilityManager()->setUIRegistrar(&uiRegistrar);
-    
+
     // Now register the built-in extension (after ExtensionRegistry is created)
     application.extensionManager()->registerBuiltInExtension(navigationExtension, navExtensionPath);
     application.extensionManager()->registerBuiltInExtension(bluetoothExtension, btExtensionPath);
     application.extensionManager()->registerBuiltInExtension(mediaPlayerExtension, mpExtensionPath);
     application.extensionManager()->registerBuiltInExtension(dialerExtension, dialerExtensionPath);
-    application.extensionManager()->registerBuiltInExtension(wirelessExtension, wirelessExtensionPath);
+    application.extensionManager()->registerBuiltInExtension(wirelessExtension,
+                                                             wirelessExtensionPath);
 
     // Set up QML engine and import paths
     QQmlApplicationEngine engine;
@@ -291,13 +308,15 @@ int main(int argc, char *argv[]) {
     opencardev::crankshaft::ui::I18nManager::initialise(&engine, application.extensionManager());
     // Apply language from config (default en_GB)
     {
-        const QVariant lang = application.configManager()->getValue("system", "ui", "general", "language");
+        const QVariant lang =
+            application.configManager()->getValue("system", "ui", "general", "language");
         const QString locale = lang.isValid() ? lang.toString() : QStringLiteral("en_GB");
         opencardev::crankshaft::ui::I18nManager::instance()->setLocale(locale);
     }
-    
+
     // Expose ThemeManager as a context property so it's available in all QML files
-    engine.rootContext()->setContextProperty("ThemeManager", CrankshaftReborn::UI::ThemeManager::instance());
+    engine.rootContext()->setContextProperty("ThemeManager",
+                                             CrankshaftReborn::UI::ThemeManager::instance());
     engine.rootContext()->setContextProperty("NavigationBridge", NavigationBridge::instance());
     // Temporarily disabled due to GCC 14/Qt6 ABI incompatibility
     // engine.rootContext()->setContextProperty("BluetoothBridge", BluetoothBridge::instance());
@@ -340,7 +359,8 @@ int main(int argc, char *argv[]) {
                 break;
             }
         }
-        if (!mainUrl.isEmpty()) break;
+        if (!mainUrl.isEmpty())
+            break;
     }
 
     if (mainUrl.isEmpty()) {
@@ -366,7 +386,7 @@ int main(int argc, char *argv[]) {
         // Return failure for now so CI/dev notices missing UI
         return 1;
     }
-    
+
     qDebug() << "QML loaded successfully, entering event loop";
 
     return app.exec();

@@ -18,12 +18,12 @@
  */
 
 #include "dialer_extension.hpp"
-#include "../../src/core/config/ConfigManager.hpp"
-#include "../../src/core/config/ConfigTypes.hpp"
+#include <QCoreApplication>
 #include <QDebug>
 #include <QDir>
 #include <QFile>
-#include <QCoreApplication>
+#include "../../src/core/config/ConfigManager.hpp"
+#include "../../src/core/config/ConfigTypes.hpp"
 
 namespace opencardev::crankshaft {
 namespace extensions {
@@ -49,11 +49,12 @@ void DialerExtension::start() {
     if (uiCap) {
         QVariantMap meta;
         meta["title"] = "Dialler";
-        meta["icon"] = "📞"; // simple emoji icon placeholder
+        meta["icon"] = "📞";  // simple emoji icon placeholder
         meta["description"] = "Make and manage calls";
-        
+
         // Use file path - extension QML files are copied to build/extensions/{ext}/qml
-        QString qmlPath = QDir(QCoreApplication::applicationDirPath()).filePath("extensions/dialer/qml/DialerView.qml");
+        QString qmlPath = QDir(QCoreApplication::applicationDirPath())
+                              .filePath("extensions/dialer/qml/DialerView.qml");
         if (!QFile::exists(qmlPath)) {
             // Try current working directory
             qmlPath = "extensions/dialer/qml/DialerView.qml";
@@ -108,14 +109,15 @@ void DialerExtension::registerConfigItems(core::config::ConfigManager* manager) 
 }
 
 void DialerExtension::setupEventHandlers() {
-    if (!eventCap_) return;
+    if (!eventCap_)
+        return;
 
     // Listen for dial requests from other extensions (optional)
-    eventCap_->subscribe("*.phone.dial", [this](const QVariantMap& data){
+    eventCap_->subscribe("*.phone.dial", [this](const QVariantMap& data) {
         qInfo() << "Dialler: received external dial request" << data;
     });
 }
 
-} // namespace dialer
-} // namespace extensions
-} // namespace opencardev::crankshaft
+}  // namespace dialer
+}  // namespace extensions
+}  // namespace opencardev::crankshaft

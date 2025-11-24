@@ -18,8 +18,8 @@
  */
 
 #include "GeocodingProviderFactory.hpp"
-#include "NominatimProvider.hpp"
 #include <QDebug>
+#include "NominatimProvider.hpp"
 
 namespace opencardev::crankshaft {
 namespace extensions {
@@ -30,27 +30,26 @@ GeocodingProviderFactory& GeocodingProviderFactory::instance() {
     return factory;
 }
 
-void GeocodingProviderFactory::registerProvider(const QString& id,
-                                               ProviderCreator creator,
-                                               const QString& displayName,
-                                               const QString& description,
-                                               bool requiresApiKey) {
+void GeocodingProviderFactory::registerProvider(const QString& id, ProviderCreator creator,
+                                                const QString& displayName,
+                                                const QString& description, bool requiresApiKey) {
     ProviderRegistration reg;
     reg.creator = creator;
     reg.displayName = displayName;
     reg.description = description;
     reg.requiresApiKey = requiresApiKey;
-    
+
     providers_[id] = reg;
     qInfo() << "Registered geocoding provider:" << id;
 }
 
-GeocodingProvider* GeocodingProviderFactory::createProvider(const QString& id, QObject* parent) const {
+GeocodingProvider* GeocodingProviderFactory::createProvider(const QString& id,
+                                                            QObject* parent) const {
     if (!providers_.contains(id)) {
         qWarning() << "Unknown geocoding provider:" << id;
         return nullptr;
     }
-    
+
     return providers_[id].creator(parent);
 }
 
@@ -58,9 +57,10 @@ QStringList GeocodingProviderFactory::availableProviders() const {
     return providers_.keys();
 }
 
-GeocodingProviderFactory::ProviderInfo GeocodingProviderFactory::getProviderInfo(const QString& id) const {
+GeocodingProviderFactory::ProviderInfo GeocodingProviderFactory::getProviderInfo(
+    const QString& id) const {
     ProviderInfo info;
-    
+
     if (providers_.contains(id)) {
         const auto& reg = providers_[id];
         info.id = id;
@@ -68,13 +68,13 @@ GeocodingProviderFactory::ProviderInfo GeocodingProviderFactory::getProviderInfo
         info.description = reg.description;
         info.requiresApiKey = reg.requiresApiKey;
     }
-    
+
     return info;
 }
 
 QList<GeocodingProviderFactory::ProviderInfo> GeocodingProviderFactory::getAllProviderInfo() const {
     QList<ProviderInfo> infoList;
-    
+
     for (auto it = providers_.constBegin(); it != providers_.constEnd(); ++it) {
         ProviderInfo info;
         info.id = it.key();
@@ -83,30 +83,26 @@ QList<GeocodingProviderFactory::ProviderInfo> GeocodingProviderFactory::getAllPr
         info.requiresApiKey = it.value().requiresApiKey;
         infoList.append(info);
     }
-    
+
     return infoList;
 }
 
 void GeocodingProviderFactory::registerBuiltInProviders() {
     auto& factory = instance();
-    
+
     // Register Nominatim provider
     factory.registerProvider(
         "nominatim",
-        [](QObject* parent) -> GeocodingProvider* {
-            return new NominatimProvider(parent);
-        },
-        "OpenStreetMap Nominatim",
-        "Free geocoding service by OpenStreetMap. No API key required.",
-        false
-    );
-    
+        [](QObject* parent) -> GeocodingProvider* { return new NominatimProvider(parent); },
+        "OpenStreetMap Nominatim", "Free geocoding service by OpenStreetMap. No API key required.",
+        false);
+
     // Future providers can be registered here:
     // factory.registerProvider("google", ...);
     // factory.registerProvider("mapbox", ...);
     // factory.registerProvider("here", ...);
 }
 
-} // namespace navigation
-} // namespace extensions
-} // namespace openauto
+}  // namespace navigation
+}  // namespace extensions
+}  // namespace opencardev::crankshaft

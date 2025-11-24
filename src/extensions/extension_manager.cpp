@@ -18,32 +18,32 @@
  */
 
 #include "extension_manager.hpp"
-#include "../core/capabilities/CapabilityManager.hpp"
-#include "../core/capabilities/Capability.hpp"
-#include <QDir>
 #include <QCoreApplication>
+#include <QDebug>
+#include <QDir>
 #include <QFile>
 #include <QJsonDocument>
 #include <QJsonObject>
-#include <QDebug>
 #include <QQueue>
+#include "../core/capabilities/Capability.hpp"
+#include "../core/capabilities/CapabilityManager.hpp"
 #include "../core/config/ConfigManager.hpp"
 
 namespace opencardev::crankshaft {
 namespace extensions {
 
-ExtensionManager::ExtensionManager(QObject *parent)
-        : QObject(parent),
-            capability_manager_(nullptr),
-            config_manager_(nullptr),
-            extensions_dir_("extensions") {
-}
+ExtensionManager::ExtensionManager(QObject* parent)
+    : QObject(parent),
+      capability_manager_(nullptr),
+      config_manager_(nullptr),
+      extensions_dir_("extensions") {}
 
 ExtensionManager::~ExtensionManager() {
     unloadAll();
 }
 
-void ExtensionManager::initialize(core::CapabilityManager* capability_manager, core::config::ConfigManager* config_manager) {
+void ExtensionManager::initialize(core::CapabilityManager* capability_manager,
+                                  core::config::ConfigManager* config_manager) {
     capability_manager_ = capability_manager;
     config_manager_ = config_manager;
     qInfo() << "Extension manager initialized with capability-based security";
@@ -53,55 +53,55 @@ void ExtensionManager::initialize(core::CapabilityManager* capability_manager, c
         extensions_dir_ = defaultExtDir;
     }
     if (config_manager_) {
-        QObject::connect(config_manager_, &core::config::ConfigManager::configValueChanged,
-                         this, [this](const QString& domain, const QString& extension,
-                                      const QString& section, const QString& key,
-                                      const QVariant& value) {
-            if (domain == "system" && extension == "extensions" && section == "manage") {
-                const bool enable = value.toBool();
-                if (enable) {
-                    enableExtension(key);
-                } else {
-                    disableExtension(key);
+        QObject::connect(
+            config_manager_, &core::config::ConfigManager::configValueChanged, this,
+            [this](const QString& domain, const QString& extension, const QString& section,
+                   const QString& key, const QVariant& value) {
+                if (domain == "system" && extension == "extensions" && section == "manage") {
+                    const bool enable = value.toBool();
+                    if (enable) {
+                        enableExtension(key);
+                    } else {
+                        disableExtension(key);
+                    }
                 }
-            }
-        });
+            });
     }
 }
 
 bool ExtensionManager::loadExtension(const QString& extension_path) {
     qInfo() << "Loading extension from:" << extension_path;
-    
+
     QString manifest_path = extension_path + "/manifest.json";
     ExtensionManifest manifest = loadManifest(manifest_path);
-    
+
     if (!manifest.isValid()) {
         qWarning() << "Invalid manifest for extension:" << extension_path;
         emit extensionError(manifest.id, "Invalid manifest");
         return false;
     }
-    
+
     // Skip if already loaded (e.g., built-in extension already registered)
     if (extensions_.contains(manifest.id)) {
         qDebug() << "Extension already loaded, skipping:" << manifest.id;
         return true;
     }
-    
+
     if (!validateManifest(manifest)) {
         qWarning() << "Manifest validation failed for:" << manifest.id;
         emit extensionError(manifest.id, "Manifest validation failed");
         return false;
     }
-    
+
     if (!checkDependencies(manifest)) {
         qWarning() << "Dependency check failed for:" << manifest.id;
         emit extensionError(manifest.id, "Missing dependencies or not running");
         return false;
     }
-    
+
     // TODO: Load the actual extension library/executable
     // This would involve loading shared libraries or spawning processes
-    
+
     // For now, store the manifest for capability granting
     ExtensionInfo info;
     info.manifest = manifest;
@@ -112,36 +112,37 @@ bool ExtensionManager::loadExtension(const QString& extension_path) {
     info.is_running = true;
     // Note: extension pointer will be set when actual extension is created
     extensions_[manifest.id] = info;
-    
+
     qInfo() << "Extension loaded successfully:" << manifest.id;
     emit extensionLoaded(manifest.id);
-    
+
     return true;
 }
 
-bool ExtensionManager::registerBuiltInExtension(std::shared_ptr<Extension> extension, const QString& extension_path) {
+bool ExtensionManager::registerBuiltInExtension(std::shared_ptr<Extension> extension,
+                                                const QString& extension_path) {
     if (!extension) {
         qWarning() << "Cannot register null extension";
         return false;
     }
-    
+
     QString manifest_path = extension_path + "/manifest.json";
     ExtensionManifest manifest = loadManifest(manifest_path);
-    
+
     if (!manifest.isValid()) {
         qWarning() << "Invalid manifest for built-in extension:" << extension_path;
         return false;
     }
-    
+
     // Check if already loaded (manifest discovered but extension not instantiated)
     if (extensions_.contains(manifest.id)) {
         qDebug() << "Extension manifest already loaded, adding implementation:" << manifest.id;
         auto& info = extensions_[manifest.id];
         info.extension = extension;
-        
+
         // Grant capabilities based on manifest
         grantCapabilities(extension.get(), manifest);
-        
+
         // Initialize and start extension
         if (extension->initialize()) {
             // Register config items if ConfigManager is available
@@ -158,7 +159,7 @@ bool ExtensionManager::registerBuiltInExtension(std::shared_ptr<Extension> exten
             return false;
         }
     }
-    
+
     // Store extension info
     ExtensionInfo info;
     info.extension = extension;
@@ -166,10 +167,10 @@ bool ExtensionManager::registerBuiltInExtension(std::shared_ptr<Extension> exten
     info.path = extension_path;
     info.is_running = false;
     extensions_[manifest.id] = info;
-    
+
     // Grant capabilities based on manifest
     grantCapabilities(extension.get(), manifest);
-    
+
     // Initialize and start extension
     if (extension->initialize()) {
         // Register config items if ConfigManager is available
@@ -180,7 +181,8 @@ bool ExtensionManager::registerBuiltInExtension(std::shared_ptr<Extension> exten
         if (config_manager_) {
             // Check system.extensions.manage.<id> toggle
             QVariant v = config_manager_->getValue("system", "extensions", "manage", manifest.id);
-            if (v.isValid()) shouldStart = v.toBool();
+            if (v.isValid())
+                shouldStart = v.toBool();
         }
         if (shouldStart) {
             extension->start();
@@ -204,26 +206,29 @@ bool ExtensionManager::unloadExtension(const QString& extension_id) {
     if (!extensions_.contains(extension_id)) {
         return false;
     }
-    
+
     qInfo() << "Unloading extension:" << extension_id;
-    
+
     auto& info = extensions_[extension_id];
     if (info.extension) {
         info.extension->stop();
         info.extension->cleanup();
     }
-    
+
     extensions_.remove(extension_id);
     emit extensionUnloaded(extension_id);
-    
+
     return true;
 }
 
 bool ExtensionManager::enableExtension(const QString& extension_id) {
-    if (!extensions_.contains(extension_id)) return false;
-    auto &info = extensions_[extension_id];
-    if (info.is_running) return true;
-    if (!info.extension) return false;
+    if (!extensions_.contains(extension_id))
+        return false;
+    auto& info = extensions_[extension_id];
+    if (info.is_running)
+        return true;
+    if (!info.extension)
+        return false;
     info.extension->start();
     info.is_running = true;
     qInfo() << "Enabled extension:" << extension_id;
@@ -232,10 +237,13 @@ bool ExtensionManager::enableExtension(const QString& extension_id) {
 }
 
 bool ExtensionManager::disableExtension(const QString& extension_id) {
-    if (!extensions_.contains(extension_id)) return false;
-    auto &info = extensions_[extension_id];
-    if (!info.is_running) return true;
-    if (!info.extension) return false;
+    if (!extensions_.contains(extension_id))
+        return false;
+    auto& info = extensions_[extension_id];
+    if (!info.is_running)
+        return true;
+    if (!info.extension)
+        return false;
     info.extension->stop();
     info.is_running = false;
     qInfo() << "Disabled extension:" << extension_id;
@@ -249,8 +257,10 @@ void ExtensionManager::loadAll() {
     // 1. Aggregate candidate directories (prefer runtime/app dirs over source)
     QStringList searchPaths;
     const QString envExt = qEnvironmentVariable("CRANKSHAFT_EXTENSIONS_PATH");
-    if (!envExt.isEmpty()) searchPaths << envExt;
-    if (!extensions_dir_.isEmpty()) searchPaths << extensions_dir_;
+    if (!envExt.isEmpty())
+        searchPaths << envExt;
+    if (!extensions_dir_.isEmpty())
+        searchPaths << extensions_dir_;
     // Application dir (e.g., installed bundle or build/bin layout)
     searchPaths << (QCoreApplication::applicationDirPath() + "/extensions");
     // System install paths
@@ -267,7 +277,8 @@ void ExtensionManager::loadAll() {
     for (const QString& dir : searchPaths) {
         const QStringList found = discoverExtensions(dir);
         for (const QString& p : found) {
-            if (!extension_paths.contains(p)) extension_paths << p;
+            if (!extension_paths.contains(p))
+                extension_paths << p;
         }
     }
 
@@ -292,7 +303,8 @@ void ExtensionManager::loadAll() {
         }
         // Avoid duplicate ids overriding earlier entries
         if (manifestsById.contains(manifest.id)) {
-            qWarning() << "Duplicate extension id discovered, ignoring later instance:" << manifest.id;
+            qWarning() << "Duplicate extension id discovered, ignoring later instance:"
+                       << manifest.id;
             continue;
         }
         manifestsById.insert(manifest.id, manifest);
@@ -336,7 +348,7 @@ void ExtensionManager::loadAll() {
             continue;
         }
         if (!pathById.contains(id)) {
-            continue; // Should not happen
+            continue;  // Should not happen
         }
         loadExtension(pathById.value(id));
     }
@@ -344,7 +356,7 @@ void ExtensionManager::loadAll() {
 
 void ExtensionManager::unloadAll() {
     qInfo() << "Unloading all extensions";
-    
+
     QStringList ids = extensions_.keys();
     for (const QString& id : ids) {
         unloadExtension(id);
@@ -369,12 +381,12 @@ ExtensionManifest ExtensionManager::getManifest(const QString& extension_id) con
 QStringList ExtensionManager::discoverExtensions(const QString& search_path) {
     QStringList extension_paths;
     QDir dir(search_path);
-    
+
     if (!dir.exists()) {
         qWarning() << "Extensions directory does not exist:" << search_path;
         return extension_paths;
     }
-    
+
     QStringList subdirs = dir.entryList(QDir::Dirs | QDir::NoDotAndDotDot);
     for (const QString& subdir : subdirs) {
         QString manifest_path = dir.absoluteFilePath(subdir) + "/manifest.json";
@@ -382,7 +394,7 @@ QStringList ExtensionManager::discoverExtensions(const QString& search_path) {
             extension_paths.append(dir.absoluteFilePath(subdir));
         }
     }
-    
+
     qDebug() << "Discovered" << extension_paths.size() << "extensions";
     return extension_paths;
 }
@@ -400,9 +412,10 @@ bool ExtensionManager::checkDependencies(const ExtensionManifest& manifest) {
             qWarning() << "Missing dependency:" << dep << "for extension:" << manifest.id;
             return false;
         }
-        const auto &info = extensions_[dep];
+        const auto& info = extensions_[dep];
         if (!info.is_running) {
-            qWarning() << "Dependency present but not running:" << dep << "required by:" << manifest.id;
+            qWarning() << "Dependency present but not running:" << dep
+                       << "required by:" << manifest.id;
             return false;
         }
     }
@@ -415,15 +428,15 @@ ExtensionManifest ExtensionManager::loadManifest(const QString& manifest_path) {
         qWarning() << "Failed to open manifest file:" << manifest_path;
         return ExtensionManifest();
     }
-    
+
     QByteArray data = file.readAll();
     QJsonDocument doc = QJsonDocument::fromJson(data);
-    
+
     if (!doc.isObject()) {
         qWarning() << "Invalid JSON in manifest:" << manifest_path;
         return ExtensionManifest();
     }
-    
+
     QVariantMap json = doc.object().toVariantMap();
     return ExtensionManifest::fromJson(json);
 }
@@ -433,10 +446,10 @@ void ExtensionManager::grantCapabilities(Extension* extension, const ExtensionMa
         qWarning() << "Cannot grant capabilities - CapabilityManager not initialized";
         return;
     }
-    
+
     qInfo() << "Granting capabilities to extension:" << manifest.id;
     qDebug() << "  Requested permissions:" << manifest.requirements.required_permissions;
-    
+
     for (const QString& permission : manifest.requirements.required_permissions) {
         qDebug() << "  Requesting capability:" << permission;
         auto capability = capability_manager_->grantCapability(extension->id(), permission);
@@ -448,15 +461,14 @@ void ExtensionManager::grantCapabilities(Extension* extension, const ExtensionMa
             qWarning() << "  Failed to grant capability:" << permission;
         }
     }
-    
+
     qDebug() << "  All capabilities granted, proceeding to audit log";
-    
+
     // Log the capability grant for security audit
     capability_manager_->logCapabilityUsage(
-        extension->id(),
-        "extension_initialization",
-        QString("Granted %1 capabilities based on manifest permissions").arg(manifest.requirements.required_permissions.size())
-    );
+        extension->id(), "extension_initialization",
+        QString("Granted %1 capabilities based on manifest permissions")
+            .arg(manifest.requirements.required_permissions.size()));
 }
 
 QStringList ExtensionManager::resolveLoadOrder(const QMap<QString, ExtensionManifest>& manifests,
@@ -467,14 +479,14 @@ QStringList ExtensionManager::resolveLoadOrder(const QMap<QString, ExtensionMani
     QMap<QString, int> indegree;
     QMap<QString, QStringList> adjacency;
     QSet<QString> candidates;
-    for (const auto &k : manifests.keys()) {
+    for (const auto& k : manifests.keys()) {
         candidates.insert(k);
     }
 
     // First pass: record missing deps and build adjacency for satisfiable deps
     for (auto it = manifests.begin(); it != manifests.end(); ++it) {
         const QString id = it.key();
-        indegree[id] = 0; // initialise
+        indegree[id] = 0;  // initialise
     }
     for (auto it = manifests.begin(); it != manifests.end(); ++it) {
         const QString id = it.key();
@@ -489,7 +501,7 @@ QStringList ExtensionManager::resolveLoadOrder(const QMap<QString, ExtensionMani
                 missingDeps[id] << dep;
                 continue;
             }
-            adjacency[dep] << id; // dep -> id edge
+            adjacency[dep] << id;  // dep -> id edge
             indegree[id] += 1;
         }
     }
@@ -513,7 +525,7 @@ QStringList ExtensionManager::resolveLoadOrder(const QMap<QString, ExtensionMani
         order << node;
         for (const QString& next : adjacency.value(node)) {
             if (!candidates.contains(next)) {
-                continue; // filtered out earlier
+                continue;  // filtered out earlier
             }
             indegree[next] -= 1;
             if (indegree[next] == 0) {

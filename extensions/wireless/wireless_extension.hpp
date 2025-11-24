@@ -19,17 +19,18 @@
 
 #pragma once
 
-#include "../../src/extensions/extension.hpp"
-#include "../../src/core/capabilities/WirelessCapability.hpp"
-#include <QObject>
-#include <QDBusInterface>
 #include <QDBusConnection>
+#include <QDBusInterface>
 #include <QDBusReply>
-#include <QTimer>
 #include <QList>
+#include <QObject>
+#include <QTimer>
 #include <QVariantMap>
+#include "../../src/core/capabilities/WirelessCapability.hpp"
+#include "../../src/extensions/extension.hpp"
 
-namespace opencardev { namespace crankshaft {
+namespace opencardev {
+namespace crankshaft {
 namespace extensions {
 namespace wireless {
 
@@ -38,7 +39,7 @@ namespace wireless {
  * Provides WiFi scanning, connection management, and AP mode.
  */
 class WirelessExtension : public Extension {
-public:
+  public:
     WirelessExtension();
     ~WirelessExtension() override;
 
@@ -57,7 +58,7 @@ public:
     // Configuration
     void registerConfigItems(core::config::ConfigManager* manager) override;
 
-private:
+  private:
     void setupEventHandlers();
     void setupNetworkManager();
     void scanNetworksInternal();
@@ -65,15 +66,16 @@ private:
     void disconnectInternal();
     void configureAccessPointInternal(const QString& ssid, const QString& password);
     void updateConnectionState();
-    void publishNetworkList(const QList<core::capabilities::WirelessCapability::NetworkInfo>& networks);
+    void publishNetworkList(
+        const QList<core::capabilities::WirelessCapability::NetworkInfo>& networks);
     void publishConnectionStateChanged();
-    
+
     // NetworkManager D-Bus methods
     QList<QDBusObjectPath> getWirelessDevices();
     QList<QDBusObjectPath> getAccessPoints(const QDBusObjectPath& devicePath);
     QVariantMap getAccessPointProperties(const QDBusObjectPath& apPath);
     QString getActiveConnectionSsid();
-    
+
     // Event handlers
     void handleScanRequest(const QVariantMap& data);
     void handleConnectRequest(const QVariantMap& data);
@@ -81,17 +83,17 @@ private:
     void handleAccessPointRequest(const QVariantMap& data);
     void handleForgetNetworkRequest(const QVariantMap& data);
     void handleToggleWifiRequest(const QVariantMap& data);
-    
+
     QDBusInterface* nmInterface_;
     QDBusInterface* settingsInterface_;
     QTimer* scanTimer_;
     QTimer* stateMonitorTimer_;
-    
+
     QList<core::capabilities::WirelessCapability::NetworkInfo> cachedNetworks_;
     QString currentSsid_;
     bool isScanning_;
     bool wifiEnabled_;
-    
+
     QList<int> eventSubscriptions_;
 };
 

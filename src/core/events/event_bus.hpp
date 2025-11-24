@@ -19,12 +19,12 @@
 
 #pragma once
 
-#include <QObject>
-#include <QVariantMap>
-#include <QString>
-#include <functional>
 #include <QHash>
 #include <QList>
+#include <QObject>
+#include <QString>
+#include <QVariantMap>
+#include <functional>
 #include <memory>
 
 namespace opencardev::crankshaft {
@@ -35,23 +35,23 @@ using EventCallback = std::function<void(const QVariantMap&)>;
 class EventBus : public QObject {
     Q_OBJECT
 
-public:
-    explicit EventBus(QObject *parent = nullptr);
+  public:
+    explicit EventBus(QObject* parent = nullptr);
     ~EventBus() override;
 
     // Subscribe to an event
     int subscribe(const QString& event_name, EventCallback callback);
-    
+
     // Unsubscribe from an event
     void unsubscribe(int subscription_id);
-    
+
     // Publish an event
     void publish(const QString& event_name, const QVariantMap& data = QVariantMap());
 
-signals:
+  signals:
     void eventPublished(const QString& event_name, const QVariantMap& data);
 
-private:
+  private:
     struct Subscription {
         int id;
         QString event_name;

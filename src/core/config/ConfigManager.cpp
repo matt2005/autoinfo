@@ -18,23 +18,23 @@
  */
 
 #include "ConfigManager.hpp"
-#include <QFile>
+#include <QDataStream>
+#include <QDateTime>
+#include <QDebug>
 #include <QDir>
-#include <QStandardPaths>
+#include <QFile>
+#include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
-#include <QJsonArray>
-#include <QDebug>
-#include <QDateTime>
-#include <QDataStream>
+#include <QStandardPaths>
 
-namespace opencardev { namespace crankshaft {
-namespace core { namespace config {
+namespace opencardev {
+namespace crankshaft {
+namespace core {
+namespace config {
 
 ConfigManager::ConfigManager(QObject* parent)
-    : QObject(parent),
-      current_complexity_(ConfigComplexity::Basic) {
-}
+    : QObject(parent), current_complexity_(ConfigComplexity::Basic) {}
 
 ConfigManager::~ConfigManager() {
     save();
@@ -43,10 +43,10 @@ ConfigManager::~ConfigManager() {
 void ConfigManager::registerConfigPage(const ConfigPage& page) {
     QString key = makeKey(page.domain, page.extension);
     config_pages_[key] = page;
-    
+
     // Load saved values if they exist
     loadExtensionConfig(page.domain, page.extension);
-    
+
     qInfo() << "Registered config page:" << key;
     emit configPageRegistered(page.domain, page.extension);
 }
@@ -87,7 +87,7 @@ QVariant ConfigManager::getValue(const QString& domain, const QString& extension
     if (!config_pages_.contains(pageKey)) {
         return QVariant();
     }
-    
+
     const ConfigPage& page = config_pages_[pageKey];
     for (const ConfigSection& sec : page.sections) {
         if (sec.key == section) {
@@ -98,7 +98,7 @@ QVariant ConfigManager::getValue(const QString& domain, const QString& extension
             }
         }
     }
-    
+
     return QVariant();
 }
 
@@ -111,21 +111,20 @@ QVariant ConfigManager::getValue(const QString& fullPath) const {
 }
 
 bool ConfigManager::setValue(const QString& domain, const QString& extension,
-                             const QString& section, const QString& key, 
-                             const QVariant& value) {
+                             const QString& section, const QString& key, const QVariant& value) {
     QString pageKey = makeKey(domain, extension);
     if (!config_pages_.contains(pageKey)) {
         return false;
     }
-    
+
     ConfigPage& page = config_pages_[pageKey];
     for (ConfigSection& sec : page.sections) {
         if (sec.key == section) {
             for (ConfigItem& item : sec.items) {
                 if (item.key == key) {
                     if (item.readOnly) {
-                        qWarning() << "Attempt to set read-only config item:" 
-                                  << domain << "." << extension << "." << section << "." << key;
+                        qWarning() << "Attempt to set read-only config item:" << domain << "."
+                                   << extension << "." << section << "." << key;
                         return false;
                     }
                     item.currentValue = value;
@@ -136,7 +135,7 @@ bool ConfigManager::setValue(const QString& domain, const QString& extension,
             }
         }
     }
-    
+
     return false;
 }
 
@@ -153,7 +152,7 @@ void ConfigManager::resetToDefaults(const QString& domain, const QString& extens
     if (!config_pages_.contains(pageKey)) {
         return;
     }
-    
+
     ConfigPage& page = config_pages_[pageKey];
     for (ConfigSection& section : page.sections) {
         for (ConfigItem& item : section.items) {
@@ -161,46 +160,48 @@ void ConfigManager::resetToDefaults(const QString& domain, const QString& extens
             emit configValueChanged(domain, extension, section.key, item.key, item.defaultValue);
         }
     }
-    
+
     saveExtensionConfig(domain, extension);
     qInfo() << "Reset config to defaults:" << pageKey;
 }
 
 void ConfigManager::resetSectionToDefaults(const QString& domain, const QString& extension,
-                                          const QString& sectionKey) {
+                                           const QString& sectionKey) {
     QString pageKey = makeKey(domain, extension);
     if (!config_pages_.contains(pageKey)) {
         return;
     }
-    
+
     ConfigPage& page = config_pages_[pageKey];
     for (ConfigSection& section : page.sections) {
         if (section.key == sectionKey) {
             for (ConfigItem& item : section.items) {
                 item.currentValue = item.defaultValue;
-                emit configValueChanged(domain, extension, section.key, item.key, item.defaultValue);
+                emit configValueChanged(domain, extension, section.key, item.key,
+                                        item.defaultValue);
             }
             break;
         }
     }
-    
+
     saveExtensionConfig(domain, extension);
 }
 
 void ConfigManager::resetItemToDefault(const QString& domain, const QString& extension,
-                                      const QString& sectionKey, const QString& itemKey) {
+                                       const QString& sectionKey, const QString& itemKey) {
     QString pageKey = makeKey(domain, extension);
     if (!config_pages_.contains(pageKey)) {
         return;
     }
-    
+
     ConfigPage& page = config_pages_[pageKey];
     for (ConfigSection& section : page.sections) {
         if (section.key == sectionKey) {
             for (ConfigItem& item : section.items) {
                 if (item.key == itemKey) {
                     item.currentValue = item.defaultValue;
-                    emit configValueChanged(domain, extension, section.key, item.key, item.defaultValue);
+                    emit configValueChanged(domain, extension, section.key, item.key,
+                                            item.defaultValue);
                     saveExtensionConfig(domain, extension);
                     return;
                 }
@@ -234,18 +235,18 @@ bool ConfigManager::saveExtensionConfig(const QString& domain, const QString& ex
     if (!config_pages_.contains(pageKey)) {
         return false;
     }
-    
+
     QString filePath = getConfigFilePath(domain, extension);
     QDir().mkpath(QFileInfo(filePath).absolutePath());
-    
+
     const ConfigPage& page = config_pages_[pageKey];
-    
+
     // Build JSON structure
     QJsonObject root;
     root["domain"] = domain;
     root["extension"] = extension;
     root["version"] = "1.0";
-    
+
     QJsonObject sectionsObj;
     for (const ConfigSection& section : page.sections) {
         QJsonObject itemsObj;
@@ -257,17 +258,17 @@ bool ConfigManager::saveExtensionConfig(const QString& domain, const QString& ex
         sectionsObj[section.key] = itemsObj;
     }
     root["config"] = sectionsObj;
-    
+
     QJsonDocument doc(root);
     QFile file(filePath);
     if (!file.open(QIODevice::WriteOnly)) {
         qWarning() << "Failed to save config:" << filePath;
         return false;
     }
-    
+
     file.write(doc.toJson());
     file.close();
-    
+
     qDebug() << "Saved config:" << filePath;
     return true;
 }
@@ -277,31 +278,31 @@ bool ConfigManager::loadExtensionConfig(const QString& domain, const QString& ex
     if (!config_pages_.contains(pageKey)) {
         return false;
     }
-    
+
     QString filePath = getConfigFilePath(domain, extension);
     QFile file(filePath);
     if (!file.open(QIODevice::ReadOnly)) {
         qDebug() << "No saved config found for:" << pageKey;
-        return false; // Not an error, just no saved config
+        return false;  // Not an error, just no saved config
     }
-    
+
     QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
     file.close();
-    
+
     if (!doc.isObject()) {
         qWarning() << "Invalid config file:" << filePath;
         return false;
     }
-    
+
     QJsonObject root = doc.object();
     QJsonObject sectionsObj = root["config"].toObject();
-    
+
     ConfigPage& page = config_pages_[pageKey];
     for (ConfigSection& section : page.sections) {
         if (!sectionsObj.contains(section.key)) {
             continue;
         }
-        
+
         QJsonObject itemsObj = sectionsObj[section.key].toObject();
         for (ConfigItem& item : section.items) {
             if (itemsObj.contains(item.key)) {
@@ -309,7 +310,7 @@ bool ConfigManager::loadExtensionConfig(const QString& domain, const QString& ex
             }
         }
     }
-    
+
     qDebug() << "Loaded config:" << filePath;
     return true;
 }
@@ -342,12 +343,12 @@ bool ConfigManager::parseFullPath(const QString& fullPath, QString& domain, QStr
         qWarning() << "Invalid config path:" << fullPath;
         return false;
     }
-    
+
     domain = parts[0];
     extension = parts[1];
     section = parts[2];
-    key = parts.mid(3).join('.'); // Allow dots in key names
-    
+    key = parts.mid(3).join('.');  // Allow dots in key names
+
     return true;
 }
 
@@ -356,22 +357,23 @@ QVariantMap ConfigManager::exportConfig(bool maskSecrets) const {
     root["version"] = "1.0";
     root["exportDate"] = QDateTime::currentDateTime().toString(Qt::ISODate);
     root["maskSecrets"] = maskSecrets;
-    
+
     QVariantList pages;
     for (const ConfigPage& page : config_pages_.values()) {
         pages.append(exportConfigPage(page, maskSecrets));
     }
     root["pages"] = pages;
-    
+
     return root;
 }
 
-QVariantMap ConfigManager::exportConfig(const QStringList& domainExtensions, bool maskSecrets) const {
+QVariantMap ConfigManager::exportConfig(const QStringList& domainExtensions,
+                                        bool maskSecrets) const {
     QVariantMap root;
     root["version"] = "1.0";
     root["exportDate"] = QDateTime::currentDateTime().toString(Qt::ISODate);
     root["maskSecrets"] = maskSecrets;
-    
+
     QVariantList pages;
     for (const QString& domainExtension : domainExtensions) {
         if (config_pages_.contains(domainExtension)) {
@@ -379,7 +381,7 @@ QVariantMap ConfigManager::exportConfig(const QStringList& domainExtensions, boo
         }
     }
     root["pages"] = pages;
-    
+
     return root;
 }
 
@@ -388,20 +390,20 @@ bool ConfigManager::importConfig(const QVariantMap& config, bool overwriteExisti
         qWarning() << "Unsupported config version:" << config.value("version").toString();
         return false;
     }
-    
+
     QVariantList pages = config.value("pages").toList();
     bool allSuccess = true;
-    
+
     for (const QVariant& pageVar : pages) {
         QVariantMap pageData = pageVar.toMap();
         QString domain = pageData.value("domain").toString();
         QString extension = pageData.value("extension").toString();
-        
+
         if (!importConfigPage(domain, extension, pageData, overwriteExisting)) {
             allSuccess = false;
         }
     }
-    
+
     return allSuccess;
 }
 
@@ -411,34 +413,34 @@ bool ConfigManager::importConfig(const QVariantMap& config, const QStringList& d
         qWarning() << "Unsupported config version:" << config.value("version").toString();
         return false;
     }
-    
+
     QVariantList pages = config.value("pages").toList();
     bool allSuccess = true;
-    
+
     for (const QVariant& pageVar : pages) {
         QVariantMap pageData = pageVar.toMap();
         QString domain = pageData.value("domain").toString();
         QString extension = pageData.value("extension").toString();
         QString key = makeKey(domain, extension);
-        
+
         if (!domainExtensions.contains(key)) {
-            continue; // Skip extensions not in the filter list
+            continue;  // Skip extensions not in the filter list
         }
-        
+
         if (!importConfigPage(domain, extension, pageData, overwriteExisting)) {
             allSuccess = false;
         }
     }
-    
+
     return allSuccess;
 }
 
 bool ConfigManager::backupToFile(const QString& filePath, bool maskSecrets, bool compress) {
     QVariantMap config = exportConfig(maskSecrets);
-    
+
     QJsonDocument doc = QJsonDocument::fromVariant(config);
     QByteArray data = doc.toJson(QJsonDocument::Indented);
-    
+
     if (compress) {
         return compressToFile(data, filePath);
     } else {
@@ -457,10 +459,10 @@ bool ConfigManager::backupToFile(const QString& filePath, bool maskSecrets, bool
 bool ConfigManager::backupToFile(const QString& filePath, const QStringList& domainExtensions,
                                  bool maskSecrets, bool compress) {
     QVariantMap config = exportConfig(domainExtensions, maskSecrets);
-    
+
     QJsonDocument doc = QJsonDocument::fromVariant(config);
     QByteArray data = doc.toJson(QJsonDocument::Indented);
-    
+
     if (compress) {
         return compressToFile(data, filePath);
     } else {
@@ -479,7 +481,7 @@ bool ConfigManager::backupToFile(const QString& filePath, const QStringList& dom
 bool ConfigManager::restoreFromFile(const QString& filePath, bool overwriteExisting) {
     bool success = false;
     QByteArray data;
-    
+
     // Try to decompress first (handles both compressed and uncompressed)
     if (filePath.endsWith(".gz")) {
         data = decompressFromFile(filePath, success);
@@ -496,20 +498,20 @@ bool ConfigManager::restoreFromFile(const QString& filePath, bool overwriteExist
         file.close();
         success = true;
     }
-    
+
     QJsonDocument doc = QJsonDocument::fromJson(data);
     if (!doc.isObject()) {
         qWarning() << "Invalid config file format:" << filePath;
         return false;
     }
-    
+
     QVariantMap config = doc.object().toVariantMap();
     bool result = importConfig(config, overwriteExisting);
-    
+
     if (result) {
         qInfo() << "Restored config from:" << filePath;
     }
-    
+
     return result;
 }
 
@@ -517,7 +519,7 @@ bool ConfigManager::restoreFromFile(const QString& filePath, const QStringList& 
                                     bool overwriteExisting) {
     bool success = false;
     QByteArray data;
-    
+
     // Try to decompress first (handles both compressed and uncompressed)
     if (filePath.endsWith(".gz")) {
         data = decompressFromFile(filePath, success);
@@ -534,20 +536,20 @@ bool ConfigManager::restoreFromFile(const QString& filePath, const QStringList& 
         file.close();
         success = true;
     }
-    
+
     QJsonDocument doc = QJsonDocument::fromJson(data);
     if (!doc.isObject()) {
         qWarning() << "Invalid config file format:" << filePath;
         return false;
     }
-    
+
     QVariantMap config = doc.object().toVariantMap();
     bool result = importConfig(config, domainExtensions, overwriteExisting);
-    
+
     if (result) {
         qInfo() << "Restored config from:" << filePath << "for extensions:" << domainExtensions;
     }
-    
+
     return result;
 }
 
@@ -561,13 +563,13 @@ QVariantMap ConfigManager::exportConfigPage(const ConfigPage& page, bool maskSec
     pageMap["domain"] = page.domain;
     pageMap["extension"] = page.extension;
     pageMap["title"] = page.title;
-    
+
     QVariantMap sectionsMap;
     for (const ConfigSection& section : page.sections) {
         QVariantMap itemsMap;
         for (const ConfigItem& item : section.items) {
             QVariant value = item.currentValue.isValid() ? item.currentValue : item.defaultValue;
-            
+
             // Mask secrets if requested
             if (maskSecrets && item.isSecret && value.isValid()) {
                 itemsMap[item.key] = "***MASKED***";
@@ -578,7 +580,7 @@ QVariantMap ConfigManager::exportConfigPage(const ConfigPage& page, bool maskSec
         sectionsMap[section.key] = itemsMap;
     }
     pageMap["config"] = sectionsMap;
-    
+
     return pageMap;
 }
 
@@ -589,60 +591,62 @@ bool ConfigManager::importConfigPage(const QString& domain, const QString& exten
         qWarning() << "Cannot import config for unregistered extension:" << pageKey;
         return false;
     }
-    
+
     QVariantMap sectionsMap = pageData.value("config").toMap();
     ConfigPage& page = config_pages_[pageKey];
-    
+
     for (ConfigSection& section : page.sections) {
         if (!sectionsMap.contains(section.key)) {
             continue;
         }
-        
+
         QVariantMap itemsMap = sectionsMap[section.key].toMap();
         for (ConfigItem& item : section.items) {
             if (!itemsMap.contains(item.key)) {
                 continue;
             }
-            
+
             QVariant importedValue = itemsMap[item.key];
-            
+
             // Skip masked secrets
             if (importedValue.toString() == "***MASKED***") {
-                qDebug() << "Skipping masked secret:" << domain << extension << section.key << item.key;
+                qDebug() << "Skipping masked secret:" << domain << extension << section.key
+                         << item.key;
                 continue;
             }
-            
+
             // Skip if not overwriting and value already set
             if (!overwriteExisting && item.currentValue.isValid()) {
-                qDebug() << "Skipping existing value:" << domain << extension << section.key << item.key;
+                qDebug() << "Skipping existing value:" << domain << extension << section.key
+                         << item.key;
                 continue;
             }
-            
+
             // Set the value
             item.currentValue = importedValue;
             emit configValueChanged(domain, extension, section.key, item.key, importedValue);
         }
     }
-    
+
     saveExtensionConfig(domain, extension);
     qInfo() << "Imported config for:" << pageKey;
     return true;
 }
 
 bool ConfigManager::compressToFile(const QByteArray& data, const QString& filePath) {
-    QByteArray compressed = qCompress(data, 9); // Maximum compression
-    
+    QByteArray compressed = qCompress(data, 9);  // Maximum compression
+
     QFile file(filePath);
     if (!file.open(QIODevice::WriteOnly)) {
         qWarning() << "Failed to open file for compressed backup:" << filePath;
         return false;
     }
-    
+
     file.write(compressed);
     file.close();
-    
-    qInfo() << "Backed up config to compressed file:" << filePath 
-            << "Original:" << data.size() << "bytes"
+
+    qInfo() << "Backed up config to compressed file:" << filePath << "Original:" << data.size()
+            << "bytes"
             << "Compressed:" << compressed.size() << "bytes";
     return true;
 }
@@ -654,21 +658,21 @@ QByteArray ConfigManager::decompressFromFile(const QString& filePath, bool& succ
         success = false;
         return QByteArray();
     }
-    
+
     QByteArray compressed = file.readAll();
     file.close();
-    
+
     QByteArray decompressed = qUncompress(compressed);
     if (decompressed.isEmpty() && !compressed.isEmpty()) {
         qWarning() << "Failed to decompress file:" << filePath;
         success = false;
         return QByteArray();
     }
-    
-    qDebug() << "Decompressed config from:" << filePath
-             << "Compressed:" << compressed.size() << "bytes"
+
+    qDebug() << "Decompressed config from:" << filePath << "Compressed:" << compressed.size()
+             << "bytes"
              << "Decompressed:" << decompressed.size() << "bytes";
-    
+
     success = true;
     return decompressed;
 }

@@ -18,9 +18,9 @@
  */
 
 #include "BluetoothBridge.hpp"
-#include <QQmlEngine>
-#include <QJSEngine>
 #include <QDebug>
+#include <QJSEngine>
+#include <QQmlEngine>
 #include "../core/application/application.hpp"
 
 BluetoothBridge* BluetoothBridge::s_instance_ = nullptr;
@@ -40,17 +40,18 @@ void BluetoothBridge::initialise(opencardev::crankshaft::core::Application* app)
 }
 
 void BluetoothBridge::registerQmlType() {
-    qmlRegisterSingletonType<BluetoothBridge>("CrankshaftReborn.Bluetooth", 1, 0, "BluetoothBridge",
+    qmlRegisterSingletonType<BluetoothBridge>(
+        "CrankshaftReborn.Bluetooth", 1, 0, "BluetoothBridge",
         [](QQmlEngine* engine, QJSEngine* scriptEngine) -> QObject* {
             Q_UNUSED(engine)
             Q_UNUSED(scriptEngine)
             return BluetoothBridge::instance();
-        }
-    );
+        });
 }
 
 void BluetoothBridge::publish(const QString& name, const QVariantMap& data) {
-    if (!app_ || !app_->eventBus()) return;
+    if (!app_ || !app_->eventBus())
+        return;
     QString full = QStringLiteral("bluetooth.") + name;
     app_->eventBus()->publish(full, data);
 }
@@ -85,36 +86,42 @@ void BluetoothBridge::dial(const QString& number) {
     publish("dial", data);
 }
 
-void BluetoothBridge::answerCall() { publish("answerCall", QVariantMap()); }
-void BluetoothBridge::rejectCall() { publish("rejectCall", QVariantMap()); }
-void BluetoothBridge::endCall() { publish("endCall", QVariantMap()); }
+void BluetoothBridge::answerCall() {
+    publish("answerCall", QVariantMap());
+}
+void BluetoothBridge::rejectCall() {
+    publish("rejectCall", QVariantMap());
+}
+void BluetoothBridge::endCall() {
+    publish("endCall", QVariantMap());
+}
 
 void BluetoothBridge::subscribeEvents() {
-    if (!app_ || !app_->eventBus()) return;
+    if (!app_ || !app_->eventBus())
+        return;
     auto bus = app_->eventBus();
     // Subscribe to events emitted by BluetoothExtension via EventCapability
-    subscriptions_.append(bus->subscribe("bluetooth.devices_updated", [this](const QVariantMap& data){
-        QVariantList list = data.value("devices").toList();
-        bool scanning = data.value("scanning").toBool();
-        emit devicesUpdated(list, scanning);
-    }));
-    subscriptions_.append(bus->subscribe("bluetooth.scan_started", [this](const QVariantMap& data){
+    subscriptions_.append(
+        bus->subscribe("bluetooth.devices_updated", [this](const QVariantMap& data) {
+            QVariantList list = data.value("devices").toList();
+            bool scanning = data.value("scanning").toBool();
+            emit devicesUpdated(list, scanning);
+        }));
+    subscriptions_.append(bus->subscribe("bluetooth.scan_started", [this](const QVariantMap& data) {
         emit scanStarted(data.value("timeoutMs").toInt());
     }));
-    subscriptions_.append(bus->subscribe("bluetooth.paired", [this](const QVariantMap& data){
+    subscriptions_.append(bus->subscribe("bluetooth.paired", [this](const QVariantMap& data) {
         emit paired(data.value("address").toString(), data.value("paired").toBool());
     }));
-    subscriptions_.append(bus->subscribe("bluetooth.connected", [this](const QVariantMap& data){
+    subscriptions_.append(bus->subscribe("bluetooth.connected", [this](const QVariantMap& data) {
         emit connected(data.value("address").toString(), data.value("connected").toBool());
     }));
-    subscriptions_.append(bus->subscribe("bluetooth.disconnected", [this](const QVariantMap& data){
+    subscriptions_.append(bus->subscribe("bluetooth.disconnected", [this](const QVariantMap& data) {
         emit disconnected(data.value("address").toString());
     }));
-    subscriptions_.append(bus->subscribe("bluetooth.call_status", [this](const QVariantMap& data){
-        emit callStatus(data.value("hasActiveCall").toBool(),
-                        data.value("number").toString(),
-                        data.value("contactName").toString(),
-                        data.value("incoming").toBool(),
+    subscriptions_.append(bus->subscribe("bluetooth.call_status", [this](const QVariantMap& data) {
+        emit callStatus(data.value("hasActiveCall").toBool(), data.value("number").toString(),
+                        data.value("contactName").toString(), data.value("incoming").toBool(),
                         data.value("active").toBool());
     }));
 }

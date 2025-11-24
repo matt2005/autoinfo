@@ -20,77 +20,78 @@
 #pragma once
 
 #include <QString>
+#include <QStringList>
 #include <QVariant>
 #include <QVariantMap>
-#include <QStringList>
 
-namespace opencardev { namespace crankshaft {
-namespace core { namespace config {
+namespace opencardev {
+namespace crankshaft {
+namespace core {
+namespace config {
 
 enum class ConfigComplexity {
-    Basic = 0,      // Simple on/off, basic settings
-    Advanced = 1,   // More detailed configuration
-    Expert = 2,     // Technical configuration
-    Developer = 3   // Debug and development options
+    Basic = 0,     // Simple on/off, basic settings
+    Advanced = 1,  // More detailed configuration
+    Expert = 2,    // Technical configuration
+    Developer = 3  // Debug and development options
 };
 
 enum class ConfigItemType {
-    Boolean,        // true/false toggle
-    Integer,        // Integer input
-    Double,         // Floating point input
-    String,         // Text input
-    Selection,      // Dropdown/radio selection
-    MultiSelection, // Multiple selection (checkboxes)
-    Color,          // Color picker
-    File,           // File selector
-    Directory,      // Directory selector
-    Custom          // Custom UI component
+    Boolean,         // true/false toggle
+    Integer,         // Integer input
+    Double,          // Floating point input
+    String,          // Text input
+    Selection,       // Dropdown/radio selection
+    MultiSelection,  // Multiple selection (checkboxes)
+    Color,           // Color picker
+    File,            // File selector
+    Directory,       // Directory selector
+    Custom           // Custom UI component
 };
 
 struct ConfigItem {
-    QString key;                    // Unique key (e.g., "autoconnect")
-    QString label;                  // Display label
-    QString description;            // Help text
-    ConfigItemType type;            // Input type
-    QVariant defaultValue;          // Default value
-    QVariant currentValue;          // Current value
-    ConfigComplexity complexity;    // Minimum complexity level to show
-    
+    QString key;                  // Unique key (e.g., "autoconnect")
+    QString label;                // Display label
+    QString description;          // Help text
+    ConfigItemType type;          // Input type
+    QVariant defaultValue;        // Default value
+    QVariant currentValue;        // Current value
+    ConfigComplexity complexity;  // Minimum complexity level to show
+
     // Type-specific properties
-    QVariantMap properties;         // Min/max for numbers, options for selection, etc.
-    
+    QVariantMap properties;  // Min/max for numbers, options for selection, etc.
+
     // Validation
     bool required;
-    QString validator;              // Regex or validation rule
-    
+    QString validator;  // Regex or validation rule
+
     // UI hints
     QString icon;
-    QString unit;                   // Unit label (%, ms, etc.)
+    QString unit;  // Unit label (%, ms, etc.)
     bool readOnly;
-    bool isSecret;                  // Should be masked in exports (passwords, tokens, etc.)
-    
+    bool isSecret;  // Should be masked in exports (passwords, tokens, etc.)
+
     ConfigItem()
         : type(ConfigItemType::String),
           complexity(ConfigComplexity::Basic),
           required(false),
           readOnly(false),
           isSecret(false) {}
-    
+
     QVariantMap toMap() const;
     static ConfigItem fromMap(const QVariantMap& map);
 };
 
 struct ConfigSection {
-    QString key;                    // Section key (e.g., "connection")
-    QString title;                  // Section title
-    QString description;            // Section description
-    QString icon;                   // Section icon
-    ConfigComplexity complexity;    // Minimum complexity level to show section
-    QList<ConfigItem> items;        // Configuration items in this section
-    
-    ConfigSection()
-        : complexity(ConfigComplexity::Basic) {}
-    
+    QString key;                  // Section key (e.g., "connection")
+    QString title;                // Section title
+    QString description;          // Section description
+    QString icon;                 // Section icon
+    ConfigComplexity complexity;  // Minimum complexity level to show section
+    QList<ConfigItem> items;      // Configuration items in this section
+
+    ConfigSection() : complexity(ConfigComplexity::Basic) {}
+
     QVariantMap toMap() const;
     static ConfigSection fromMap(const QVariantMap& map);
 };
@@ -103,15 +104,12 @@ struct ConfigPage {
     QString icon;                   // Page icon
     ConfigComplexity complexity;    // Minimum complexity level to show page
     QList<ConfigSection> sections;  // Configuration sections
-    
-    ConfigPage()
-        : complexity(ConfigComplexity::Basic) {}
-    
+
+    ConfigPage() : complexity(ConfigComplexity::Basic) {}
+
     // Helper to get full key: domain.extension
-    QString getFullKey() const {
-        return domain + "." + extension;
-    }
-    
+    QString getFullKey() const { return domain + "." + extension; }
+
     QVariantMap toMap() const;
     static ConfigPage fromMap(const QVariantMap& map);
 };

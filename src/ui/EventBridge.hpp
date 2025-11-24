@@ -19,13 +19,15 @@
 
 #pragma once
 
-#include <QObject>
-#include <QVariantMap>
-#include <QQmlEngine>
 #include <QJSEngine>
+#include <QObject>
+#include <QQmlEngine>
+#include <QVariantMap>
 
 namespace opencardev::crankshaft {
-namespace core { class EventBus; }
+namespace core {
+class EventBus;
+}
 namespace ui {
 
 /**
@@ -40,7 +42,7 @@ namespace ui {
  */
 class EventBridge : public QObject {
     Q_OBJECT
-public:
+  public:
     explicit EventBridge(QObject* parent = nullptr);
     ~EventBridge() override = default;
 
@@ -54,14 +56,13 @@ public:
     Q_INVOKABLE void publish(const QString& topic, const QVariantMap& data = QVariantMap());
 
     // Helper for common case: emit namespaced event name = extId + "." + name
-    Q_INVOKABLE void emitNamespaced(const QString& extensionId,
-                                    const QString& name,
+    Q_INVOKABLE void emitNamespaced(const QString& extensionId, const QString& name,
                                     const QVariantMap& data = QVariantMap());
 
-private:
+  private:
     static EventBridge* instance_;
     static core::EventBus* event_bus_;
 };
 
-} // namespace ui
-} // namespace opencardev::crankshaft
+}  // namespace ui
+}  // namespace opencardev::crankshaft

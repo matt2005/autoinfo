@@ -18,15 +18,16 @@
  */
 
 #include "ExtensionManagerBridge.hpp"
-#include "../extensions/extension_manager.hpp"
-#include "../extensions/extension_manifest.hpp"
-#include <QQmlEngine>
 #include <QDebug>
 #include <QFile>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QQmlEngine>
+#include "../extensions/extension_manager.hpp"
+#include "../extensions/extension_manifest.hpp"
 
-namespace opencardev { namespace crankshaft {
+namespace opencardev {
+namespace crankshaft {
 namespace ui {
 
 ExtensionManagerBridge* ExtensionManagerBridge::instance_ = nullptr;
@@ -41,10 +42,7 @@ ExtensionManagerBridge* ExtensionManagerBridge::instance() {
 void ExtensionManagerBridge::registerQmlType() {
     qmlRegisterSingletonType<ExtensionManagerBridge>(
         "CrankshaftReborn.UI", 1, 0, "ExtensionManagerBridge",
-        [](QQmlEngine*, QJSEngine*) -> QObject* {
-            return ExtensionManagerBridge::instance();
-        }
-    );
+        [](QQmlEngine*, QJSEngine*) -> QObject* { return ExtensionManagerBridge::instance(); });
 }
 
 void ExtensionManagerBridge::initialise(extensions::ExtensionManager* manager) {
@@ -54,20 +52,19 @@ void ExtensionManagerBridge::initialise(extensions::ExtensionManager* manager) {
 }
 
 ExtensionManagerBridge::ExtensionManagerBridge(QObject* parent)
-    : QObject(parent), extension_manager_(nullptr) {
-}
+    : QObject(parent), extension_manager_(nullptr) {}
 
 void ExtensionManagerBridge::connectSignals() {
     if (!extension_manager_) {
         return;
     }
 
-    connect(extension_manager_, &extensions::ExtensionManager::extensionLoaded,
-            this, &ExtensionManagerBridge::extensionLoaded);
-    connect(extension_manager_, &extensions::ExtensionManager::extensionUnloaded,
-            this, &ExtensionManagerBridge::extensionUnloaded);
-    connect(extension_manager_, &extensions::ExtensionManager::extensionError,
-            this, &ExtensionManagerBridge::extensionError);
+    connect(extension_manager_, &extensions::ExtensionManager::extensionLoaded, this,
+            &ExtensionManagerBridge::extensionLoaded);
+    connect(extension_manager_, &extensions::ExtensionManager::extensionUnloaded, this,
+            &ExtensionManagerBridge::extensionUnloaded);
+    connect(extension_manager_, &extensions::ExtensionManager::extensionError, this,
+            &ExtensionManagerBridge::extensionError);
 }
 
 QVariantList ExtensionManagerBridge::getLoadedExtensions() const {

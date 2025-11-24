@@ -18,34 +18,35 @@
  */
 
 #include "I18nManager.hpp"
-#include <QQmlEngine>
 #include <QCoreApplication>
+#include <QDebug>
 #include <QDir>
 #include <QFileInfo>
-#include <QDebug>
+#include <QQmlEngine>
 #include "../extensions/extension_manager.hpp"
 
-namespace opencardev { namespace crankshaft { namespace ui {
+namespace opencardev {
+namespace crankshaft {
+namespace ui {
 
 I18nManager* I18nManager::self_ = nullptr;
 
 I18nManager::I18nManager(QObject* parent)
-    : QObject(parent)
-    , engine_(nullptr)
-    , ext_manager_(nullptr)
-{
-}
+    : QObject(parent), engine_(nullptr), ext_manager_(nullptr) {}
 
 void I18nManager::registerQmlType() {
-    qmlRegisterSingletonInstance("CrankshaftReborn.I18n", 1, 0, "I18nManager", I18nManager::instance());
+    qmlRegisterSingletonInstance("CrankshaftReborn.I18n", 1, 0, "I18nManager",
+                                 I18nManager::instance());
 }
 
 I18nManager* I18nManager::instance() {
-    if (!self_) self_ = new I18nManager();
+    if (!self_)
+        self_ = new I18nManager();
     return self_;
 }
 
-void I18nManager::initialise(QQmlEngine* engine, opencardev::crankshaft::extensions::ExtensionManager* extMgr) {
+void I18nManager::initialise(QQmlEngine* engine,
+                             opencardev::crankshaft::extensions::ExtensionManager* extMgr) {
     auto* mgr = instance();
     mgr->engine_ = engine;
     mgr->ext_manager_ = extMgr;
@@ -61,20 +62,24 @@ QStringList I18nManager::availableLocales() const {
 
     for (const QString& base : searchPaths) {
         QDir dir(base);
-        if (!dir.exists()) continue;
+        if (!dir.exists())
+            continue;
         const QStringList files = dir.entryList(QStringList() << "core_*.qm", QDir::Files);
         for (const QString& f : files) {
-            const QString loc = f.mid(QString("core_").length()).chopped(3); // remove .qm
-            if (!locales.contains(loc)) locales << loc;
+            const QString loc = f.mid(QString("core_").length()).chopped(3);  // remove .qm
+            if (!locales.contains(loc))
+                locales << loc;
         }
     }
     // Ensure en_GB is present as default
-    if (!locales.contains("en_GB")) locales.prepend("en_GB");
+    if (!locales.contains("en_GB"))
+        locales.prepend("en_GB");
     return locales;
 }
 
 bool I18nManager::setLocale(const QString& locale) {
-    if (current_locale_ == locale) return true;
+    if (current_locale_ == locale)
+        return true;
 
     unloadTranslations();
     current_locale_ = locale;
@@ -85,7 +90,8 @@ bool I18nManager::setLocale(const QString& locale) {
     reloadExtensionTranslations(locale);
 
     // Retranslate QML
-    if (engine_) engine_->retranslate();
+    if (engine_)
+        engine_->retranslate();
     emit languageChanged(current_locale_);
     qInfo() << "I18n: language set to" << current_locale_;
     return true;
@@ -119,7 +125,8 @@ void I18nManager::reloadExtensionTranslations(const QString& locale) {
     }
     extension_translators_.clear();
 
-    if (!ext_manager_) return;
+    if (!ext_manager_)
+        return;
     const QStringList ids = ext_manager_->getLoadedExtensions();
     for (const QString& id : ids) {
         const auto manifest = ext_manager_->getManifest(id);
@@ -130,10 +137,14 @@ void I18nManager::reloadExtensionTranslations(const QString& locale) {
         const QString disk = manifest.isValid() ? manifest.id : id;
         Q_UNUSED(disk);
         // We don't have direct path here; rely on appDir extensions/<id>/i18n convention
-        candidates << (QCoreApplication::applicationDirPath() + "/extensions/" + id + "/i18n/" + id + "_" + locale + ".qm");
-        candidates << (QDir::currentPath() + "/extensions/" + id + "/i18n/" + id + "_" + locale + ".qm");
-        candidates << QString::fromUtf8("/usr/share/CrankshaftReborn/extensions/") + id + "/i18n/" + id + "_" + locale + ".qm";
-        candidates << QString::fromUtf8("/usr/share/crankshaft_reborn/extensions/") + id + "/i18n/" + id + "_" + locale + ".qm";
+        candidates << (QCoreApplication::applicationDirPath() + "/extensions/" + id + "/i18n/" +
+                       id + "_" + locale + ".qm");
+        candidates << (QDir::currentPath() + "/extensions/" + id + "/i18n/" + id + "_" + locale +
+                       ".qm");
+        candidates << QString::fromUtf8("/usr/share/CrankshaftReborn/extensions/") + id + "/i18n/" +
+                          id + "_" + locale + ".qm";
+        candidates << QString::fromUtf8("/usr/share/crankshaft_reborn/extensions/") + id +
+                          "/i18n/" + id + "_" + locale + ".qm";
 
         bool loaded = false;
         for (const QString& p : candidates) {
@@ -166,4 +177,6 @@ void I18nManager::unloadTranslations() {
     extension_translators_.clear();
 }
 
-} } }
+}  // namespace ui
+}  // namespace crankshaft
+}  // namespace opencardev

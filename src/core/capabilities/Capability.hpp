@@ -28,38 +28,38 @@ namespace capabilities {
 
 /**
  * Base capability interface for extension security model.
- * 
+ *
  * Capabilities are unforgeable tokens that grant extensions specific
  * permissions. Extensions cannot create capabilities - only the core
  * CapabilityManager can grant them based on manifest permissions.
- * 
+ *
  * This follows the capability-based security model where possession
  * of a capability object is proof of authorization to use it.
  */
 class Capability {
-public:
+  public:
     virtual ~Capability() = default;
-    
+
     /**
      * Get the capability identifier (e.g., "location", "network").
      */
     virtual QString id() const = 0;
-    
+
     /**
      * Check if this capability is still valid.
      * Returns false if capability has been revoked by core.
      */
     virtual bool isValid() const = 0;
-    
+
     /**
      * Get the extension ID that owns this capability.
      */
     virtual QString extensionId() const = 0;
 
-protected:
+  protected:
     // Only CapabilityManager can construct capabilities
     Capability() = default;
-    
+
     // Non-copyable and non-moveable to prevent forgery
     Capability(const Capability&) = delete;
     Capability& operator=(const Capability&) = delete;

@@ -32,12 +32,12 @@
 class WirelessBridge : public QObject {
     Q_OBJECT
 
-public:
+  public:
     static WirelessBridge* instance();
     static void initialise(opencardev::crankshaft::core::EventBus* eventBus);
     static void registerQmlType();
 
-public slots:
+  public slots:
     void scan();
     void connect(const QString& ssid, const QString& password);
     void disconnect();
@@ -45,16 +45,16 @@ public slots:
     void forget(const QString& ssid);
     void toggleWifi(bool enabled);
 
-signals:
+  signals:
     void networksUpdated(const QVariantList& networks);
     void connectionStateChanged(const QString& ssid, bool connected);
 
-private:
+  private:
     explicit WirelessBridge(QObject* parent = nullptr);
     void subscribeEvents();
-    
+
     opencardev::crankshaft::core::EventBus* event_bus_ = nullptr;
     QList<int> subscriptions_;
-    
+
     static WirelessBridge* instance_;
 };

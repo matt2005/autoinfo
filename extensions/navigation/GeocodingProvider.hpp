@@ -19,13 +19,13 @@
 
 #pragma once
 
-#include <QObject>
-#include <QString>
-#include <QVariantList>
-#include <QVariantMap>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
+#include <QObject>
+#include <QString>
 #include <QUrl>
+#include <QVariantList>
+#include <QVariantMap>
 
 namespace opencardev::crankshaft {
 namespace extensions {
@@ -37,55 +37,55 @@ namespace navigation {
  */
 class GeocodingProvider : public QObject {
     Q_OBJECT
-    
-public:
+
+  public:
     explicit GeocodingProvider(QObject* parent = nullptr) : QObject(parent) {}
     virtual ~GeocodingProvider() = default;
-    
+
     /**
      * Unique identifier for this provider (e.g., "nominatim", "google", "mapbox")
      */
     virtual QString id() const = 0;
-    
+
     /**
      * Display name for UI (e.g., "OpenStreetMap Nominatim")
      */
     virtual QString displayName() const = 0;
-    
+
     /**
      * Description of the provider and its features
      */
     virtual QString description() const = 0;
-    
+
     /**
      * Whether this provider requires an API key
      */
     virtual bool requiresApiKey() const = 0;
-    
+
     /**
      * Whether this provider is available (e.g., has valid config)
      */
     virtual bool isAvailable() const = 0;
-    
+
     /**
      * Set API key if required
      */
     virtual void setApiKey(const QString& apiKey) = 0;
-    
+
     /**
      * Perform geocoding search
      * @param query - Search string (address, place name, etc.)
      */
     virtual void search(const QString& query) = 0;
-    
+
     /**
      * Reverse geocoding: coordinates -> address
      * @param latitude - Latitude coordinate
      * @param longitude - Longitude coordinate
      */
     virtual void reverseGeocode(double latitude, double longitude) = 0;
-    
-signals:
+
+  signals:
     /**
      * Emitted when search results are ready
      * @param results - List of result maps with keys:
@@ -99,21 +99,21 @@ signals:
      *   - postcode (QString, optional)
      */
     void searchResultsReady(const QVariantList& results);
-    
+
     /**
      * Emitted when reverse geocoding is complete
      * @param address - Formatted address string
      * @param details - Map with detailed address components
      */
     void reverseGeocodeComplete(const QString& address, const QVariantMap& details);
-    
+
     /**
      * Emitted on error
      * @param error - Error message
      */
     void errorOccurred(const QString& error);
-    
-protected:
+
+  protected:
     /**
      * Helper to normalize results to common format
      */
@@ -122,6 +122,6 @@ protected:
     }
 };
 
-} // namespace navigation
-} // namespace extensions
-} // namespace openauto
+}  // namespace navigation
+}  // namespace extensions
+}  // namespace opencardev::crankshaft

@@ -19,12 +19,12 @@
 
 #pragma once
 
-#include "../../src/extensions/extension.hpp"
-#include "../../src/core/capabilities/BluetoothCapability.hpp"
-#include "../../src/core/capabilities/EventCapability.hpp"
 #include <QString>
 #include <QVector>
 #include <memory>
+#include "../../src/core/capabilities/BluetoothCapability.hpp"
+#include "../../src/core/capabilities/EventCapability.hpp"
+#include "../../src/extensions/extension.hpp"
 
 namespace opencardev::crankshaft {
 namespace extensions {
@@ -38,7 +38,7 @@ struct PhoneCall {
 };
 
 class BluetoothExtension : public Extension {
-public:
+  public:
     BluetoothExtension() = default;
     ~BluetoothExtension() override = default;
 
@@ -57,7 +57,7 @@ public:
     // Configuration
     void registerConfigItems(core::config::ConfigManager* manager) override;
 
-private:
+  private:
     void setupEventHandlers();
     void handleScanCommand(const QVariantMap& data);
     void handlePairCommand(const QVariantMap& data);

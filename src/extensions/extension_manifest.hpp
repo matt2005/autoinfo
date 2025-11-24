@@ -33,20 +33,20 @@ struct ExtensionManifest {
     QString description;
     QString author;
     QString type;  // service, ui, integration, platform
-    
+
     QStringList dependencies;
     QStringList platforms;  // linux, windows, all
-    
-    QString entry_point;  // Path to the main executable/library
+
+    QString entry_point;    // Path to the main executable/library
     QString config_schema;  // Path to JSON schema for configuration
-    
+
     struct Requirements {
         QString min_core_version;
         QStringList required_permissions;
     } requirements;
-    
+
     QVariantMap metadata;
-    
+
     static ExtensionManifest fromJson(const QVariantMap& json);
     QVariantMap toJson() const;
     bool isValid() const;

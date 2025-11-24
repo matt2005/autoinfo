@@ -19,20 +19,19 @@
 
 #include "application.hpp"
 #include <QDebug>
-#include "../config/ConfigManager.hpp"
 #include "../../extensions/extension_manager.hpp"
+#include "../config/ConfigManager.hpp"
 
 namespace opencardev::crankshaft {
 namespace core {
 
-Application::Application(QObject *parent)
+Application::Application(QObject* parent)
     : QObject(parent),
       event_bus_(std::make_unique<EventBus>()),
       websocket_server_(std::make_unique<WebSocketServer>()),
       capability_manager_(nullptr),
       config_manager_(nullptr),
-      extension_manager_(nullptr) {
-}
+      extension_manager_(nullptr) {}
 
 Application::~Application() {
     shutdown();
@@ -55,11 +54,11 @@ bool Application::initialize() {
 
 void Application::shutdown() {
     qInfo() << "Shutting down application...";
-    
+
     if (extension_manager_) {
         extension_manager_->unloadAll();
     }
-    
+
     if (websocket_server_) {
         websocket_server_->stop();
     }
@@ -77,7 +76,8 @@ void Application::setupWebSocketServer() {
 
 void Application::setupCapabilityManager() {
     qDebug() << "Setting up capability manager...";
-    capability_manager_ = std::make_unique<CapabilityManager>(event_bus_.get(), websocket_server_.get());
+    capability_manager_ =
+        std::make_unique<CapabilityManager>(event_bus_.get(), websocket_server_.get());
     qInfo() << "Capability manager initialized - extensions will use capability-based security";
 }
 

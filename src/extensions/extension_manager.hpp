@@ -19,10 +19,10 @@
 
 #pragma once
 
-#include <QObject>
-#include <QString>
 #include <QMap>
+#include <QObject>
 #include <QSet>
+#include <QString>
 #include <QStringList>
 #include <memory>
 #include "extension.hpp"
@@ -30,16 +30,16 @@
 
 namespace opencardev::crankshaft {
 namespace core {
-    class EventBus;
-    class WebSocketServer;
-    class CapabilityManager;
-    namespace config {
-        class ConfigManager;
-    }
+class EventBus;
+class WebSocketServer;
+class CapabilityManager;
+namespace config {
+class ConfigManager;
 }
+}  // namespace core
 
 namespace ui {
-    class ExtensionRegistry;
+class ExtensionRegistry;
 }
 
 namespace extensions {
@@ -47,42 +47,44 @@ namespace extensions {
 class ExtensionManager : public QObject {
     Q_OBJECT
 
-public:
-    explicit ExtensionManager(QObject *parent = nullptr);
+  public:
+    explicit ExtensionManager(QObject* parent = nullptr);
     ~ExtensionManager() override;
 
-    void initialize(core::CapabilityManager* capability_manager, core::config::ConfigManager* config_manager);
-    
+    void initialize(core::CapabilityManager* capability_manager,
+                    core::config::ConfigManager* config_manager);
+
     // Extension lifecycle
     bool loadExtension(const QString& extension_path);
-    bool registerBuiltInExtension(std::shared_ptr<Extension> extension, const QString& extension_path);
+    bool registerBuiltInExtension(std::shared_ptr<Extension> extension,
+                                  const QString& extension_path);
     bool unloadExtension(const QString& extension_id);
     bool enableExtension(const QString& extension_id);
     bool disableExtension(const QString& extension_id);
     void loadAll();
     void unloadAll();
-    
+
     // Extension queries
     bool isLoaded(const QString& extension_id) const;
     QStringList getLoadedExtensions() const;
     ExtensionManifest getManifest(const QString& extension_id) const;
-    
+
     // Extension discovery
     QStringList discoverExtensions(const QString& search_path);
 
-signals:
+  signals:
     void extensionLoaded(const QString& extension_id);
     void extensionUnloaded(const QString& extension_id);
     void extensionError(const QString& extension_id, const QString& error);
     void requestUnregisterComponents(const QString& extension_id);
 
-private:
+  private:
     struct ExtensionInfo {
         std::shared_ptr<Extension> extension;
         ExtensionManifest manifest;
         QString path;
         bool is_running;
-        
+
         // Make the struct copyable
         ExtensionInfo() : extension(nullptr), is_running(false) {}
         ExtensionInfo(const ExtensionInfo&) = default;
@@ -90,7 +92,7 @@ private:
         ExtensionInfo(ExtensionInfo&&) = default;
         ExtensionInfo& operator=(ExtensionInfo&&) = default;
     };
-    
+
     bool validateManifest(const ExtensionManifest& manifest);
     bool checkDependencies(const ExtensionManifest& manifest);
     ExtensionManifest loadManifest(const QString& manifest_path);
@@ -100,9 +102,8 @@ private:
     // Populates cycleGroup with extensions participating in a dependency cycle.
     QStringList resolveLoadOrder(const QMap<QString, ExtensionManifest>& manifests,
                                  const QSet<QString>& alreadyLoaded,
-                                 QMap<QString, QStringList>& missingDeps,
-                                 QStringList& cycleGroup);
-    
+                                 QMap<QString, QStringList>& missingDeps, QStringList& cycleGroup);
+
     QMap<QString, ExtensionInfo> extensions_;
     core::CapabilityManager* capability_manager_;
     core::config::ConfigManager* config_manager_;

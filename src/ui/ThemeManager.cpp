@@ -18,12 +18,12 @@
  */
 
 #include "ThemeManager.hpp"
-#include <QDir>
 #include <QCoreApplication>
+#include <QDebug>
+#include <QDir>
 #include <QFile>
 #include <QSettings>
 #include <QStandardPaths>
-#include <QDebug>
 
 namespace CrankshaftReborn {
 namespace UI {
@@ -31,11 +31,7 @@ namespace UI {
 ThemeManager* ThemeManager::s_instance = nullptr;
 
 ThemeManager::ThemeManager(QObject* parent)
-    : QObject(parent)
-    , m_currentTheme(Theme::defaultLight())
-    , m_currentThemeName("light")
-{
-}
+    : QObject(parent), m_currentTheme(Theme::defaultLight()), m_currentThemeName("light") {}
 
 ThemeManager* ThemeManager::instance() {
     if (!s_instance) {
@@ -50,16 +46,14 @@ void ThemeManager::initialize(const QString& themesPath) {
         // Try multiple locations
         QStringList searchPaths = {
             // System install (package)
-            "/usr/share/CrankshaftReborn/themes",
-            "/usr/share/crankshaft_reborn/themes",
+            "/usr/share/CrankshaftReborn/themes", "/usr/share/crankshaft_reborn/themes",
             // Application directory (portable/relocatable)
             QCoreApplication::applicationDirPath() + "/themes",
             // Current working directory (developer runs)
             QDir::currentPath() + "/themes",
             // Per-user data dir
-            QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/themes"
-        };
-        
+            QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/themes"};
+
         for (const QString& path : searchPaths) {
             if (QDir(path).exists()) {
                 m_themesPath = path;
@@ -67,28 +61,28 @@ void ThemeManager::initialize(const QString& themesPath) {
                 break;
             }
         }
-        
+
         if (m_themesPath.isEmpty()) {
             qWarning() << "No themes directory found, using built-in themes";
         }
     } else {
         m_themesPath = themesPath;
     }
-    
+
     // Load available themes
     loadAvailableThemes();
-    
+
     // Load saved theme preference or use default
     loadSavedTheme();
 }
 
 void ThemeManager::loadAvailableThemes() {
     m_availableThemes.clear();
-    
+
     // Always add built-in themes
     m_availableThemes["light"] = ":builtin:light";
     m_availableThemes["dark"] = ":builtin:dark";
-    
+
     // Load themes from filesystem
     if (!m_themesPath.isEmpty()) {
         QDir themesDir(m_themesPath);
@@ -96,7 +90,7 @@ void ThemeManager::loadAvailableThemes() {
             QStringList filters;
             filters << "*.json";
             QFileInfoList files = themesDir.entryInfoList(filters, QDir::Files);
-            
+
             for (const QFileInfo& fileInfo : files) {
                 QString themeName = fileInfo.baseName();
                 m_availableThemes[themeName] = fileInfo.absoluteFilePath();
@@ -108,14 +102,14 @@ void ThemeManager::loadAvailableThemes() {
 
 bool ThemeManager::loadTheme(const QString& themeName) {
     Theme newTheme;
-    
+
     if (!m_availableThemes.contains(themeName)) {
         qWarning() << "Theme not found:" << themeName;
         return false;
     }
-    
+
     QString themePath = m_availableThemes[themeName];
-    
+
     // Handle built-in themes
     if (themePath == ":builtin:light") {
         newTheme = Theme::defaultLight();
@@ -125,16 +119,16 @@ bool ThemeManager::loadTheme(const QString& themeName) {
         // Load from file
         newTheme = Theme::fromFile(themePath);
     }
-    
+
     // Apply theme
     m_currentTheme = newTheme;
     m_currentThemeName = themeName;
-    
+
     qDebug() << "Loaded theme:" << m_currentTheme.displayName << "(" << themeName << ")";
-    
+
     emit themeChanged();
     saveCurrentTheme();
-    
+
     return true;
 }
 
@@ -166,7 +160,7 @@ void ThemeManager::saveCurrentTheme() {
 void ThemeManager::loadSavedTheme() {
     QSettings settings("OpenCarDev", "CrankshaftReborn");
     QString savedTheme = settings.value("ui/theme", "light").toString();
-    
+
     if (m_availableThemes.contains(savedTheme)) {
         loadTheme(savedTheme);
     } else {
@@ -182,9 +176,8 @@ void ThemeManager::registerQmlType() {
             Q_UNUSED(engine)
             Q_UNUSED(scriptEngine)
             return ThemeManager::instance();
-        }
-    );
+        });
 }
 
-} // namespace UI
-} // namespace CrankshaftReborn
+}  // namespace UI
+}  // namespace CrankshaftReborn

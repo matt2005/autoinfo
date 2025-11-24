@@ -18,15 +18,12 @@
 */
 
 #include "WirelessBridge.hpp"
-#include <QQmlEngine>
 #include <QDebug>
+#include <QQmlEngine>
 
 WirelessBridge* WirelessBridge::instance_ = nullptr;
 
-WirelessBridge::WirelessBridge(QObject* parent)
-    : QObject(parent)
-{
-}
+WirelessBridge::WirelessBridge(QObject* parent) : QObject(parent) {}
 
 WirelessBridge* WirelessBridge::instance() {
     return instance_;
@@ -43,9 +40,7 @@ void WirelessBridge::initialise(opencardev::crankshaft::core::EventBus* eventBus
 
 void WirelessBridge::registerQmlType() {
     qmlRegisterSingletonType<WirelessBridge>(
-        "CrankshaftReborn.Wireless",
-        1, 0,
-        "WirelessBridge",
+        "CrankshaftReborn.Wireless", 1, 0, "WirelessBridge",
         [](QQmlEngine* engine, QJSEngine*) -> QObject* {
             if (instance_ == nullptr) {
                 qWarning() << "WirelessBridge instance not created yet!";
@@ -53,8 +48,7 @@ void WirelessBridge::registerQmlType() {
             }
             QQmlEngine::setObjectOwnership(instance_, QQmlEngine::CppOwnership);
             return instance_;
-        }
-    );
+        });
 }
 
 void WirelessBridge::subscribeEvents() {
@@ -62,35 +56,38 @@ void WirelessBridge::subscribeEvents() {
         qWarning() << "WirelessBridge: No event bus available";
         return;
     }
-    
+
     // Subscribe to networks_updated event from wireless extension
     int subId = event_bus_->subscribe("wireless.networks_updated", [this](const QVariantMap& data) {
         QVariantList networks = data.value("networks").toList();
         emit networksUpdated(networks);
     });
     subscriptions_.append(subId);
-    
+
     // Subscribe to connection_state_changed event
-    subId = event_bus_->subscribe("wireless.connection_state_changed", [this](const QVariantMap& data) {
-        QString ssid = data.value("ssid").toString();
-        bool connected = data.value("connected").toBool();
-        emit connectionStateChanged(ssid, connected);
-    });
+    subId =
+        event_bus_->subscribe("wireless.connection_state_changed", [this](const QVariantMap& data) {
+            QString ssid = data.value("ssid").toString();
+            bool connected = data.value("connected").toBool();
+            emit connectionStateChanged(ssid, connected);
+        });
     subscriptions_.append(subId);
-    
+
     qInfo() << "WirelessBridge: Subscribed to wireless events";
 }
 
 void WirelessBridge::scan() {
-    if (!event_bus_) return;
-    
+    if (!event_bus_)
+        return;
+
     QVariantMap data;
     event_bus_->publish("wireless.scan", data);
 }
 
 void WirelessBridge::connect(const QString& ssid, const QString& password) {
-    if (!event_bus_) return;
-    
+    if (!event_bus_)
+        return;
+
     QVariantMap data;
     data["ssid"] = ssid;
     data["password"] = password;
@@ -98,15 +95,17 @@ void WirelessBridge::connect(const QString& ssid, const QString& password) {
 }
 
 void WirelessBridge::disconnect() {
-    if (!event_bus_) return;
-    
+    if (!event_bus_)
+        return;
+
     QVariantMap data;
     event_bus_->publish("wireless.disconnect", data);
 }
 
 void WirelessBridge::configureAP(const QString& ssid, const QString& password) {
-    if (!event_bus_) return;
-    
+    if (!event_bus_)
+        return;
+
     QVariantMap data;
     data["ssid"] = ssid;
     data["password"] = password;
@@ -114,16 +113,18 @@ void WirelessBridge::configureAP(const QString& ssid, const QString& password) {
 }
 
 void WirelessBridge::forget(const QString& ssid) {
-    if (!event_bus_) return;
-    
+    if (!event_bus_)
+        return;
+
     QVariantMap data;
     data["ssid"] = ssid;
     event_bus_->publish("wireless.forget", data);
 }
 
 void WirelessBridge::toggleWifi(bool enabled) {
-    if (!event_bus_) return;
-    
+    if (!event_bus_)
+        return;
+
     QVariantMap data;
     data["enabled"] = enabled;
     event_bus_->publish("wireless.toggle", data);

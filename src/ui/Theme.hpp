@@ -19,9 +19,9 @@
 
 #pragma once
 
-#include <QString>
 #include <QColor>
 #include <QObject>
+#include <QString>
 
 namespace CrankshaftReborn {
 namespace UI {
@@ -33,72 +33,72 @@ struct Theme {
     QString name;
     QString displayName;
     bool isDark{false};
-    
+
     // Primary colors
     QColor primaryColor;
     QColor primaryLightColor;
     QColor primaryDarkColor;
-    
+
     // Secondary colors
     QColor secondaryColor;
     QColor secondaryLightColor;
     QColor secondaryDarkColor;
-    
+
     // Accent colors
     QColor accentColor;
     QColor accentLightColor;
     QColor accentDarkColor;
-    
+
     // Background colors
     QColor backgroundColor;
     QColor surfaceColor;
     QColor cardColor;
-    
+
     // Text colors
     QColor textColor;
     QColor textSecondaryColor;
     QColor textDisabledColor;
-    
+
     // UI element colors
     QColor dividerColor;
     QColor borderColor;
     QColor shadowColor;
-    
+
     // Status colors
     QColor successColor;
     QColor warningColor;
     QColor errorColor;
     QColor infoColor;
-    
+
     // Additional properties
     int cornerRadius{8};
     int spacing{8};
     int padding{16};
-    
+
     /**
      * @brief Load theme from JSON file
      * @param filePath Path to theme JSON file
      * @return Loaded theme or default theme on error
      */
     static Theme fromFile(const QString& filePath);
-    
+
     /**
      * @brief Save theme to JSON file
      * @param filePath Path to save theme JSON
      * @return True if saved successfully
      */
     bool toFile(const QString& filePath) const;
-    
+
     /**
      * @brief Create default light theme
      */
     static Theme defaultLight();
-    
+
     /**
      * @brief Create default dark theme
      */
     static Theme defaultDark();
 };
 
-} // namespace UI
-} // namespace CrankshaftReborn
+}  // namespace UI
+}  // namespace CrankshaftReborn

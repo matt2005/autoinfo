@@ -19,16 +19,16 @@
 
 #pragma once
 
-#include "../../src/extensions/extension.hpp"
-#include "../../src/core/capabilities/EventCapability.hpp"
 #include <memory>
+#include "../../src/core/capabilities/EventCapability.hpp"
+#include "../../src/extensions/extension.hpp"
 
 namespace opencardev::crankshaft {
 namespace extensions {
 namespace media {
 
 class MediaPlayerExtension : public Extension {
-public:
+  public:
     MediaPlayerExtension() = default;
     ~MediaPlayerExtension() override = default;
 
@@ -47,14 +47,14 @@ public:
     // Configuration
     void registerConfigItems(core::config::ConfigManager* manager) override;
 
-private:
+  private:
     void setupEventHandlers();
     void handlePlayCommand(const QVariantMap& data);
     void handlePauseCommand(const QVariantMap& data);
     void handleStopCommand(const QVariantMap& data);
     void handleNextCommand(const QVariantMap& data);
     void handlePreviousCommand(const QVariantMap& data);
-    
+
     std::shared_ptr<core::capabilities::EventCapability> eventCap_;
 };
 

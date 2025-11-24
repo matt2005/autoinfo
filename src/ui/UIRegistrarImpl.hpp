@@ -25,18 +25,14 @@ namespace opencardev::crankshaft {
 namespace ui {
 
 class UIRegistrarImpl : public core::ui::UIRegistrar {
-public:
+  public:
     ~UIRegistrarImpl() override = default;
 
-    void registerComponent(
-        const QString& extensionId,
-        const QString& slotType,
-        const QString& qmlPath,
-        const QVariantMap& metadata
-    ) override;
+    void registerComponent(const QString& extensionId, const QString& slotType,
+                           const QString& qmlPath, const QVariantMap& metadata) override;
 
     void unregisterComponent(const QString& componentId) override;
 };
 
-} // namespace ui
-} // namespace openauto
+}  // namespace ui
+}  // namespace opencardev::crankshaft

@@ -18,21 +18,18 @@
 */
 
 #include "UIRegistrarImpl.hpp"
-#include "ExtensionRegistry.hpp"
 #include <QDebug>
+#include "ExtensionRegistry.hpp"
 
 namespace opencardev::crankshaft {
 namespace ui {
 
-void UIRegistrarImpl::registerComponent(
-    const QString& extensionId,
-    const QString& slotType,
-    const QString& qmlPath,
-    const QVariantMap& metadata
-) {
+void UIRegistrarImpl::registerComponent(const QString& extensionId, const QString& slotType,
+                                        const QString& qmlPath, const QVariantMap& metadata) {
     auto* reg = ExtensionRegistry::instance();
     if (!reg) {
-        qWarning() << "ExtensionRegistry not initialised; cannot register" << extensionId << slotType << qmlPath;
+        qWarning() << "ExtensionRegistry not initialised; cannot register" << extensionId
+                   << slotType << qmlPath;
         return;
     }
     reg->registerComponent(extensionId, slotType, qmlPath, metadata);
@@ -47,5 +44,5 @@ void UIRegistrarImpl::unregisterComponent(const QString& componentId) {
     reg->unregisterComponent(componentId);
 }
 
-} // namespace ui
-} // namespace openauto
+}  // namespace ui
+}  // namespace opencardev::crankshaft

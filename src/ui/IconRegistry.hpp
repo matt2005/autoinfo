@@ -20,38 +20,39 @@
 #ifndef CRANKSHAFT_UI_ICON_REGISTRY_HPP
 #define CRANKSHAFT_UI_ICON_REGISTRY_HPP
 
+#include <QMap>
 #include <QObject>
 #include <QString>
 #include <QStringList>
 #include <QUrl>
-#include <QMap>
 
 namespace opencardev::crankshaft::ui {
 
 class IconRegistry : public QObject {
     Q_OBJECT
-public:
+  public:
     static IconRegistry* instance();
     static void registerQmlType();
 
-    Q_INVOKABLE QUrl iconUrl(const QString& name) const; // returns qrc:/ url for given icon name
+    Q_INVOKABLE QUrl iconUrl(const QString& name) const;  // returns qrc:/ url for given icon name
     Q_INVOKABLE bool exists(const QString& name) const;
     Q_INVOKABLE QStringList listAvailable() const { return available_; }
-    
+
     // Register extension-provided icons (namespace:name -> qrc path)
-    void registerExtensionIcon(const QString& extensionId, const QString& iconName, const QUrl& iconUrl);
+    void registerExtensionIcon(const QString& extensionId, const QString& iconName,
+                               const QUrl& iconUrl);
     void unregisterExtensionIcons(const QString& extensionId);
 
-private:
+  private:
     explicit IconRegistry(QObject* parent = nullptr);
     void buildIndex();
     QString normalise(const QString& name) const;
     QString extractNamespace(const QString& name, QString& outName) const;
 
     QStringList available_;
-    QMap<QString, QUrl> extensionIcons_; // full key (ext:name) -> url
+    QMap<QString, QUrl> extensionIcons_;  // full key (ext:name) -> url
 };
 
-} // namespace opencardev::crankshaft::ui
+}  // namespace opencardev::crankshaft::ui
 
-#endif // CRANKSHAFT_UI_ICON_REGISTRY_HPP
+#endif  // CRANKSHAFT_UI_ICON_REGISTRY_HPP

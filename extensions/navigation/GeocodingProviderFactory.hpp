@@ -19,12 +19,12 @@
 
 #pragma once
 
-#include "GeocodingProvider.hpp"
+#include <QMap>
 #include <QObject>
 #include <QString>
 #include <QStringList>
-#include <QMap>
 #include <memory>
+#include "GeocodingProvider.hpp"
 
 namespace opencardev::crankshaft {
 namespace extensions {
@@ -35,12 +35,12 @@ namespace navigation {
  * Manages registration and instantiation of providers
  */
 class GeocodingProviderFactory {
-public:
+  public:
     /**
      * Get singleton instance
      */
     static GeocodingProviderFactory& instance();
-    
+
     /**
      * Register a provider creator function
      * @param id - Provider identifier
@@ -50,12 +50,9 @@ public:
      * @param requiresApiKey - Whether API key is needed
      */
     using ProviderCreator = std::function<GeocodingProvider*(QObject*)>;
-    void registerProvider(const QString& id, 
-                         ProviderCreator creator,
-                         const QString& displayName,
-                         const QString& description,
-                         bool requiresApiKey);
-    
+    void registerProvider(const QString& id, ProviderCreator creator, const QString& displayName,
+                          const QString& description, bool requiresApiKey);
+
     /**
      * Create provider instance by ID
      * @param id - Provider identifier
@@ -63,12 +60,12 @@ public:
      * @return Provider instance or nullptr if not found
      */
     GeocodingProvider* createProvider(const QString& id, QObject* parent = nullptr) const;
-    
+
     /**
      * Get list of available provider IDs
      */
     QStringList availableProviders() const;
-    
+
     /**
      * Get provider metadata
      */
@@ -78,31 +75,31 @@ public:
         QString description;
         bool requiresApiKey;
     };
-    
+
     ProviderInfo getProviderInfo(const QString& id) const;
     QList<ProviderInfo> getAllProviderInfo() const;
-    
+
     /**
      * Register all built-in providers
      */
     static void registerBuiltInProviders();
-    
-private:
+
+  private:
     GeocodingProviderFactory() = default;
     ~GeocodingProviderFactory() = default;
     GeocodingProviderFactory(const GeocodingProviderFactory&) = delete;
     GeocodingProviderFactory& operator=(const GeocodingProviderFactory&) = delete;
-    
+
     struct ProviderRegistration {
         ProviderCreator creator;
         QString displayName;
         QString description;
         bool requiresApiKey;
     };
-    
+
     QMap<QString, ProviderRegistration> providers_;
 };
 
-} // namespace navigation
-} // namespace extensions
-} // namespace openauto
+}  // namespace navigation
+}  // namespace extensions
+}  // namespace opencardev::crankshaft

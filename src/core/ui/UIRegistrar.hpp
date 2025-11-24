@@ -31,19 +31,15 @@ namespace ui {
  * Implemented in UI module and injected into CapabilityManager at runtime.
  */
 class UIRegistrar {
-public:
+  public:
     virtual ~UIRegistrar() = default;
 
-    virtual void registerComponent(
-        const QString& extensionId,
-        const QString& slotType,
-        const QString& qmlPath,
-        const QVariantMap& metadata
-    ) = 0;
+    virtual void registerComponent(const QString& extensionId, const QString& slotType,
+                                   const QString& qmlPath, const QVariantMap& metadata) = 0;
 
     virtual void unregisterComponent(const QString& componentId) = 0;
 };
 
-} // namespace ui
-} // namespace core
-} // namespace openauto
+}  // namespace ui
+}  // namespace core
+}  // namespace opencardev::crankshaft

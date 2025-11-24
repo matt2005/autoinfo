@@ -20,20 +20,28 @@
 #pragma once
 
 #include <QObject>
-#include <QTranslator>
 #include <QStringList>
+#include <QTranslator>
 
 class QQmlEngine;
 
-namespace opencardev { namespace crankshaft { namespace extensions { class ExtensionManager; } } }
+namespace opencardev {
+namespace crankshaft {
+namespace extensions {
+class ExtensionManager;
+}
+}  // namespace crankshaft
+}  // namespace opencardev
 
-namespace opencardev { namespace crankshaft { namespace ui {
+namespace opencardev {
+namespace crankshaft {
+namespace ui {
 
 class I18nManager : public QObject {
     Q_OBJECT
     Q_PROPERTY(QString currentLocale READ currentLocale NOTIFY languageChanged)
 
-public:
+  public:
     static void registerQmlType();
     static I18nManager* instance();
 
@@ -46,10 +54,10 @@ public:
     static void initialise(QQmlEngine* engine,
                            opencardev::crankshaft::extensions::ExtensionManager* extMgr);
 
-signals:
+  signals:
     void languageChanged(const QString& newLocale);
 
-private:
+  private:
     explicit I18nManager(QObject* parent = nullptr);
     bool loadCoreTranslations(const QString& locale);
     void unloadTranslations();
@@ -63,4 +71,6 @@ private:
     QList<QTranslator*> extension_translators_;
 };
 
-} } }
+}  // namespace ui
+}  // namespace crankshaft
+}  // namespace opencardev

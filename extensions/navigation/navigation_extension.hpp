@@ -19,11 +19,11 @@
 
 #pragma once
 
-#include "../../src/extensions/extension.hpp"
-#include "RoutingProvider.hpp"
 #include <QGeoCoordinate>
 #include <QString>
 #include <QVector>
+#include "../../src/extensions/extension.hpp"
+#include "RoutingProvider.hpp"
 
 namespace opencardev::crankshaft {
 namespace extensions {
@@ -37,7 +37,7 @@ struct RoutePoint {
 };
 
 class NavigationExtension : public Extension {
-public:
+  public:
     NavigationExtension() = default;
     ~NavigationExtension() override = default;
 
@@ -56,7 +56,7 @@ public:
     // Configuration
     void registerConfigItems(core::config::ConfigManager* manager) override;
 
-private:
+  private:
     void setupEventHandlers();
     void handleNavigateToCommand(const QVariantMap& data);
     void handleCancelNavigationCommand(const QVariantMap& data);

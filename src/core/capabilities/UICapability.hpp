@@ -19,9 +19,9 @@
 
 #pragma once
 
-#include "Capability.hpp"
 #include <QString>
 #include <QVariantMap>
+#include "Capability.hpp"
 
 namespace opencardev::crankshaft {
 namespace core {
@@ -29,21 +29,21 @@ namespace capabilities {
 
 /**
  * UI capability for registering user interface components.
- * 
+ *
  * Extensions with this capability can:
  * - Register main view components (full-screen tabs)
  * - Register widget components (dashboard widgets, notifications)
  * - Show notifications
  * - Update status bar information
- * 
+ *
  * Extensions cannot directly access QML engine or Qt Quick APIs.
  */
 class UICapability : public Capability {
-public:
+  public:
     virtual ~UICapability() = default;
-    
+
     QString id() const override { return "ui"; }
-    
+
     /**
      * UI component slot types.
      */
@@ -54,63 +54,56 @@ public:
         StatusBar,     // Status bar item (e.g., GPS indicator)
         QuickAction    // Quick action button
     };
-    
+
     /**
      * Register a main view component.
      * Main views appear as tabs in the primary navigation.
-     * 
+     *
      * @param qmlPath Path to QML file (relative to extension assets or qrc:/)
      * @param metadata Component metadata (title, icon, etc.)
      * @return true if registered successfully
      */
     virtual bool registerMainView(const QString& qmlPath, const QVariantMap& metadata) = 0;
-    
+
     /**
      * Register a widget component.
      * Widgets can appear on dashboard or other widget containers.
-     * 
+     *
      * @param qmlPath Path to QML file
      * @param metadata Widget metadata (size, position hints, etc.)
      * @return true if registered successfully
      */
     virtual bool registerWidget(const QString& qmlPath, const QVariantMap& metadata) = 0;
-    
+
     /**
      * Show a temporary notification.
-     * 
+     *
      * @param title Notification title
      * @param message Notification message
      * @param duration Duration in milliseconds (0 = default)
      * @param icon Optional icon name or path
      */
-    virtual void showNotification(
-        const QString& title,
-        const QString& message,
-        int duration = 0,
-        const QString& icon = QString()
-    ) = 0;
-    
+    virtual void showNotification(const QString& title, const QString& message, int duration = 0,
+                                  const QString& icon = QString()) = 0;
+
     /**
      * Update status bar item.
-     * 
+     *
      * @param itemId Unique item identifier
      * @param text Status text
      * @param icon Optional icon
      */
-    virtual void updateStatusBar(
-        const QString& itemId,
-        const QString& text,
-        const QString& icon = QString()
-    ) = 0;
-    
+    virtual void updateStatusBar(const QString& itemId, const QString& text,
+                                 const QString& icon = QString()) = 0;
+
     /**
      * Unregister a UI component.
-     * 
+     *
      * @param componentId Component identifier (from registration)
      */
     virtual void unregisterComponent(const QString& componentId) = 0;
 
-protected:
+  protected:
     UICapability() = default;
 };
 

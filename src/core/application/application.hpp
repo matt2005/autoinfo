@@ -19,19 +19,19 @@
 
 #pragma once
 
-#include <memory>
 #include <QObject>
+#include <memory>
+#include "../capabilities/CapabilityManager.hpp"
 #include "../events/event_bus.hpp"
 #include "../network/websocket_server.hpp"
-#include "../capabilities/CapabilityManager.hpp"
 
 // Forward declarations
 namespace opencardev::crankshaft::core::config {
-    class ConfigManager;
+class ConfigManager;
 }
 
 namespace opencardev::crankshaft::extensions {
-    class ExtensionManager;
+class ExtensionManager;
 }
 
 namespace opencardev::crankshaft {
@@ -40,8 +40,8 @@ namespace core {
 class Application : public QObject {
     Q_OBJECT
 
-public:
-    explicit Application(QObject *parent = nullptr);
+  public:
+    explicit Application(QObject* parent = nullptr);
     ~Application() override;
 
     bool initialize();
@@ -54,7 +54,7 @@ public:
     config::ConfigManager* configManager() const;
     extensions::ExtensionManager* extensionManager() const;
 
-private:
+  private:
     void setupEventBus();
     void setupWebSocketServer();
     void setupCapabilityManager();

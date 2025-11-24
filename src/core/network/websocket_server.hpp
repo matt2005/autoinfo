@@ -19,11 +19,11 @@
 
 #pragma once
 
-#include <QObject>
-#include <QWebSocketServer>
-#include <QWebSocket>
 #include <QList>
+#include <QObject>
 #include <QString>
+#include <QWebSocket>
+#include <QWebSocketServer>
 
 namespace opencardev::crankshaft {
 namespace core {
@@ -31,28 +31,28 @@ namespace core {
 class WebSocketServer : public QObject {
     Q_OBJECT
 
-public:
-    explicit WebSocketServer(QObject *parent = nullptr);
+  public:
+    explicit WebSocketServer(QObject* parent = nullptr);
     ~WebSocketServer() override;
 
     bool start(quint16 port);
     void stop();
     bool isRunning() const;
-    
+
     void broadcast(const QString& message);
     void sendToClient(QWebSocket* client, const QString& message);
 
-signals:
+  signals:
     void clientConnected(QWebSocket* client);
     void clientDisconnected(QWebSocket* client);
     void messageReceived(QWebSocket* client, const QString& message);
 
-private slots:
+  private slots:
     void onNewConnection();
     void onTextMessageReceived(const QString& message);
     void onClientDisconnected();
 
-private:
+  private:
     QWebSocketServer* server_;
     QList<QWebSocket*> clients_;
 };

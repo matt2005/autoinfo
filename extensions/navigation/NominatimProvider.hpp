@@ -19,15 +19,15 @@
 
 #pragma once
 
-#include "GeocodingProvider.hpp"
+#include <QJsonArray>
+#include <QJsonDocument>
+#include <QJsonObject>
 #include <QNetworkAccessManager>
-#include <QNetworkRequest>
 #include <QNetworkReply>
+#include <QNetworkRequest>
 #include <QUrl>
 #include <QUrlQuery>
-#include <QJsonDocument>
-#include <QJsonArray>
-#include <QJsonObject>
+#include "GeocodingProvider.hpp"
 
 namespace opencardev::crankshaft {
 namespace extensions {
@@ -39,46 +39,46 @@ namespace navigation {
  */
 class NominatimProvider : public GeocodingProvider {
     Q_OBJECT
-    
-public:
+
+  public:
     explicit NominatimProvider(QObject* parent = nullptr);
     ~NominatimProvider() override = default;
-    
+
     QString id() const override { return "nominatim"; }
     QString displayName() const override { return "OpenStreetMap Nominatim"; }
-    QString description() const override { 
+    QString description() const override {
         return "Free geocoding service by OpenStreetMap. No API key required.";
     }
     bool requiresApiKey() const override { return false; }
     bool isAvailable() const override { return true; }
-    
+
     void setApiKey(const QString& apiKey) override { Q_UNUSED(apiKey); }
     void search(const QString& query) override;
     void reverseGeocode(double latitude, double longitude) override;
-    
+
     /**
      * Set custom Nominatim server URL (for self-hosted instances)
      */
     void setServerUrl(const QString& url) { serverUrl_ = url; }
-    
+
     /**
      * Set result limit (default: 10)
      */
     void setResultLimit(int limit) { resultLimit_ = limit; }
-    
-private slots:
+
+  private slots:
     void handleSearchReply(QNetworkReply* reply);
     void handleReverseReply(QNetworkReply* reply);
-    
-private:
+
+  private:
     QNetworkAccessManager* networkManager_;
     QString serverUrl_;
     int resultLimit_;
-    
+
     QVariantList parseSearchResults(const QJsonArray& results) const;
     QVariantMap parseReverseResult(const QJsonObject& result) const;
 };
 
-} // namespace navigation
-} // namespace extensions
-} // namespace openauto
+}  // namespace navigation
+}  // namespace extensions
+}  // namespace opencardev::crankshaft

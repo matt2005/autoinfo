@@ -18,10 +18,10 @@
  */
 
 #include "IconRegistry.hpp"
-#include <QDir>
-#include <QQmlEngine>
 #include <QDebug>
+#include <QDir>
 #include <QFileInfo>
+#include <QQmlEngine>
 
 namespace opencardev::crankshaft::ui {
 
@@ -39,7 +39,8 @@ IconRegistry::IconRegistry(QObject* parent) : QObject(parent) {
 }
 
 void IconRegistry::registerQmlType() {
-    qmlRegisterSingletonInstance("CrankshaftReborn.UI", 1, 0, "IconRegistry", IconRegistry::instance());
+    qmlRegisterSingletonInstance("CrankshaftReborn.UI", 1, 0, "IconRegistry",
+                                 IconRegistry::instance());
 }
 
 void IconRegistry::buildIndex() {
@@ -47,7 +48,7 @@ void IconRegistry::buildIndex() {
     QDir rootDir(":/icons");
     qDebug() << "IconRegistry: Root exists:" << rootDir.exists();
     qDebug() << "IconRegistry: Root entries:" << rootDir.entryList();
-    
+
     QDir dir(":/icons/mdi");
     qDebug() << "IconRegistry: mdi dir exists:" << dir.exists();
     const QStringList files = dir.entryList(QStringList() << "*.svg", QDir::Files);
@@ -82,19 +83,19 @@ QString IconRegistry::extractNamespace(const QString& name, QString& outName) co
         return name.left(colon);
     }
     outName = name;
-    return QStringLiteral("mdi"); // default namespace
+    return QStringLiteral("mdi");  // default namespace
 }
 
 QUrl IconRegistry::iconUrl(const QString& name) const {
     QString iconName;
     const QString ns = extractNamespace(name, iconName);
-    
+
     // Check extension icons first
     const QString fullKey = ns + ":" + iconName;
     if (extensionIcons_.contains(fullKey)) {
         return extensionIcons_.value(fullKey);
     }
-    
+
     // Check MDI built-in icons
     if (ns == "mdi") {
         const QString normalized = normalise(iconName);
@@ -102,7 +103,7 @@ QUrl IconRegistry::iconUrl(const QString& name) const {
             return QUrl(QStringLiteral("qrc:/icons/mdi/%1.svg").arg(normalized));
         }
     }
-    
+
     // Fallback to placeholder
     return QUrl(QStringLiteral("qrc:/icons/mdi/placeholder.svg"));
 }
@@ -111,19 +112,20 @@ bool IconRegistry::exists(const QString& name) const {
     QString iconName;
     const QString ns = extractNamespace(name, iconName);
     const QString fullKey = ns + ":" + iconName;
-    
+
     if (extensionIcons_.contains(fullKey)) {
         return true;
     }
-    
+
     if (ns == "mdi") {
         return available_.contains(normalise(iconName));
     }
-    
+
     return false;
 }
 
-void IconRegistry::registerExtensionIcon(const QString& extensionId, const QString& iconName, const QUrl& iconUrl) {
+void IconRegistry::registerExtensionIcon(const QString& extensionId, const QString& iconName,
+                                         const QUrl& iconUrl) {
     const QString key = extensionId + ":" + iconName;
     extensionIcons_[key] = iconUrl;
     qDebug() << "Registered extension icon:" << key << "->" << iconUrl;
@@ -141,4 +143,4 @@ void IconRegistry::unregisterExtensionIcons(const QString& extensionId) {
     }
 }
 
-} // namespace opencardev::crankshaft::ui
+}  // namespace opencardev::crankshaft::ui

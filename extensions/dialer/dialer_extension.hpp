@@ -19,17 +19,17 @@
 
 #pragma once
 
-#include "../../src/extensions/extension.hpp"
-#include "../../src/core/capabilities/UICapability.hpp"
-#include "../../src/core/capabilities/EventCapability.hpp"
 #include <memory>
+#include "../../src/core/capabilities/EventCapability.hpp"
+#include "../../src/core/capabilities/UICapability.hpp"
+#include "../../src/extensions/extension.hpp"
 
 namespace opencardev::crankshaft {
 namespace extensions {
 namespace dialer {
 
 class DialerExtension : public Extension {
-public:
+  public:
     DialerExtension() = default;
     ~DialerExtension() override = default;
 
@@ -48,12 +48,12 @@ public:
     // Configuration
     void registerConfigItems(core::config::ConfigManager* manager) override;
 
-private:
+  private:
     void setupEventHandlers();
 
     std::shared_ptr<core::capabilities::EventCapability> eventCap_;
 };
 
-} // namespace dialer
-} // namespace extensions
-} // namespace opencardev::crankshaft
+}  // namespace dialer
+}  // namespace extensions
+}  // namespace opencardev::crankshaft

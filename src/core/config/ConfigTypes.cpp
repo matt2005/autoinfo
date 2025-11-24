@@ -19,59 +19,84 @@
 
 #include "ConfigTypes.hpp"
 
-namespace opencardev { namespace crankshaft {
-namespace core { namespace config {
+namespace opencardev {
+namespace crankshaft {
+namespace core {
+namespace config {
 
 QString configComplexityToString(ConfigComplexity complexity) {
     switch (complexity) {
-        case ConfigComplexity::Basic:
-            return "basic";
-        case ConfigComplexity::Advanced:
-            return "advanced";
-        case ConfigComplexity::Expert:
-            return "expert";
-        case ConfigComplexity::Developer:
-            return "developer";
-        default:
-            return "basic";
+    case ConfigComplexity::Basic:
+        return "basic";
+    case ConfigComplexity::Advanced:
+        return "advanced";
+    case ConfigComplexity::Expert:
+        return "expert";
+    case ConfigComplexity::Developer:
+        return "developer";
+    default:
+        return "basic";
     }
 }
 
 ConfigComplexity stringToConfigComplexity(const QString& str) {
     QString lower = str.toLower();
-    if (lower == "advanced") return ConfigComplexity::Advanced;
-    if (lower == "expert") return ConfigComplexity::Expert;
-    if (lower == "developer" || lower == "dev") return ConfigComplexity::Developer;
+    if (lower == "advanced")
+        return ConfigComplexity::Advanced;
+    if (lower == "expert")
+        return ConfigComplexity::Expert;
+    if (lower == "developer" || lower == "dev")
+        return ConfigComplexity::Developer;
     return ConfigComplexity::Basic;
 }
 
 QString configItemTypeToString(ConfigItemType type) {
     switch (type) {
-        case ConfigItemType::Boolean: return "boolean";
-        case ConfigItemType::Integer: return "integer";
-        case ConfigItemType::Double: return "double";
-        case ConfigItemType::String: return "string";
-        case ConfigItemType::Selection: return "selection";
-        case ConfigItemType::MultiSelection: return "multiselection";
-        case ConfigItemType::Color: return "color";
-        case ConfigItemType::File: return "file";
-        case ConfigItemType::Directory: return "directory";
-        case ConfigItemType::Custom: return "custom";
-        default: return "string";
+    case ConfigItemType::Boolean:
+        return "boolean";
+    case ConfigItemType::Integer:
+        return "integer";
+    case ConfigItemType::Double:
+        return "double";
+    case ConfigItemType::String:
+        return "string";
+    case ConfigItemType::Selection:
+        return "selection";
+    case ConfigItemType::MultiSelection:
+        return "multiselection";
+    case ConfigItemType::Color:
+        return "color";
+    case ConfigItemType::File:
+        return "file";
+    case ConfigItemType::Directory:
+        return "directory";
+    case ConfigItemType::Custom:
+        return "custom";
+    default:
+        return "string";
     }
 }
 
 ConfigItemType stringToConfigItemType(const QString& str) {
     QString lower = str.toLower();
-    if (lower == "boolean" || lower == "bool") return ConfigItemType::Boolean;
-    if (lower == "integer" || lower == "int") return ConfigItemType::Integer;
-    if (lower == "double" || lower == "float") return ConfigItemType::Double;
-    if (lower == "selection" || lower == "select") return ConfigItemType::Selection;
-    if (lower == "multiselection") return ConfigItemType::MultiSelection;
-    if (lower == "color") return ConfigItemType::Color;
-    if (lower == "file") return ConfigItemType::File;
-    if (lower == "directory" || lower == "dir") return ConfigItemType::Directory;
-    if (lower == "custom") return ConfigItemType::Custom;
+    if (lower == "boolean" || lower == "bool")
+        return ConfigItemType::Boolean;
+    if (lower == "integer" || lower == "int")
+        return ConfigItemType::Integer;
+    if (lower == "double" || lower == "float")
+        return ConfigItemType::Double;
+    if (lower == "selection" || lower == "select")
+        return ConfigItemType::Selection;
+    if (lower == "multiselection")
+        return ConfigItemType::MultiSelection;
+    if (lower == "color")
+        return ConfigItemType::Color;
+    if (lower == "file")
+        return ConfigItemType::File;
+    if (lower == "directory" || lower == "dir")
+        return ConfigItemType::Directory;
+    if (lower == "custom")
+        return ConfigItemType::Custom;
     return ConfigItemType::String;
 }
 
@@ -120,13 +145,13 @@ QVariantMap ConfigSection::toMap() const {
     map["description"] = description;
     map["icon"] = icon;
     map["complexity"] = configComplexityToString(complexity);
-    
+
     QVariantList itemsList;
     for (const ConfigItem& item : items) {
         itemsList.append(item.toMap());
     }
     map["items"] = itemsList;
-    
+
     return map;
 }
 
@@ -137,12 +162,12 @@ ConfigSection ConfigSection::fromMap(const QVariantMap& map) {
     section.description = map.value("description").toString();
     section.icon = map.value("icon").toString();
     section.complexity = stringToConfigComplexity(map.value("complexity").toString());
-    
+
     QVariantList itemsList = map.value("items").toList();
     for (const QVariant& itemVar : itemsList) {
         section.items.append(ConfigItem::fromMap(itemVar.toMap()));
     }
-    
+
     return section;
 }
 
@@ -154,13 +179,13 @@ QVariantMap ConfigPage::toMap() const {
     map["description"] = description;
     map["icon"] = icon;
     map["complexity"] = configComplexityToString(complexity);
-    
+
     QVariantList sectionsList;
     for (const ConfigSection& section : sections) {
         sectionsList.append(section.toMap());
     }
     map["sections"] = sectionsList;
-    
+
     return map;
 }
 
@@ -172,12 +197,12 @@ ConfigPage ConfigPage::fromMap(const QVariantMap& map) {
     page.description = map.value("description").toString();
     page.icon = map.value("icon").toString();
     page.complexity = stringToConfigComplexity(map.value("complexity").toString());
-    
+
     QVariantList sectionsList = map.value("sections").toList();
     for (const QVariant& sectionVar : sectionsList) {
         page.sections.append(ConfigSection::fromMap(sectionVar.toMap()));
     }
-    
+
     return page;
 }
 

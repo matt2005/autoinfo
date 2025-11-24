@@ -19,17 +19,21 @@
 
 #pragma once
 
+#include <QList>
 #include <QObject>
+#include <QPointer>
+#include <QString>
 #include <QVariant>
 #include <QVariantList>
 #include <QVariantMap>
-#include <QString>
-#include <QList>
-#include <QPointer>
 #include "../core/application/application.hpp"
 #include "../core/events/event_bus.hpp"
 
-namespace opencardev::crankshaft { namespace core { class Application; } }
+namespace opencardev::crankshaft {
+namespace core {
+class Application;
+}
+}  // namespace opencardev::crankshaft
 
 /**
  * BluetoothBridge exposes BluetoothExtension events into QML and converts
@@ -37,7 +41,7 @@ namespace opencardev::crankshaft { namespace core { class Application; } }
  */
 class BluetoothBridge : public QObject {
     Q_OBJECT
-public:
+  public:
     static BluetoothBridge* instance();
     static void initialise(opencardev::crankshaft::core::Application* app);
     static void registerQmlType();
@@ -51,15 +55,16 @@ public:
     Q_INVOKABLE void rejectCall();
     Q_INVOKABLE void endCall();
 
-signals:
+  signals:
     void devicesUpdated(const QVariantList& devices, bool scanning);
     void scanStarted(int timeoutMs);
     void paired(const QString& address, bool paired);
     void connected(const QString& address, bool connected);
     void disconnected(const QString& address);
-    void callStatus(bool hasActiveCall, const QString& number, const QString& contactName, bool incoming, bool active);
+    void callStatus(bool hasActiveCall, const QString& number, const QString& contactName,
+                    bool incoming, bool active);
 
-private:
+  private:
     explicit BluetoothBridge(QObject* parent = nullptr);
     void subscribeEvents();
     void publish(const QString& name, const QVariantMap& data = {});

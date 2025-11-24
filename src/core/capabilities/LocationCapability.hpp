@@ -19,9 +19,9 @@
 
 #pragma once
 
-#include "Capability.hpp"
 #include <QGeoCoordinate>
 #include <functional>
+#include "Capability.hpp"
 
 namespace opencardev::crankshaft {
 namespace core {
@@ -29,59 +29,53 @@ namespace capabilities {
 
 /**
  * Location capability for GPS/positioning access.
- * 
+ *
  * Extensions with this capability can:
  * - Get current GPS position
  * - Subscribe to location updates
  * - Get location accuracy and metadata
- * 
+ *
  * Extensions cannot directly access Qt positioning APIs.
  */
 class LocationCapability : public Capability {
-public:
+  public:
     virtual ~LocationCapability() = default;
-    
+
     QString id() const override { return "location"; }
 
     // GPS device modes supported by the location capability.
     // Internal/USB/Hat use the underlying platform position source.
     // MockStatic provides a fixed coordinate for development.
     // MockIP resolves approximate location from public IP (network required).
-    enum class DeviceMode {
-        Internal,
-        USB,
-        Hat,
-        MockStatic,
-        MockIP
-    };
-    
+    enum class DeviceMode { Internal, USB, Hat, MockStatic, MockIP };
+
     /**
      * Get the current GPS position.
      * Returns invalid coordinate if location unavailable.
      */
     virtual QGeoCoordinate getCurrentPosition() const = 0;
-    
+
     /**
      * Subscribe to location updates.
      * Callback is invoked whenever position changes.
-     * 
+     *
      * @param callback Function to call with new position
      * @return Subscription ID for unsubscribe
      */
     virtual int subscribeToUpdates(std::function<void(const QGeoCoordinate&)> callback) = 0;
-    
+
     /**
      * Unsubscribe from location updates.
-     * 
+     *
      * @param subscriptionId ID returned from subscribeToUpdates
      */
     virtual void unsubscribe(int subscriptionId) = 0;
-    
+
     /**
      * Get location accuracy in metres.
      */
     virtual double getAccuracy() const = 0;
-    
+
     /**
      * Check if location service is available.
      */
@@ -94,7 +88,7 @@ public:
     // Get current active device mode.
     virtual DeviceMode deviceMode() const = 0;
 
-protected:
+  protected:
     LocationCapability() = default;
 };
 

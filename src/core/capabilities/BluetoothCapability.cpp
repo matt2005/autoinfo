@@ -18,14 +18,14 @@
  */
 
 #include "BluetoothCapability.hpp"
-#include "Capability.hpp"
-#include "CapabilityManager.hpp"
-#include <QBluetoothLocalDevice>
 #include <QBluetoothDeviceDiscoveryAgent>
 #include <QBluetoothDeviceInfo>
-#include <QTimer>
+#include <QBluetoothLocalDevice>
 #include <QDateTime>
 #include <QDebug>
+#include <QTimer>
+#include "Capability.hpp"
+#include "CapabilityManager.hpp"
 
 namespace opencardev::crankshaft {
 namespace core {
@@ -33,16 +33,22 @@ namespace capabilities {
 
 // Concrete Bluetooth capability implementation (internal use only).
 class BluetoothCapabilityImpl : public BluetoothCapability {
-public:
+  public:
     BluetoothCapabilityImpl(const QString& extensionId, CapabilityManager* manager)
-        : extension_id_(extensionId), manager_(manager), is_valid_(true), next_sub_id_(1), discovery_agent_(nullptr), discovery_timer_(nullptr) {
+        : extension_id_(extensionId),
+          manager_(manager),
+          is_valid_(true),
+          next_sub_id_(1),
+          discovery_agent_(nullptr),
+          discovery_timer_(nullptr) {
         // Attempt to initialise local device (may be absent in WSL or container).
         local_device_ = std::make_unique<QBluetoothLocalDevice>();
         if (!local_device_->isValid()) {
             qWarning() << "Bluetooth local device not valid - will operate in mock mode";
             // Mock mode will fabricate an adapter and devices on demand.
         }
-        current_adapter_ = local_device_->isValid() ? local_device_->address().toString() : QStringLiteral("mock-adapter");
+        current_adapter_ = local_device_->isValid() ? local_device_->address().toString()
+                                                    : QStringLiteral("mock-adapter");
     }
 
     ~BluetoothCapabilityImpl() override {
@@ -59,18 +65,21 @@ public:
     void invalidate() { is_valid_ = false; }
 
     QStringList listAdapters() const override {
-        if (!is_valid_) return {};
+        if (!is_valid_)
+            return {};
         if (local_device_ && local_device_->isValid()) {
-            return { local_device_->address().toString() };
+            return {local_device_->address().toString()};
         }
-        return { QStringLiteral("mock-adapter") };
+        return {QStringLiteral("mock-adapter")};
     }
 
     QString currentAdapter() const override { return current_adapter_; }
 
     bool selectAdapter(const QString& adapterId) override {
-        if (!is_valid_) return false;
-        if (adapterId.isEmpty()) return false;
+        if (!is_valid_)
+            return false;
+        if (adapterId.isEmpty())
+            return false;
         // In future we might validate against listAdapters(); for now always accept.
         current_adapter_ = adapterId;
         manager_->logCapabilityUsage(extension_id_, "bluetooth", "selectAdapter", adapterId);
@@ -80,11 +89,13 @@ public:
     QList<Device> listDevices() const override { return devices_.values(); }
 
     bool startDiscovery(int timeoutMs) override {
-        if (!is_valid_) return false;
+        if (!is_valid_)
+            return false;
         if (!discovery_agent_) {
             discovery_agent_ = new QBluetoothDeviceDiscoveryAgent();
-            QObject::connect(discovery_agent_, &QBluetoothDeviceDiscoveryAgent::deviceDiscovered,
-                             [this](const QBluetoothDeviceInfo& info) { onDeviceDiscovered(info); });
+            QObject::connect(
+                discovery_agent_, &QBluetoothDeviceDiscoveryAgent::deviceDiscovered,
+                [this](const QBluetoothDeviceInfo& info) { onDeviceDiscovered(info); });
             QObject::connect(discovery_agent_, &QBluetoothDeviceDiscoveryAgent::finished,
                              [this]() { onDiscoveryFinished(); });
             QObject::connect(discovery_agent_, &QBluetoothDeviceDiscoveryAgent::errorOccurred,
@@ -95,9 +106,12 @@ public:
         }
         devices_.clear();
         discovery_agent_->start(QBluetoothDeviceDiscoveryAgent::ClassicMethod);
-        manager_->logCapabilityUsage(extension_id_, "bluetooth", "startDiscovery", QString::number(timeoutMs));
-        if (timeoutMs <= 0) timeoutMs = 10000; // default 10s
-        if (!discovery_timer_) discovery_timer_ = new QTimer();
+        manager_->logCapabilityUsage(extension_id_, "bluetooth", "startDiscovery",
+                                     QString::number(timeoutMs));
+        if (timeoutMs <= 0)
+            timeoutMs = 10000;  // default 10s
+        if (!discovery_timer_)
+            discovery_timer_ = new QTimer();
         discovery_timer_->stop();
         discovery_timer_->setSingleShot(true);
         QObject::connect(discovery_timer_, &QTimer::timeout, [this]() { stopDiscovery(); });
@@ -106,20 +120,23 @@ public:
     }
 
     void stopDiscovery() override {
-        if (!is_valid_) return;
+        if (!is_valid_)
+            return;
         if (discovery_agent_ && discovery_agent_->isActive()) {
             discovery_agent_->stop();
         }
-        if (discovery_timer_) discovery_timer_->stop();
+        if (discovery_timer_)
+            discovery_timer_->stop();
         manager_->logCapabilityUsage(extension_id_, "bluetooth", "stopDiscovery", QString());
         notifySubscribers();
     }
 
     bool pairDevice(const QString& address) override {
-        if (!is_valid_) return false;
+        if (!is_valid_)
+            return false;
         if (devices_.contains(address)) {
             auto dev = devices_[address];
-            dev.paired = true; // Simulated pairing success
+            dev.paired = true;  // Simulated pairing success
             devices_[address] = dev;
             manager_->logCapabilityUsage(extension_id_, "bluetooth", "pairDevice", address);
             notifySubscribers();
@@ -133,10 +150,11 @@ public:
     }
 
     bool connectDevice(const QString& address) override {
-        if (!is_valid_) return false;
+        if (!is_valid_)
+            return false;
         if (devices_.contains(address)) {
             auto dev = devices_[address];
-            dev.connected = true; // Logical connection
+            dev.connected = true;  // Logical connection
             devices_[address] = dev;
             manager_->logCapabilityUsage(extension_id_, "bluetooth", "connectDevice", address);
             notifySubscribers();
@@ -146,7 +164,8 @@ public:
     }
 
     bool disconnectDevice(const QString& address) override {
-        if (!is_valid_) return false;
+        if (!is_valid_)
+            return false;
         if (devices_.contains(address)) {
             auto dev = devices_[address];
             dev.connected = false;
@@ -159,12 +178,15 @@ public:
     }
 
     int subscribeDevices(std::function<void(const QList<Device>&)> callback) override {
-        if (!is_valid_) return -1;
+        if (!is_valid_)
+            return -1;
         int id = next_sub_id_++;
-        // Use vector of pairs for subscriptions to avoid allocator debug issue with QMap<int,...> under some environments.
+        // Use vector of pairs for subscriptions to avoid allocator debug issue with QMap<int,...>
+        // under some environments.
         subscriptions_.append(QPair<int, std::function<void(const QList<Device>&)>>(id, callback));
         callback(listDevices());
-        manager_->logCapabilityUsage(extension_id_, "bluetooth", "subscribeDevices", QString::number(id));
+        manager_->logCapabilityUsage(extension_id_, "bluetooth", "subscribeDevices",
+                                     QString::number(id));
         return id;
     }
 
@@ -175,16 +197,20 @@ public:
                 break;
             }
         }
-        manager_->logCapabilityUsage(extension_id_, "bluetooth", "unsubscribeDevices", QString::number(subscriptionId));
+        manager_->logCapabilityUsage(extension_id_, "bluetooth", "unsubscribeDevices",
+                                     QString::number(subscriptionId));
     }
 
-private:
+  private:
     void onDeviceDiscovered(const QBluetoothDeviceInfo& info) {
         Device dev;
         dev.name = info.name();
         dev.address = info.address().toString();
-        dev.paired = local_device_ && local_device_->isValid() ? (local_device_->pairingStatus(info.address()) != QBluetoothLocalDevice::Unpaired) : false;
-        dev.connected = false; // We do not auto-connect here.
+        dev.paired =
+            local_device_ && local_device_->isValid()
+                ? (local_device_->pairingStatus(info.address()) != QBluetoothLocalDevice::Unpaired)
+                : false;
+        dev.connected = false;  // We do not auto-connect here.
         dev.rssi = info.rssi();
         devices_[dev.address] = dev;
         notifySubscribers();
@@ -197,7 +223,7 @@ private:
 
     void notifySubscribers() {
         QList<Device> list = listDevices();
-        for (const auto &entry : subscriptions_) {
+        for (const auto& entry : subscriptions_) {
             entry.second(list);
         }
     }
@@ -215,10 +241,11 @@ private:
 };
 
 // Factory helper used by CapabilityManager.
-std::shared_ptr<BluetoothCapability> createBluetoothCapabilityInstance(const QString& extensionId, ::opencardev::crankshaft::core::CapabilityManager* manager) {
+std::shared_ptr<BluetoothCapability> createBluetoothCapabilityInstance(
+    const QString& extensionId, ::opencardev::crankshaft::core::CapabilityManager* manager) {
     return std::make_shared<BluetoothCapabilityImpl>(extensionId, manager);
 }
 
-} // namespace capabilities
-} // namespace core
-} // namespace opencardev::crankshaft
+}  // namespace capabilities
+}  // namespace core
+}  // namespace opencardev::crankshaft

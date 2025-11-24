@@ -19,12 +19,12 @@
 
 #pragma once
 
-#include "Capability.hpp"
+#include <QList>
 #include <QString>
 #include <QStringList>
-#include <QList>
 #include <functional>
 #include <memory>
+#include "Capability.hpp"
 
 namespace opencardev::crankshaft {
 namespace core {
@@ -47,13 +47,13 @@ namespace capabilities {
  * via separate specialised capabilities in future iterations.
  */
 class BluetoothCapability : public Capability {
-public:
+  public:
     struct Device {
         QString name;
         QString address;
         bool paired;
         bool connected;
-        int rssi; // -1 if unknown
+        int rssi;  // -1 if unknown
     };
 
     virtual ~BluetoothCapability() = default;
@@ -87,15 +87,18 @@ public:
     // Unsubscribe from device updates.
     virtual void unsubscribeDevices(int subscriptionId) = 0;
 
-protected:
+  protected:
     BluetoothCapability() = default;
 };
 
 // Factory declaration provided for CapabilityManager. Implemented in BluetoothCapability.cpp
 // Forward declaration to avoid circular include with CapabilityManager.
-namespace openauto { namespace core { class CapabilityManager; } }
+namespace openauto {
+namespace core {
+class CapabilityManager;
+}
+}  // namespace openauto
 
-
-} // namespace capabilities
-} // namespace core
-} // namespace openauto
+}  // namespace capabilities
+}  // namespace core
+}  // namespace opencardev::crankshaft

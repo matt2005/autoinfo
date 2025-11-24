@@ -19,30 +19,32 @@
 
 #pragma once
 
-#include <QObject>
-#include <QString>
-#include <QVariant>
-#include <QVariantList>
+#include <QDebug>
+#include <QDir>
 #include <QFile>
+#include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
-#include <QJsonArray>
-#include <QStandardPaths>
-#include <QDir>
-#include <QDebug>
 #include <QNetworkAccessManager>
-#include <QNetworkRequest>
 #include <QNetworkReply>
+#include <QNetworkRequest>
+#include <QObject>
+#include <QStandardPaths>
+#include <QString>
 #include <QUrl>
 #include <QUrlQuery>
-#include "../core/capabilities/LocationCapability.hpp"
+#include <QVariant>
+#include <QVariantList>
 #include "../../extensions/navigation/GeocodingProvider.hpp"
 #include "../../extensions/navigation/GeocodingProviderFactory.hpp"
+#include "../core/capabilities/LocationCapability.hpp"
 class openauto_capability_manager_forward_decl;
 
 namespace opencardev::crankshaft {
-namespace core { class CapabilityManager; }
+namespace core {
+class CapabilityManager;
 }
+}  // namespace opencardev::crankshaft
 
 /**
  * NavigationBridge exposes persistent navigation-related settings to QML
@@ -52,9 +54,11 @@ namespace core { class CapabilityManager; }
 class NavigationBridge : public QObject {
     Q_OBJECT
     Q_PROPERTY(QString gpsDevice READ gpsDevice WRITE setGpsDevice NOTIFY gpsDeviceChanged)
-    Q_PROPERTY(QString geocodingProvider READ geocodingProvider WRITE setGeocodingProvider NOTIFY geocodingProviderChanged)
-    Q_PROPERTY(QVariantList availableProviders READ availableProviders NOTIFY availableProvidersChanged)
-public:
+    Q_PROPERTY(QString geocodingProvider READ geocodingProvider WRITE setGeocodingProvider NOTIFY
+                   geocodingProviderChanged)
+    Q_PROPERTY(
+        QVariantList availableProviders READ availableProviders NOTIFY availableProvidersChanged)
+  public:
     static NavigationBridge* instance();
 
     static void initialise(opencardev::crankshaft::core::CapabilityManager* capabilityManager);
@@ -64,21 +68,21 @@ public:
     QString geocodingProvider() const { return geocodingProviderId_; }
     QVariantList availableProviders() const;
 
-public slots:
+  public slots:
     void setGpsDevice(const QString& device);
     void setGeocodingProvider(const QString& providerId);
-    
+
     // Geocoding API
     void searchLocation(const QString& query);
-    
+
     // Favourites management
     QVariantList loadFavourites();
     void saveFavourites(const QVariantList& favourites);
-    
+
     // Settings UI
     void requestOpenSettings() { emit openNavigationSettings(); }
 
-signals:
+  signals:
     void gpsDeviceChanged();
     void geocodingProviderChanged();
     void availableProvidersChanged();
@@ -88,14 +92,14 @@ signals:
     void routeError(const QString& error);
     void openNavigationSettings();
 
-private:
+  private:
     explicit NavigationBridge(QObject* parent = nullptr);
     void load();
     void save();
     void applyToCapability();
     void initializeProviders();
     void switchProvider(const QString& providerId);
-    
+
     opencardev::crankshaft::core::CapabilityManager* capability_manager_ = nullptr;
     QString gpsDevice_ = "Internal";
     QString geocodingProviderId_ = "nominatim";

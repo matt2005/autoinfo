@@ -19,11 +19,11 @@
 
 #pragma once
 
+#include <QGeoCoordinate>
 #include <QObject>
 #include <QString>
-#include <QGeoCoordinate>
-#include <QVariantMap>
 #include <QVariantList>
+#include <QVariantMap>
 
 namespace opencardev::crankshaft {
 namespace extensions {
@@ -47,50 +47,48 @@ struct Route {
 
 /**
  * @brief Abstract base class for routing providers
- * 
+ *
  * Provides interface for calculating routes between coordinates
  * and generating turn-by-turn navigation instructions.
  */
 class RoutingProvider : public QObject {
     Q_OBJECT
-    
-public:
+
+  public:
     explicit RoutingProvider(QObject* parent = nullptr) : QObject(parent) {}
     virtual ~RoutingProvider() = default;
-    
+
     /**
      * @brief Calculate route between two points
      * @param start Starting coordinate
      * @param end Destination coordinate
      * @param profile Routing profile (car, bike, foot)
      */
-    virtual void calculateRoute(
-        const QGeoCoordinate& start,
-        const QGeoCoordinate& end,
-        const QString& profile = "car") = 0;
-    
+    virtual void calculateRoute(const QGeoCoordinate& start, const QGeoCoordinate& end,
+                                const QString& profile = "car") = 0;
+
     /**
      * @brief Get provider name
      */
     virtual QString name() const = 0;
-    
+
     /**
      * @brief Get provider description
      */
     virtual QString description() const = 0;
-    
+
     /**
      * @brief Check if provider requires API key
      */
     virtual bool requiresApiKey() const = 0;
-    
-signals:
+
+  signals:
     /**
      * @brief Emitted when route calculation completes
      * @param route Calculated route with steps and coordinates
      */
     void routeCalculated(const Route& route);
-    
+
     /**
      * @brief Emitted when route calculation fails
      * @param error Error message
@@ -98,6 +96,6 @@ signals:
     void routeError(const QString& error);
 };
 
-} // namespace navigation
-} // namespace extensions
-} // namespace openauto
+}  // namespace navigation
+}  // namespace extensions
+}  // namespace opencardev::crankshaft

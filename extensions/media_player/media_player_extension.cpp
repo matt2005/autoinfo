@@ -18,9 +18,9 @@
  */
 
 #include "media_player_extension.hpp"
+#include <QDebug>
 #include "../../src/core/config/ConfigManager.hpp"
 #include "../../src/core/config/ConfigTypes.hpp"
-#include <QDebug>
 
 namespace opencardev::crankshaft {
 namespace extensions {
@@ -28,13 +28,13 @@ namespace media {
 
 bool MediaPlayerExtension::initialize() {
     qInfo() << "Initializing Media Player extension...";
-    
+
     eventCap_ = getCapability<core::capabilities::EventCapability>();
     if (!eventCap_) {
         qWarning() << "Event capability not granted; extension will be disabled.";
         return false;
     }
-    
+
     setupEventHandlers();
     return true;
 }
@@ -54,21 +54,21 @@ void MediaPlayerExtension::cleanup() {
 
 void MediaPlayerExtension::registerConfigItems(core::config::ConfigManager* manager) {
     using namespace core::config;
-    
+
     ConfigPage page;
     page.domain = "media";
     page.extension = "player";
     page.title = "Media Player Settings";
     page.description = "Configure media playback and library options";
     page.icon = "qrc:/icons/media.svg";
-    
+
     // Playback Settings Section
     ConfigSection playbackSection;
     playbackSection.key = "playback";
     playbackSection.title = "Playback Settings";
     playbackSection.description = "Control media playback behavior";
     playbackSection.complexity = ConfigComplexity::Basic;
-    
+
     ConfigItem volumeItem;
     volumeItem.key = "default_volume";
     volumeItem.label = "Default volume";
@@ -82,7 +82,7 @@ void MediaPlayerExtension::registerConfigItems(core::config::ConfigManager* mana
     volumeItem.required = false;
     volumeItem.readOnly = false;
     playbackSection.items.append(volumeItem);
-    
+
     ConfigItem autoPlayItem;
     autoPlayItem.key = "auto_play";
     autoPlayItem.label = "Auto-play on connect";
@@ -93,7 +93,7 @@ void MediaPlayerExtension::registerConfigItems(core::config::ConfigManager* mana
     autoPlayItem.required = false;
     autoPlayItem.readOnly = false;
     playbackSection.items.append(autoPlayItem);
-    
+
     ConfigItem repeatModeItem;
     repeatModeItem.key = "repeat_mode";
     repeatModeItem.label = "Repeat mode";
@@ -105,7 +105,7 @@ void MediaPlayerExtension::registerConfigItems(core::config::ConfigManager* mana
     repeatModeItem.required = false;
     repeatModeItem.readOnly = false;
     playbackSection.items.append(repeatModeItem);
-    
+
     ConfigItem shuffleItem;
     shuffleItem.key = "shuffle";
     shuffleItem.label = "Enable shuffle";
@@ -116,16 +116,16 @@ void MediaPlayerExtension::registerConfigItems(core::config::ConfigManager* mana
     shuffleItem.required = false;
     shuffleItem.readOnly = false;
     playbackSection.items.append(shuffleItem);
-    
+
     page.sections.append(playbackSection);
-    
+
     // Audio Quality Section
     ConfigSection qualitySection;
     qualitySection.key = "quality";
     qualitySection.title = "Audio Quality";
     qualitySection.description = "Configure audio quality and processing";
     qualitySection.complexity = ConfigComplexity::Advanced;
-    
+
     ConfigItem equalizerItem;
     equalizerItem.key = "equalizer";
     equalizerItem.label = "Enable equalizer";
@@ -136,19 +136,20 @@ void MediaPlayerExtension::registerConfigItems(core::config::ConfigManager* mana
     equalizerItem.required = false;
     equalizerItem.readOnly = false;
     qualitySection.items.append(equalizerItem);
-    
+
     ConfigItem equalizerPresetItem;
     equalizerPresetItem.key = "equalizer_preset";
     equalizerPresetItem.label = "Equalizer preset";
     equalizerPresetItem.description = "Audio equalizer preset";
     equalizerPresetItem.type = ConfigItemType::Selection;
-    equalizerPresetItem.properties["options"] = QStringList{"Flat", "Pop", "Rock", "Jazz", "Classical", "Bass Boost", "Treble Boost", "Custom"};
+    equalizerPresetItem.properties["options"] = QStringList{
+        "Flat", "Pop", "Rock", "Jazz", "Classical", "Bass Boost", "Treble Boost", "Custom"};
     equalizerPresetItem.defaultValue = "Flat";
     equalizerPresetItem.complexity = ConfigComplexity::Advanced;
     equalizerPresetItem.required = false;
     equalizerPresetItem.readOnly = false;
     qualitySection.items.append(equalizerPresetItem);
-    
+
     ConfigItem normalizationItem;
     normalizationItem.key = "volume_normalization";
     normalizationItem.label = "Volume normalization";
@@ -159,28 +160,29 @@ void MediaPlayerExtension::registerConfigItems(core::config::ConfigManager* mana
     normalizationItem.required = false;
     normalizationItem.readOnly = false;
     qualitySection.items.append(normalizationItem);
-    
+
     page.sections.append(qualitySection);
-    
+
     // Library Settings Section
     ConfigSection librarySection;
     librarySection.key = "library";
     librarySection.title = "Library Settings";
     librarySection.description = "Configure media library and scanning";
     librarySection.complexity = ConfigComplexity::Basic;
-    
+
     ConfigItem libraryPathsItem;
     libraryPathsItem.key = "library_paths";
     libraryPathsItem.label = "Library directories";
     libraryPathsItem.description = "Directories to scan for media files";
     libraryPathsItem.type = ConfigItemType::MultiSelection;
-    libraryPathsItem.properties["options"] = QStringList{"/media/music", "/media/usb", "/media/sdcard"};
+    libraryPathsItem.properties["options"] =
+        QStringList{"/media/music", "/media/usb", "/media/sdcard"};
     libraryPathsItem.defaultValue = QStringList{"/media/music"};
     libraryPathsItem.complexity = ConfigComplexity::Basic;
     libraryPathsItem.required = false;
     libraryPathsItem.readOnly = false;
     librarySection.items.append(libraryPathsItem);
-    
+
     ConfigItem autoScanItem;
     autoScanItem.key = "auto_scan";
     autoScanItem.label = "Auto-scan library";
@@ -191,9 +193,9 @@ void MediaPlayerExtension::registerConfigItems(core::config::ConfigManager* mana
     autoScanItem.required = false;
     autoScanItem.readOnly = false;
     librarySection.items.append(autoScanItem);
-    
+
     page.sections.append(librarySection);
-    
+
     // Register the page
     manager->registerConfigPage(page);
     qInfo() << "Media Player extension registered config items";
@@ -206,48 +208,38 @@ void MediaPlayerExtension::setupEventHandlers() {
     }
 
     // Private namespace (extension's own)
-    eventCap_->subscribe("media_player.play", [this](const QVariantMap& data) {
-        handlePlayCommand(data);
-    });
+    eventCap_->subscribe("media_player.play",
+                         [this](const QVariantMap& data) { handlePlayCommand(data); });
 
-    eventCap_->subscribe("media_player.pause", [this](const QVariantMap& data) {
-        handlePauseCommand(data);
-    });
+    eventCap_->subscribe("media_player.pause",
+                         [this](const QVariantMap& data) { handlePauseCommand(data); });
 
-    eventCap_->subscribe("media_player.stop", [this](const QVariantMap& data) {
-        handleStopCommand(data);
-    });
+    eventCap_->subscribe("media_player.stop",
+                         [this](const QVariantMap& data) { handleStopCommand(data); });
 
-    eventCap_->subscribe("media_player.next", [this](const QVariantMap& data) {
-        handleNextCommand(data);
-    });
+    eventCap_->subscribe("media_player.next",
+                         [this](const QVariantMap& data) { handleNextCommand(data); });
 
-    eventCap_->subscribe("media_player.previous", [this](const QVariantMap& data) {
-        handlePreviousCommand(data);
-    });
+    eventCap_->subscribe("media_player.previous",
+                         [this](const QVariantMap& data) { handlePreviousCommand(data); });
 
     // Public control namespace: allow any extension to control playback by
     // emitting "<their_extension_id>.media.*" events. Wildcard subscription is
     // permitted by EventCapability.
-    eventCap_->subscribe("*.media.play", [this](const QVariantMap& data) {
-        handlePlayCommand(data);
-    });
+    eventCap_->subscribe("*.media.play",
+                         [this](const QVariantMap& data) { handlePlayCommand(data); });
 
-    eventCap_->subscribe("*.media.pause", [this](const QVariantMap& data) {
-        handlePauseCommand(data);
-    });
+    eventCap_->subscribe("*.media.pause",
+                         [this](const QVariantMap& data) { handlePauseCommand(data); });
 
-    eventCap_->subscribe("*.media.stop", [this](const QVariantMap& data) {
-        handleStopCommand(data);
-    });
+    eventCap_->subscribe("*.media.stop",
+                         [this](const QVariantMap& data) { handleStopCommand(data); });
 
-    eventCap_->subscribe("*.media.next", [this](const QVariantMap& data) {
-        handleNextCommand(data);
-    });
+    eventCap_->subscribe("*.media.next",
+                         [this](const QVariantMap& data) { handleNextCommand(data); });
 
-    eventCap_->subscribe("*.media.previous", [this](const QVariantMap& data) {
-        handlePreviousCommand(data);
-    });
+    eventCap_->subscribe("*.media.previous",
+                         [this](const QVariantMap& data) { handlePreviousCommand(data); });
 }
 
 void MediaPlayerExtension::handlePlayCommand(const QVariantMap& data) {

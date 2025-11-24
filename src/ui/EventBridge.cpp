@@ -18,8 +18,8 @@
  */
 
 #include "EventBridge.hpp"
-#include "../core/events/event_bus.hpp"
 #include <QDebug>
+#include "../core/events/event_bus.hpp"
 
 namespace opencardev::crankshaft {
 namespace ui {
@@ -28,23 +28,20 @@ EventBridge* EventBridge::instance_ = nullptr;
 core::EventBus* EventBridge::event_bus_ = nullptr;
 
 EventBridge::EventBridge(QObject* parent) : QObject(parent) {
-    if (!instance_) instance_ = this;
+    if (!instance_)
+        instance_ = this;
 }
 
 void EventBridge::registerQmlType() {
-    qmlRegisterSingletonType<EventBridge>(
-        "CrankshaftReborn.Events",
-        1,
-        0,
-        "EventBridge",
-        EventBridge::qmlInstance
-    );
+    qmlRegisterSingletonType<EventBridge>("CrankshaftReborn.Events", 1, 0, "EventBridge",
+                                          EventBridge::qmlInstance);
 }
 
 QObject* EventBridge::qmlInstance(QQmlEngine* engine, QJSEngine* scriptEngine) {
     Q_UNUSED(engine);
     Q_UNUSED(scriptEngine);
-    if (!instance_) instance_ = new EventBridge();
+    if (!instance_)
+        instance_ = new EventBridge();
     return instance_;
 }
 
@@ -60,8 +57,7 @@ void EventBridge::publish(const QString& topic, const QVariantMap& data) {
     event_bus_->publish(topic, data);
 }
 
-void EventBridge::emitNamespaced(const QString& extensionId,
-                                 const QString& name,
+void EventBridge::emitNamespaced(const QString& extensionId, const QString& name,
                                  const QVariantMap& data) {
     if (!event_bus_) {
         qWarning() << "EventBridge: EventBus not initialised; cannot emit";
@@ -71,5 +67,5 @@ void EventBridge::emitNamespaced(const QString& extensionId,
     event_bus_->publish(full, data);
 }
 
-} // namespace ui
-} // namespace opencardev::crankshaft
+}  // namespace ui
+}  // namespace opencardev::crankshaft

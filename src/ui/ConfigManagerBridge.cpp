@@ -18,41 +18,33 @@
  */
 
 #include "ConfigManagerBridge.hpp"
+#include <QDebug>
 #include "../core/config/ConfigManager.hpp"
 #include "../core/config/ConfigTypes.hpp"
-#include <QDebug>
 
-namespace opencardev { namespace crankshaft {
+namespace opencardev {
+namespace crankshaft {
 namespace ui {
 
 ConfigManagerBridge* ConfigManagerBridge::instance_ = nullptr;
 
 ConfigManagerBridge::ConfigManagerBridge(QObject* parent)
-    : QObject(parent)
-    , config_manager_(nullptr)
-{
-}
+    : QObject(parent), config_manager_(nullptr) {}
 
-ConfigManagerBridge* ConfigManagerBridge::instance()
-{
+ConfigManagerBridge* ConfigManagerBridge::instance() {
     if (instance_ == nullptr) {
         instance_ = new ConfigManagerBridge();
     }
     return instance_;
 }
 
-void ConfigManagerBridge::registerQmlType()
-{
+void ConfigManagerBridge::registerQmlType() {
     qmlRegisterSingletonType<ConfigManagerBridge>(
         "Crankshaft.ConfigManagerBridge", 1, 0, "ConfigManagerBridge",
-        [](QQmlEngine*, QJSEngine*) -> QObject* {
-            return ConfigManagerBridge::instance();
-        }
-    );
+        [](QQmlEngine*, QJSEngine*) -> QObject* { return ConfigManagerBridge::instance(); });
 }
 
-void ConfigManagerBridge::initialise(core::config::ConfigManager* manager)
-{
+void ConfigManagerBridge::initialise(core::config::ConfigManager* manager) {
     if (instance_ == nullptr) {
         instance_ = new ConfigManagerBridge();
     }
@@ -61,24 +53,22 @@ void ConfigManagerBridge::initialise(core::config::ConfigManager* manager)
     qDebug() << "ConfigManagerBridge initialised";
 }
 
-void ConfigManagerBridge::connectSignals()
-{
+void ConfigManagerBridge::connectSignals() {
     if (config_manager_ == nullptr) {
         return;
     }
 
-        connect(config_manager_, &core::config::ConfigManager::configValueChanged,
-            this, &ConfigManagerBridge::configValueChanged);
-        connect(config_manager_, &core::config::ConfigManager::configPageRegistered,
-            this, &ConfigManagerBridge::configPageRegistered);
-        connect(config_manager_, &core::config::ConfigManager::complexityLevelChanged,
-            this, [this](core::config::ConfigComplexity level) {
-            emit complexityLevelChanged(core::config::configComplexityToString(level));
+    connect(config_manager_, &core::config::ConfigManager::configValueChanged, this,
+            &ConfigManagerBridge::configValueChanged);
+    connect(config_manager_, &core::config::ConfigManager::configPageRegistered, this,
+            &ConfigManagerBridge::configPageRegistered);
+    connect(config_manager_, &core::config::ConfigManager::complexityLevelChanged, this,
+            [this](core::config::ConfigComplexity level) {
+                emit complexityLevelChanged(core::config::configComplexityToString(level));
             });
 }
 
-QVariantList ConfigManagerBridge::getAllConfigPages() const
-{
+QVariantList ConfigManagerBridge::getAllConfigPages() const {
     if (config_manager_ == nullptr) {
         qWarning() << "ConfigManager not initialised";
         return QVariantList();
@@ -92,8 +82,7 @@ QVariantList ConfigManagerBridge::getAllConfigPages() const
     return result;
 }
 
-QVariantList ConfigManagerBridge::getConfigPagesByDomain(const QString& domain) const
-{
+QVariantList ConfigManagerBridge::getConfigPagesByDomain(const QString& domain) const {
     if (config_manager_ == nullptr) {
         qWarning() << "ConfigManager not initialised";
         return QVariantList();
@@ -107,8 +96,8 @@ QVariantList ConfigManagerBridge::getConfigPagesByDomain(const QString& domain) 
     return result;
 }
 
-QVariantMap ConfigManagerBridge::getConfigPage(const QString& domain, const QString& extension) const
-{
+QVariantMap ConfigManagerBridge::getConfigPage(const QString& domain,
+                                               const QString& extension) const {
     if (config_manager_ == nullptr) {
         qWarning() << "ConfigManager not initialised";
         return QVariantMap();
@@ -119,8 +108,7 @@ QVariantMap ConfigManagerBridge::getConfigPage(const QString& domain, const QStr
 }
 
 QVariant ConfigManagerBridge::getValue(const QString& domain, const QString& extension,
-                                      const QString& section, const QString& key) const
-{
+                                       const QString& section, const QString& key) const {
     if (config_manager_ == nullptr) {
         qWarning() << "ConfigManager not initialised";
         return QVariant();
@@ -129,8 +117,7 @@ QVariant ConfigManagerBridge::getValue(const QString& domain, const QString& ext
     return config_manager_->getValue(domain, extension, section, key);
 }
 
-QVariant ConfigManagerBridge::getValue(const QString& fullPath) const
-{
+QVariant ConfigManagerBridge::getValue(const QString& fullPath) const {
     if (config_manager_ == nullptr) {
         qWarning() << "ConfigManager not initialised";
         return QVariant();
@@ -140,8 +127,8 @@ QVariant ConfigManagerBridge::getValue(const QString& fullPath) const
 }
 
 bool ConfigManagerBridge::setValue(const QString& domain, const QString& extension,
-                                  const QString& section, const QString& key, const QVariant& value)
-{
+                                   const QString& section, const QString& key,
+                                   const QVariant& value) {
     if (config_manager_ == nullptr) {
         qWarning() << "ConfigManager not initialised";
         return false;
@@ -150,8 +137,7 @@ bool ConfigManagerBridge::setValue(const QString& domain, const QString& extensi
     return config_manager_->setValue(domain, extension, section, key, value);
 }
 
-bool ConfigManagerBridge::setValue(const QString& fullPath, const QVariant& value)
-{
+bool ConfigManagerBridge::setValue(const QString& fullPath, const QVariant& value) {
     if (config_manager_ == nullptr) {
         qWarning() << "ConfigManager not initialised";
         return false;
@@ -160,8 +146,7 @@ bool ConfigManagerBridge::setValue(const QString& fullPath, const QVariant& valu
     return config_manager_->setValue(fullPath, value);
 }
 
-void ConfigManagerBridge::resetToDefaults(const QString& domain, const QString& extension)
-{
+void ConfigManagerBridge::resetToDefaults(const QString& domain, const QString& extension) {
     if (config_manager_ == nullptr) {
         qWarning() << "ConfigManager not initialised";
         return;
@@ -171,8 +156,7 @@ void ConfigManagerBridge::resetToDefaults(const QString& domain, const QString& 
 }
 
 void ConfigManagerBridge::resetSectionToDefaults(const QString& domain, const QString& extension,
-                                                const QString& section)
-{
+                                                 const QString& section) {
     if (config_manager_ == nullptr) {
         qWarning() << "ConfigManager not initialised";
         return;
@@ -182,8 +166,7 @@ void ConfigManagerBridge::resetSectionToDefaults(const QString& domain, const QS
 }
 
 void ConfigManagerBridge::resetItemToDefault(const QString& domain, const QString& extension,
-                                            const QString& section, const QString& key)
-{
+                                             const QString& section, const QString& key) {
     if (config_manager_ == nullptr) {
         qWarning() << "ConfigManager not initialised";
         return;
@@ -192,8 +175,7 @@ void ConfigManagerBridge::resetItemToDefault(const QString& domain, const QStrin
     config_manager_->resetItemToDefault(domain, extension, section, key);
 }
 
-bool ConfigManagerBridge::save()
-{
+bool ConfigManagerBridge::save() {
     if (config_manager_ == nullptr) {
         qWarning() << "ConfigManager not initialised";
         return false;
@@ -202,8 +184,7 @@ bool ConfigManagerBridge::save()
     return config_manager_->save();
 }
 
-bool ConfigManagerBridge::load()
-{
+bool ConfigManagerBridge::load() {
     if (config_manager_ == nullptr) {
         qWarning() << "ConfigManager not initialised";
         return false;
@@ -212,8 +193,7 @@ bool ConfigManagerBridge::load()
     return config_manager_->load();
 }
 
-QVariantMap ConfigManagerBridge::exportConfig(bool maskSecrets) const
-{
+QVariantMap ConfigManagerBridge::exportConfig(bool maskSecrets) const {
     if (config_manager_ == nullptr) {
         qWarning() << "ConfigManager not initialised";
         return QVariantMap();
@@ -222,8 +202,7 @@ QVariantMap ConfigManagerBridge::exportConfig(bool maskSecrets) const
     return config_manager_->exportConfig(maskSecrets);
 }
 
-bool ConfigManagerBridge::importConfig(const QVariantMap& config, bool overwriteExisting)
-{
+bool ConfigManagerBridge::importConfig(const QVariantMap& config, bool overwriteExisting) {
     if (config_manager_ == nullptr) {
         qWarning() << "ConfigManager not initialised";
         return false;
@@ -232,8 +211,7 @@ bool ConfigManagerBridge::importConfig(const QVariantMap& config, bool overwrite
     return config_manager_->importConfig(config, overwriteExisting);
 }
 
-bool ConfigManagerBridge::backupToFile(const QString& filePath, bool maskSecrets, bool compress)
-{
+bool ConfigManagerBridge::backupToFile(const QString& filePath, bool maskSecrets, bool compress) {
     if (config_manager_ == nullptr) {
         qWarning() << "ConfigManager not initialised";
         return false;
@@ -243,8 +221,7 @@ bool ConfigManagerBridge::backupToFile(const QString& filePath, bool maskSecrets
 }
 
 bool ConfigManagerBridge::backupToFile(const QString& filePath, const QStringList& domainExtensions,
-                                      bool maskSecrets, bool compress)
-{
+                                       bool maskSecrets, bool compress) {
     if (config_manager_ == nullptr) {
         qWarning() << "ConfigManager not initialised";
         return false;
@@ -253,8 +230,7 @@ bool ConfigManagerBridge::backupToFile(const QString& filePath, const QStringLis
     return config_manager_->backupToFile(filePath, domainExtensions, maskSecrets, compress);
 }
 
-bool ConfigManagerBridge::restoreFromFile(const QString& filePath, bool overwriteExisting)
-{
+bool ConfigManagerBridge::restoreFromFile(const QString& filePath, bool overwriteExisting) {
     if (config_manager_ == nullptr) {
         qWarning() << "ConfigManager not initialised";
         return false;
@@ -263,9 +239,9 @@ bool ConfigManagerBridge::restoreFromFile(const QString& filePath, bool overwrit
     return config_manager_->restoreFromFile(filePath, overwriteExisting);
 }
 
-bool ConfigManagerBridge::restoreFromFile(const QString& filePath, const QStringList& domainExtensions,
-                                         bool overwriteExisting)
-{
+bool ConfigManagerBridge::restoreFromFile(const QString& filePath,
+                                          const QStringList& domainExtensions,
+                                          bool overwriteExisting) {
     if (config_manager_ == nullptr) {
         qWarning() << "ConfigManager not initialised";
         return false;
@@ -274,8 +250,7 @@ bool ConfigManagerBridge::restoreFromFile(const QString& filePath, const QString
     return config_manager_->restoreFromFile(filePath, domainExtensions, overwriteExisting);
 }
 
-QString ConfigManagerBridge::getComplexityLevel() const
-{
+QString ConfigManagerBridge::getComplexityLevel() const {
     if (config_manager_ == nullptr) {
         qWarning() << "ConfigManager not initialised";
         return "Basic";
@@ -284,8 +259,7 @@ QString ConfigManagerBridge::getComplexityLevel() const
     return core::config::configComplexityToString(config_manager_->getComplexityLevel());
 }
 
-void ConfigManagerBridge::setComplexityLevel(const QString& level)
-{
+void ConfigManagerBridge::setComplexityLevel(const QString& level) {
     if (config_manager_ == nullptr) {
         qWarning() << "ConfigManager not initialised";
         return;
@@ -294,8 +268,7 @@ void ConfigManagerBridge::setComplexityLevel(const QString& level)
     config_manager_->setComplexityLevel(core::config::stringToConfigComplexity(level));
 }
 
-QStringList ConfigManagerBridge::getComplexityLevels() const
-{
+QStringList ConfigManagerBridge::getComplexityLevels() const {
     return QStringList{"Basic", "Advanced", "Expert", "Developer"};
 }
 

@@ -23,9 +23,7 @@
 namespace opencardev::crankshaft {
 namespace core {
 
-WebSocketServer::WebSocketServer(QObject *parent)
-    : QObject(parent), server_(nullptr) {
-}
+WebSocketServer::WebSocketServer(QObject* parent) : QObject(parent), server_(nullptr) {}
 
 WebSocketServer::~WebSocketServer() {
     stop();
@@ -37,16 +35,12 @@ bool WebSocketServer::start(quint16 port) {
         return false;
     }
 
-    server_ = new QWebSocketServer(
-        QStringLiteral("Crankshaft Reborn WebSocket Server"),
-        QWebSocketServer::NonSecureMode,
-        this
-    );
+    server_ = new QWebSocketServer(QStringLiteral("Crankshaft Reborn WebSocket Server"),
+                                   QWebSocketServer::NonSecureMode, this);
 
     if (server_->listen(QHostAddress::Any, port)) {
         qInfo() << "WebSocket server listening on port:" << port;
-        connect(server_, &QWebSocketServer::newConnection,
-                this, &WebSocketServer::onNewConnection);
+        connect(server_, &QWebSocketServer::newConnection, this, &WebSocketServer::onNewConnection);
         return true;
     } else {
         qWarning() << "Failed to start WebSocket server:" << server_->errorString();
@@ -62,7 +56,7 @@ void WebSocketServer::stop() {
     }
 
     qInfo() << "Stopping WebSocket server...";
-    
+
     for (QWebSocket* client : clients_) {
         client->close();
         client->deleteLater();
@@ -92,14 +86,13 @@ void WebSocketServer::sendToClient(QWebSocket* client, const QString& message) {
 
 void WebSocketServer::onNewConnection() {
     QWebSocket* client = server_->nextPendingConnection();
-    
+
     qInfo() << "New WebSocket client connected:" << client->peerAddress().toString();
-    
-    connect(client, &QWebSocket::textMessageReceived,
-            this, &WebSocketServer::onTextMessageReceived);
-    connect(client, &QWebSocket::disconnected,
-            this, &WebSocketServer::onClientDisconnected);
-    
+
+    connect(client, &QWebSocket::textMessageReceived, this,
+            &WebSocketServer::onTextMessageReceived);
+    connect(client, &QWebSocket::disconnected, this, &WebSocketServer::onClientDisconnected);
+
     clients_.append(client);
     emit clientConnected(client);
 }

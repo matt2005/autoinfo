@@ -19,14 +19,15 @@
 
 #pragma once
 
+#include <qqml.h>
 #include <QObject>
 #include <QVariantList>
 #include <QVariantMap>
-#include <qqml.h>
 
-namespace opencardev { namespace crankshaft {
+namespace opencardev {
+namespace crankshaft {
 namespace extensions {
-    class ExtensionManager;
+class ExtensionManager;
 }
 
 namespace ui {
@@ -36,7 +37,7 @@ class ExtensionManagerBridge : public QObject {
     QML_ELEMENT
     QML_SINGLETON
 
-public:
+  public:
     static ExtensionManagerBridge* instance();
     static void registerQmlType();
     static void initialise(extensions::ExtensionManager* manager);
@@ -50,13 +51,13 @@ public:
     Q_INVOKABLE bool isExtensionEnabled(const QString& extensionId) const;
     Q_INVOKABLE void refreshExtensions();
 
-signals:
+  signals:
     void extensionLoaded(const QString& extensionId);
     void extensionUnloaded(const QString& extensionId);
     void extensionError(const QString& extensionId, const QString& error);
     void extensionsRefreshed();
 
-private:
+  private:
     explicit ExtensionManagerBridge(QObject* parent = nullptr);
     ~ExtensionManagerBridge() override = default;
 

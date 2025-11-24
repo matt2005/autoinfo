@@ -18,23 +18,18 @@
  */
 
 #include "ExtensionRegistry.hpp"
-#include "../extensions/extension_manager.hpp"
-#include <QQmlEngine>
 #include <QDebug>
+#include <QQmlEngine>
+#include "../extensions/extension_manager.hpp"
 
 namespace opencardev::crankshaft {
 namespace ui {
 
 ExtensionRegistry* ExtensionRegistry::instance_ = nullptr;
 
-ExtensionRegistry::ExtensionRegistry(
-    extensions::ExtensionManager* extensionManager,
-    QObject* parent
-)
-    : QObject(parent)
-    , extension_manager_(extensionManager)
-    , next_component_id_(1)
-{
+ExtensionRegistry::ExtensionRegistry(extensions::ExtensionManager* extensionManager,
+                                     QObject* parent)
+    : QObject(parent), extension_manager_(extensionManager), next_component_id_(1) {
     if (instance_ == nullptr) {
         instance_ = this;
     }
@@ -46,34 +41,25 @@ ExtensionRegistry* ExtensionRegistry::instance() {
 
 void ExtensionRegistry::registerQmlType() {
     qmlRegisterSingletonType<ExtensionRegistry>(
-        "CrankshaftReborn.Extensions",
-        1,
-        0,
-        "ExtensionRegistry",
-        ExtensionRegistry::qmlInstance
-    );
+        "CrankshaftReborn.Extensions", 1, 0, "ExtensionRegistry", ExtensionRegistry::qmlInstance);
 }
 
 QObject* ExtensionRegistry::qmlInstance(QQmlEngine* engine, QJSEngine* scriptEngine) {
     Q_UNUSED(engine);
     Q_UNUSED(scriptEngine);
-    
+
     if (instance_ == nullptr) {
         qWarning() << "ExtensionRegistry instance not created yet!";
         return nullptr;
     }
-    
+
     // QML engine takes ownership
     QQmlEngine::setObjectOwnership(instance_, QQmlEngine::CppOwnership);
     return instance_;
 }
 
-void ExtensionRegistry::registerComponent(
-    const QString& extensionId,
-    const QString& slotType,
-    const QString& qmlPath,
-    const QVariantMap& metadata
-) {
+void ExtensionRegistry::registerComponent(const QString& extensionId, const QString& slotType,
+                                          const QString& qmlPath, const QVariantMap& metadata) {
     ComponentInfo info;
     info.component_id = QString("%1_%2").arg(extensionId).arg(next_component_id_++);
     info.extension_id = extensionId;
@@ -84,16 +70,15 @@ void ExtensionRegistry::registerComponent(
     info.metadata["extensionId"] = extensionId;
     info.metadata["qmlPath"] = qmlPath;
     info.metadata["slotType"] = slotType;
-    
+
     components_.append(info);
-    
-    qInfo() << "ExtensionRegistry: Registered component"
-            << info.component_id << "from" << extensionId
-            << "(" << slotType << ")";
-    
+
+    qInfo() << "ExtensionRegistry: Registered component" << info.component_id << "from"
+            << extensionId << "(" << slotType << ")";
+
     emit componentRegistered(extensionId, info.component_id);
     emit componentCountChanged();
-    
+
     if (slotType == "main") {
         emit mainComponentsChanged();
     } else if (slotType == "widget") {
@@ -106,18 +91,18 @@ void ExtensionRegistry::unregisterComponent(const QString& componentId) {
         if (components_[i].component_id == componentId) {
             QString slotType = components_[i].slot_type;
             components_.removeAt(i);
-            
+
             qInfo() << "ExtensionRegistry: Unregistered component" << componentId;
-            
+
             emit componentUnregistered(componentId);
             emit componentCountChanged();
-            
+
             if (slotType == "main") {
                 emit mainComponentsChanged();
             } else if (slotType == "widget") {
                 emit widgetsChanged();
             }
-            
+
             break;
         }
     }
@@ -127,51 +112,55 @@ void ExtensionRegistry::unregisterExtensionComponents(const QString& extensionId
     bool hadMain = false;
     bool hadWidget = false;
     int removedCount = 0;
-    
+
     for (int i = components_.size() - 1; i >= 0; --i) {
         if (components_[i].extension_id == extensionId) {
             QString slotType = components_[i].slot_type;
             QString componentId = components_[i].component_id;
             components_.removeAt(i);
             removedCount++;
-            
-            if (slotType == "main") hadMain = true;
-            else if (slotType == "widget") hadWidget = true;
-            
+
+            if (slotType == "main")
+                hadMain = true;
+            else if (slotType == "widget")
+                hadWidget = true;
+
             emit componentUnregistered(componentId);
         }
     }
-    
+
     if (removedCount > 0) {
-        qInfo() << "ExtensionRegistry: Unregistered" << removedCount 
-                << "component(s) for extension" << extensionId;
+        qInfo() << "ExtensionRegistry: Unregistered" << removedCount << "component(s) for extension"
+                << extensionId;
         emit componentCountChanged();
-        if (hadMain) emit mainComponentsChanged();
-        if (hadWidget) emit widgetsChanged();
+        if (hadMain)
+            emit mainComponentsChanged();
+        if (hadWidget)
+            emit widgetsChanged();
     }
 }
 
 QVariantList ExtensionRegistry::mainComponents() const {
     QVariantList result;
-    
+
     for (const auto& component : components_) {
         if (component.slot_type == "main") {
             result.append(component.metadata);
         }
     }
-    
+
     return result;
 }
 
 QVariantList ExtensionRegistry::widgets() const {
     QVariantList result;
-    
+
     for (const auto& component : components_) {
         if (component.slot_type == "widget") {
             result.append(component.metadata);
         }
     }
-    
+
     return result;
 }
 
@@ -185,7 +174,7 @@ QVariantMap ExtensionRegistry::getComponent(const QString& componentId) const {
             return component.metadata;
         }
     }
-    
+
     return QVariantMap();
 }
 

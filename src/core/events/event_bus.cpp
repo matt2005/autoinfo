@@ -24,9 +24,7 @@
 namespace opencardev::crankshaft {
 namespace core {
 
-EventBus::EventBus(QObject *parent)
-    : QObject(parent), next_subscription_id_(1) {
-}
+EventBus::EventBus(QObject* parent) : QObject(parent), next_subscription_id_(1) {}
 
 EventBus::~EventBus() {
     subscriptions_.clear();
@@ -34,21 +32,21 @@ EventBus::~EventBus() {
 
 int EventBus::subscribe(const QString& event_name, EventCallback callback) {
     int id = next_subscription_id_++;
-    
+
     auto subscription = std::make_shared<Subscription>();
     subscription->id = id;
     subscription->event_name = event_name;
     subscription->callback = callback;
-    
+
     subscriptions_[event_name].append(subscription);
-    
+
     qDebug() << "Subscribed to event:" << event_name << "with ID:" << id;
     return id;
 }
 
 void EventBus::unsubscribe(int subscription_id) {
     for (auto it = subscriptions_.begin(); it != subscriptions_.end(); ++it) {
-        auto &subs = it.value();
+        auto& subs = it.value();
         bool removed = false;
         for (int i = subs.size() - 1; i >= 0; --i) {
             if (subs[i]->id == subscription_id) {
@@ -66,14 +64,14 @@ void EventBus::unsubscribe(int subscription_id) {
 
 void EventBus::publish(const QString& event_name, const QVariantMap& data) {
     qDebug() << "Publishing event:" << event_name;
-    
+
     emit eventPublished(event_name, data);
-    
+
     // First deliver exact-match subscriptions
     auto it = subscriptions_.find(event_name);
     if (it != subscriptions_.end()) {
-        const auto &subs = it.value();
-        for (const auto &subscription : subs) {
+        const auto& subs = it.value();
+        for (const auto& subscription : subs) {
             subscription->callback(data);
         }
     }
@@ -81,7 +79,8 @@ void EventBus::publish(const QString& event_name, const QVariantMap& data) {
     // Then deliver wildcard pattern subscriptions (e.g., "*.media.play", "navigation.*")
     auto matchesPattern = [](const QString& pattern, const QString& text) -> bool {
         // Fast path: no wildcard in pattern => no match handling here
-        if (!pattern.contains('*') && !pattern.contains('?')) return false;
+        if (!pattern.contains('*') && !pattern.contains('?'))
+            return false;
         // Escape regex special chars, then replace glob wildcards
         QString rx = QRegularExpression::escape(pattern);
         rx.replace("\\*", ".*");
@@ -93,10 +92,12 @@ void EventBus::publish(const QString& event_name, const QVariantMap& data) {
     for (auto it2 = subscriptions_.cbegin(); it2 != subscriptions_.cend(); ++it2) {
         const QString& pattern = it2.key();
         // Skip exact key already delivered
-        if (pattern == event_name) continue;
-        if (!matchesPattern(pattern, event_name)) continue;
-        const auto &subs = it2.value();
-        for (const auto &subscription : subs) {
+        if (pattern == event_name)
+            continue;
+        if (!matchesPattern(pattern, event_name))
+            continue;
+        const auto& subs = it2.value();
+        for (const auto& subscription : subs) {
             subscription->callback(data);
         }
     }

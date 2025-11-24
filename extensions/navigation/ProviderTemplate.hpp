@@ -19,8 +19,8 @@
 
 #pragma once
 
-#include "GeocodingProvider.hpp"
 #include <QNetworkAccessManager>
+#include "GeocodingProvider.hpp"
 
 namespace opencardev::crankshaft {
 namespace extensions {
@@ -28,14 +28,14 @@ namespace navigation {
 
 /**
  * Template for implementing a new geocoding provider
- * 
+ *
  * To add a new provider:
  * 1. Copy this template to YourProviderName.hpp
  * 2. Implement all pure virtual methods
  * 3. Create corresponding .cpp file
  * 4. Register in GeocodingProviderFactory::registerBuiltInProviders()
  * 5. Add to CMakeLists.txt
- * 
+ *
  * Example providers to implement:
  * - Google Maps Geocoding API (requires API key)
  * - Mapbox Geocoding API (requires API key)
@@ -45,53 +45,51 @@ namespace navigation {
  */
 class TemplateProvider : public GeocodingProvider {
     Q_OBJECT
-    
-public:
+
+  public:
     explicit TemplateProvider(QObject* parent = nullptr);
     ~TemplateProvider() override = default;
-    
+
     // Required: Unique identifier (lowercase, alphanumeric)
     QString id() const override { return "template"; }
-    
+
     // Required: Display name for UI
     QString displayName() const override { return "Template Provider"; }
-    
+
     // Required: Brief description
-    QString description() const override { 
-        return "Template provider for demonstration purposes.";
-    }
-    
+    QString description() const override { return "Template provider for demonstration purposes."; }
+
     // Required: Does this provider need an API key?
     bool requiresApiKey() const override { return false; }
-    
+
     // Required: Is provider available (e.g., has valid config/key)?
     bool isAvailable() const override { return true; }
-    
+
     // Required: Set API key if needed
     void setApiKey(const QString& apiKey) override;
-    
+
     // Required: Perform geocoding search
     void search(const QString& query) override;
-    
+
     // Required: Reverse geocoding (coordinates to address)
     void reverseGeocode(double latitude, double longitude) override;
-    
+
     // Optional: Provider-specific configuration
     void setCustomOption(const QString& option) { customOption_ = option; }
-    
-private slots:
+
+  private slots:
     void handleSearchReply(QNetworkReply* reply);
     void handleReverseReply(QNetworkReply* reply);
-    
-private:
+
+  private:
     QNetworkAccessManager* networkManager_;
     QString apiKey_;
     QString customOption_;
-    
+
     // Helper methods
     QVariantList parseSearchResults(const QByteArray& data) const;
     QVariantMap parseReverseResult(const QByteArray& data) const;
-    
+
     // Provider-specific URL building
     QUrl buildSearchUrl(const QString& query) const;
     QUrl buildReverseUrl(double lat, double lng) const;
@@ -99,35 +97,35 @@ private:
 
 /**
  * Implementation guidelines:
- * 
+ *
  * 1. Constructor:
  *    - Initialize QNetworkAccessManager
  *    - Set default configuration
- * 
+ *
  * 2. search() method:
  *    - Build API URL with query parameters
  *    - Add authentication if needed (API key in header or URL)
  *    - Make async HTTP request
  *    - Connect reply to handleSearchReply()
- * 
+ *
  * 3. reverseGeocode() method:
  *    - Build API URL with lat/lng parameters
  *    - Add authentication if needed
  *    - Make async HTTP request
  *    - Connect reply to handleReverseReply()
- * 
+ *
  * 4. handleSearchReply():
  *    - Check for network errors -> emit errorOccurred()
  *    - Parse response (JSON, XML, etc.)
  *    - Convert to standard format (see below)
  *    - Emit searchResultsReady()
- * 
+ *
  * 5. handleReverseReply():
  *    - Check for network errors -> emit errorOccurred()
  *    - Parse response
  *    - Extract address string and details
  *    - Emit reverseGeocodeComplete()
- * 
+ *
  * Standard result format:
  * QVariantMap with keys:
  *   - latitude (double) - REQUIRED
@@ -139,13 +137,13 @@ private:
  *   - country (QString) - OPTIONAL
  *   - postcode (QString) - OPTIONAL
  *   - road (QString) - OPTIONAL
- * 
+ *
  * Error handling:
  *   - Network errors: emit errorOccurred(reply->errorString())
  *   - API errors: emit errorOccurred("API error: " + apiErrorMessage)
  *   - Parse errors: emit errorOccurred("Invalid response format")
  *   - Rate limiting: emit errorOccurred("Rate limit exceeded")
- * 
+ *
  * Best practices:
  *   - Set appropriate User-Agent header
  *   - Respect API rate limits
@@ -155,6 +153,6 @@ private:
  *   - Clean up network replies (reply->deleteLater())
  */
 
-} // namespace navigation
-} // namespace extensions
-} // namespace openauto
+}  // namespace navigation
+}  // namespace extensions
+}  // namespace opencardev::crankshaft
