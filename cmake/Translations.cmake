@@ -42,18 +42,8 @@ set(CORE_SOURCES
 )
 
 # Create translation source files (.ts) from sources
-qt6_add_lupdate(
-    SOURCES ${CORE_SOURCES}
-    TS_FILES ${CORE_TS_FILES}
-    OPTIONS -no-obsolete
-    NO_GLOBAL_TARGET
-)
-
-# Compile .ts to .qm
-qt6_add_lrelease(
-    TS_FILES ${CORE_TS_FILES}
-    QM_FILES_OUTPUT_VARIABLE CORE_QM_FILES
-    OPTIONS -idbased
+qt6_create_translation(CORE_QM_FILES ${CORE_SOURCES} ${CORE_TS_FILES}
+    OPTIONS -no-obsolete -idbased
 )
 
 # Install .qm files
@@ -78,24 +68,16 @@ function(add_extension_translations EXTENSION_NAME EXTENSION_DIR)
     )
     
     if(EXT_SOURCES)
-        qt6_add_lupdate(
-            SOURCES ${EXT_SOURCES}
-            TS_FILES ${EXT_TS_FILE}
-            OPTIONS -no-obsolete
-            NO_GLOBAL_TARGET
-        )
-        
-        qt6_add_lrelease(
-            TS_FILES ${EXT_TS_FILE}
-            QM_FILES_OUTPUT_VARIABLE EXT_QM_FILES
-            OPTIONS -idbased
+        set(EXT_QM_FILES)
+        qt6_create_translation(EXT_QM_FILES ${EXT_SOURCES} ${EXT_TS_FILE}
+            OPTIONS -no-obsolete -idbased
         )
         
         install(FILES ${EXT_QM_FILES}
             DESTINATION ${CMAKE_INSTALL_DATADIR}/crankshaft_reborn/extensions/${EXTENSION_NAME}/i18n
         )
         
-        add_dependencies(translations ${EXTENSION_NAME}Extension)
+        set_property(TARGET translations APPEND PROPERTY MANUALLY_ADDED_DEPENDENCIES ${EXT_QM_FILES})
     endif()
 endfunction()
 
