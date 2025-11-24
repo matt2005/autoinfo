@@ -51,11 +51,8 @@ install(FILES ${CORE_QM_FILES}
     DESTINATION ${CMAKE_INSTALL_DATADIR}/crankshaft_reborn/i18n
 )
 
-# Custom target to update all translations
-add_custom_target(translations
-    DEPENDS ${CORE_QM_FILES}
-    COMMENT "Building translation files"
-)
+# Collect all QM files for the translations target
+set(ALL_QM_FILES ${CORE_QM_FILES})
 
 # Per-extension translation support
 function(add_extension_translations EXTENSION_NAME EXTENSION_DIR)
@@ -77,7 +74,8 @@ function(add_extension_translations EXTENSION_NAME EXTENSION_DIR)
             DESTINATION ${CMAKE_INSTALL_DATADIR}/crankshaft_reborn/extensions/${EXTENSION_NAME}/i18n
         )
         
-        set_property(TARGET translations APPEND PROPERTY MANUALLY_ADDED_DEPENDENCIES ${EXT_QM_FILES})
+        # Export QM files to parent scope
+        set(ALL_QM_FILES ${ALL_QM_FILES} ${EXT_QM_FILES} PARENT_SCOPE)
     endif()
 endfunction()
 
@@ -87,5 +85,11 @@ add_extension_translations(bluetooth ${CMAKE_SOURCE_DIR}/extensions/bluetooth)
 add_extension_translations(media_player ${CMAKE_SOURCE_DIR}/extensions/media_player)
 add_extension_translations(dialer ${CMAKE_SOURCE_DIR}/extensions/dialer)
 add_extension_translations(wireless ${CMAKE_SOURCE_DIR}/extensions/wireless)
+
+# Custom target to update all translations
+add_custom_target(translations
+    DEPENDS ${ALL_QM_FILES}
+    COMMENT "Building translation files"
+)
 
 message(STATUS "Translation targets configured: run 'make translations' to build")
