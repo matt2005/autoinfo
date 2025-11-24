@@ -25,9 +25,15 @@ if(NOT Qt6_FOUND OR NOT Qt6LinguistTools_FOUND)
     return()
 endif()
 
+# Ensure core i18n directory exists
+set(CORE_I18N_DIR "${CMAKE_SOURCE_DIR}/i18n")
+if(NOT EXISTS "${CORE_I18N_DIR}")
+    file(MAKE_DIRECTORY "${CORE_I18N_DIR}")
+endif()
+
 # Core translations
 set(CORE_TS_FILES
-    ${CMAKE_SOURCE_DIR}/i18n/core_en_GB.ts
+    ${CORE_I18N_DIR}/core_en_GB.ts
 )
 
 set(CORE_SOURCES
@@ -56,7 +62,13 @@ set(ALL_QM_FILES ${CORE_QM_FILES})
 
 # Per-extension translation support
 function(add_extension_translations EXTENSION_NAME EXTENSION_DIR)
-    set(EXT_TS_FILE "${EXTENSION_DIR}/i18n/${EXTENSION_NAME}_en_GB.ts")
+    # Ensure i18n directory exists
+    set(I18N_DIR "${EXTENSION_DIR}/i18n")
+    if(NOT EXISTS "${I18N_DIR}")
+        file(MAKE_DIRECTORY "${I18N_DIR}")
+    endif()
+    
+    set(EXT_TS_FILE "${I18N_DIR}/${EXTENSION_NAME}_en_GB.ts")
     
     file(GLOB_RECURSE EXT_SOURCES
         "${EXTENSION_DIR}/*.cpp"
