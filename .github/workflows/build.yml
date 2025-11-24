@@ -148,10 +148,13 @@ jobs:
     
     - name: Check Code Formatting
       run: |
-        find src -name '*.cpp' -o -name '*.hpp' | xargs clang-format --dry-run --Werror || true
+        # Include both core src and extensions for formatting checks
+        find src extensions -type f \( -name '*.cpp' -o -name '*.hpp' -o -name '*.cc' -o -name '*.h' \) | xargs clang-format --dry-run --Werror
     
     - name: Run Cppcheck
       run: |
+        # Run cppcheck over src and extensions; fail on findings (remove '|| true')
         cppcheck --enable=all --inconclusive --std=c++17 \
           --suppress=missingIncludeSystem \
-          src/ || true
+          --suppress=unknownMacro \
+          src/ extensions/
