@@ -64,6 +64,11 @@ set(MAIN_SOURCES
 
 add_executable(${PROJECT_NAME} ${MAIN_SOURCES})
 
+# Build translations before packaging
+if(TARGET translations)
+    add_dependencies(${PROJECT_NAME} translations)
+endif()
+
 target_link_libraries(${PROJECT_NAME}
     PRIVATE
         Qt6::Core
