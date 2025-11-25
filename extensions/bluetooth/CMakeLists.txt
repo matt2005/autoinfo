@@ -3,6 +3,7 @@ find_package(Qt6 REQUIRED COMPONENTS Core Bluetooth)
 add_library(BluetoothExtension SHARED
     bluetooth_extension.cpp
     bluetooth_extension.hpp
+    resources.qrc
 )
 
 # Ensure the built library name matches manifest entry_point (bluetooth.so)
@@ -29,6 +30,14 @@ target_link_libraries(BluetoothExtension
 target_include_directories(BluetoothExtension
     PRIVATE
     ${CMAKE_SOURCE_DIR}/src
+)
+
+# Copy QML assets (BluetoothView) to build tree for direct file access (optional)
+add_custom_command(TARGET BluetoothExtension POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_CURRENT_SOURCE_DIR}/assets
+        ${CMAKE_BINARY_DIR}/extensions/bluetooth/assets
+    COMMENT "Copying bluetooth assets (qml) to build directory"
 )
 
 install(TARGETS BluetoothExtension

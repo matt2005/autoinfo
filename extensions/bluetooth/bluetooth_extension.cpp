@@ -60,6 +60,16 @@ bool BluetoothExtension::initialize() {
 
 void BluetoothExtension::start() {
     qInfo() << "Starting Bluetooth extension";
+    // Register UI main view if UI capability is present
+    auto uiCap = getCapability<core::capabilities::UICapability>();
+    if (uiCap) {
+        QVariantMap meta;
+        meta["title"] = "Bluetooth";
+        meta["icon"] = "bluetooth";
+        meta["description"] = "Manage Bluetooth devices";
+        uiCap->registerMainView("qrc:/bluetooth/qml/BluetoothView.qml", meta);
+        qInfo() << "Bluetooth: Registered main view";
+    }
     publishDeviceList();
 }
 

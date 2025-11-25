@@ -1,0 +1,5 @@
+<RCC>
+  <qresource prefix="/bluetooth">
+    <file alias="qml/BluetoothView.qml">assets/BluetoothView.qml</file>
+  </qresource>
+</RCC>

@@ -159,6 +159,8 @@ class CapabilityManager {
         const QString& extensionId, const QVariantMap& options);
     std::shared_ptr<capabilities::Capability> createBluetoothCapability(const QString& extensionId,
                                                                         const QVariantMap& options);
+    std::shared_ptr<capabilities::Capability> createWirelessCapability(const QString& extensionId,
+                                                                       const QVariantMap& options);
 
     // New capability factories
     std::shared_ptr<capabilities::AudioCapability> createAudioCapability(
