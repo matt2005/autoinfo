@@ -3,6 +3,16 @@ cmake_minimum_required(VERSION 3.16)
 find_package(Qt6 REQUIRED COMPONENTS Test)
 
 enable_testing()
+# Test: Capability Manager (grant/revoke lifecycle)
+add_executable(test_capability_manager unit/test_capability_manager.cpp)
+target_link_libraries(test_capability_manager
+    Qt6::Core
+    Qt6::Test
+    CrankshaftCore
+    CrankshaftExtensions
+)
+add_test(NAME test_capability_manager COMMAND test_capability_manager)
+
 
 # Test: Event Bus
 add_executable(test_event_bus unit/test_event_bus.cpp)

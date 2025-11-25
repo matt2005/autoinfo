@@ -2,6 +2,12 @@
 
 An extensible automotive infotainment system designed for modern vehicles, optimised for Raspberry Pi 4 running Raspberry Pi OS.
 
+## Status
+
+- **Build**: Passing (local, 2025-11-25)
+- **Tests**: 5/5 passing via `ctest`
+- **Line endings**: LF enforced via `.gitattributes` (repo-wide)
+
 ## Overview
 
 Crankshaft Reborn is a modular, open-source infotainment platform that provides a robust foundation for creating custom in-vehicle experiences. Built with Qt6 and C++, it offers a flexible extension framework, allowing developers to create and share custom functionality.
@@ -76,6 +82,7 @@ The easiest way to build Crankshaft Reborn is using Docker, which provides a con
 ./docker-build-rpi.sh all release      # Build for all architectures
 ```
 
+
 #### Windows (PowerShell)
 
 ```powershell
@@ -95,6 +102,7 @@ The easiest way to build Crankshaft Reborn is using Docker, which provides a con
 ```
 
 The Docker build will:
+
 1. Build a Docker image with all required dependencies
 2. Compile the project inside the container
 3. Output binaries to the `build/` directory (or `build-output-{arch}/` for Raspberry Pi builds) on your host machine
@@ -107,10 +115,12 @@ The Raspberry Pi build uses Docker with QEMU emulation to natively compile ARM b
 - **arm64**: ARM64 64-bit for Raspberry Pi 4, 5, and newer devices
 
 Requirements:
+
 - Docker with Buildx support, or Podman
 - QEMU user-mode emulation (automatically set up by the build script)
 
 The build script (`docker-build-rpi.sh` / `docker-build-rpi.ps1`) will:
+
 1. Set up QEMU for ARM emulation
 2. Build using native ARM compilation in an emulated environment
 3. Extract binaries to `build-output-{arch}/` directory
@@ -381,9 +391,10 @@ If you add new source file types, update `.editorconfig` and tasks accordingly. 
 ```bash
 mkdir -p build && cd build
 cmake .. -DBUILD_TESTS=ON
-cmake --build . --target test_extension_dependencies
 ctest --output-on-failure
 ```
+
+Tip: On Windows, run tests inside WSL to match CI toolchain.
 
 ## License
 
