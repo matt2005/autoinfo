@@ -255,7 +255,7 @@ Item {
                 width: parent.width
                 visible: itemData && itemData.type === "string"
                 enabled: itemData && !itemData.readOnly
-                placeholderText: itemData && itemData.properties ? itemData.properties.placeholder : ""
+                placeholderText: (itemData && itemData.properties && itemData.properties.placeholder) ? itemData.properties.placeholder : ""
                 font.pixelSize: 13
                 color: ThemeManager.textColor
                 echoMode: itemData && itemData.isSecret ? TextInput.Password : TextInput.Normal

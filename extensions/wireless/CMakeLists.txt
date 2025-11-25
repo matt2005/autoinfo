@@ -8,9 +8,13 @@ set(WIRELESS_HEADERS
     wireless_extension.hpp
 )
 
+# Enable Qt resource compilation
+set(CMAKE_AUTORCC ON)
+
 add_library(WirelessExtension STATIC
     ${WIRELESS_SOURCES}
     ${WIRELESS_HEADERS}
+    resources.qrc
 )
 
 target_link_libraries(WirelessExtension
@@ -25,12 +29,6 @@ target_include_directories(WirelessExtension
     PUBLIC
         ${CMAKE_SOURCE_DIR}/src
 )
-
-# Add QRC resources to expose QML via qrc:/wireless/qml/WirelessView.qml
-# The resources.qrc file defines the /wireless prefix and file alias
-set(WIRELESS_QRC ${CMAKE_CURRENT_SOURCE_DIR}/resources.qrc)
-target_sources(WirelessExtension PRIVATE ${WIRELESS_QRC})
-set_property(SOURCE ${WIRELESS_QRC} PROPERTY SKIP_AUTORCC OFF)
 
 # Copy manifest.json to build directory for development
 add_custom_command(TARGET WirelessExtension POST_BUILD
