@@ -1,5 +1,7 @@
 # Crankshaft Reborn
 
+[![Build Status](https://github.com/matt2005/autoinfo/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/matt2005/autoinfo/actions/workflows/build.yml)
+
 An extensible automotive infotainment system designed for modern vehicles, optimised for Raspberry Pi 4 running Raspberry Pi OS.
 
 ## Status
@@ -319,6 +321,7 @@ systemctl status bluetooth.service | grep Active
 bluetoothctl show
 ```
 
+
 ## API Documentation
 
 See [API Documentation](docs/api.md) for details on the core APIs and WebSocket protocol.
@@ -395,6 +398,10 @@ ctest --output-on-failure
 ```
 
 Tip: On Windows, run tests inside WSL to match CI toolchain.
+
+### VS Code Task Snapshot
+
+Run tests via the provided VS Code task "Run Tests" which executes `ctest` in the configured build directory. This mirrors CI behaviour and ensures consistent results.
 
 ## License
 
