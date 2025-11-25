@@ -24,6 +24,7 @@
 #include "UICapabilityImpl.hpp"
 #include "EventCapabilityImpl.hpp"
 #include "AudioCapabilityImpl.hpp"
+#include "TokenCapabilityImpl.hpp"
 #include <QDateTime>
 #include <QDebug>
 #include <QDir>
@@ -62,23 +63,7 @@ namespace core {
 
 // AudioCapabilityImpl moved to AudioCapabilityImpl.{hpp,cpp}
 
-/**
- * Simple token capability used for lightweight permissions (e.g., contacts/phone).
- */
-class TokenCapabilityImpl : public capabilities::Capability {
-  public:
-    TokenCapabilityImpl(const QString& extension_id, const QString& cap_id)
-        : extension_id_(extension_id), cap_id_(cap_id), valid_(true) {}
-    QString id() const override { return cap_id_; }
-    bool isValid() const override { return valid_; }
-    QString extensionId() const override { return extension_id_; }
-    void invalidate() { valid_ = false; }
-
-  private:
-    QString extension_id_;
-    QString cap_id_;
-    bool valid_;
-};
+// TokenCapabilityImpl moved to TokenCapabilityImpl.{hpp,cpp}
 
 // FileSystemCapabilityImpl moved to FileSystemCapabilityImpl.{hpp,cpp}
 
@@ -363,7 +348,7 @@ std::shared_ptr<capabilities::AudioCapability> CapabilityManager::createAudioCap
 std::shared_ptr<capabilities::Capability> CapabilityManager::createTokenCapability(
     const QString& extensionId, const QString& capabilityId) {
     return std::static_pointer_cast<capabilities::Capability>(
-        std::make_shared<TokenCapabilityImpl>(extensionId, capabilityId));
+        capabilities::createTokenCapabilityInstance(extensionId, capabilityId));
 }
 
 }  // namespace core
