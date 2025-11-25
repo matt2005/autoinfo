@@ -107,15 +107,63 @@ Update relevant documentation when making changes:
 - CMake 3.16+
 - C++17 compiler
 - Git
+- (Windows) WSL + VS Code Remote extension (tasks run under WSL)
+- Optional analysis tools: `clang-format clang-tidy cppcheck cmake-lint doxygen bandit`
 
 ### Build for Development
 
 ```bash
-mkdir build && cd build
-cmake .. -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTS=ON
-make -j$(nproc)
-ctest
+mkdir -p build && cd build
+cmake .. -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTS=ON -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+cmake --build . -j$(nproc)
+ctest --output-on-failure
 ```
+
+### VS Code Tasks (WSL)
+
+The repository ships a shared `.vscode/tasks.json` (tracked despite other VS Code files being ignored). Core tasks:
+
+| Task | Purpose |
+|------|---------|
+| Configure CMake (Debug/Release) | Generate build tree with tests enabled |
+| Build (Debug/Release) | Compile targets |
+| Run Tests | Execute test suite via `ctest` |
+| Check Formatting (clang-format) | Enforce Google style with CI parity |
+| Lint C++ Code (clang-tidy) | Static analysis (config in `.clang-tidy`) |
+| Check C++ Code (cppcheck) | Additional static analysis surface |
+| Check CMake Files | Lint key CMakeLists |
+| Build Package (DEB) | Run `cpack -G DEB` packaging |
+| Run Application (VNC Debug) | Launch Qt app on virtual display |
+| Check License Headers | Ensure GPL header presence |
+| Pre-commit Check | Sequenced validation suite |
+
+Install tooling quickly using the `Install Dev Tools (WSL)` task.
+
+### Quality & Style Tooling
+
+- Formatting: `clang-format` (Google style, column 100). Run formatting before committing.
+- Static Analysis: `clang-tidy` (configured via root `.clang-tidy`), and `cppcheck` with broad enable flags.
+- Configuration: `.editorconfig` enforces line endings and indentation to keep diffs clean.
+- License Compliance: All new source/QML/script files must include the GPL header.
+- Fix Summaries: For significant changes/fixes add a markdown file under `docs/fix_summaries/` (lowercase underscores) describing context, change and impact.
+
+### Recommended Workflow
+
+1. Run `Install Dev Tools (WSL)` once per environment.
+2. Implement changes with small, focused commits.
+3. Run `Pre-commit Check` task; resolve any failures.
+4. Add/update tests and documentation.
+5. Create or update a fix summary if the change is notable.
+6. Push and open a Pull Request referencing related issues.
+
+### Pull Request Checklist
+
+- [ ] Builds succeed (Debug & Release)
+- [ ] Tests added/updated and passing
+- [ ] Formatting passes (`Check Formatting` task)
+- [ ] Static analysis warnings addressed or justified
+- [ ] License headers present in new files
+- [ ] Documentation/fix summary updated if needed
 
 ## Community
 

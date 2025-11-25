@@ -1,0 +1,52 @@
+# Project: Crankshaft
+# This file is part of Crankshaft project.
+# Copyright (C) 2025 OpenCarDev Team
+#
+#  Crankshaft is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation; either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  Crankshaft is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with Crankshaft. If not, see <http://www.gnu.org/licenses/>.
+#
+# Clang-Tidy configuration
+# Use with: clang-tidy -p build <file>
+# This set balances signal/noise for an embedded-ish UI application.
+
+Checks: >-
+  clang-analyzer-*,-clang-analyzer-alpha.*,
+  bugprone-*,
+  performance-*,
+  readability-*,
+  modernize-*,
+  portability-*,
+  cppcoreguidelines-*,-cppcoreguidelines-avoid-non-const-global-variables,-cppcoreguidelines-owning-memory,-cppcoreguidelines-avoid-magic-numbers,
+  hicpp-*,-hicpp-avoid-c-arrays,-hicpp-special-member-functions,
+  misc-*,
+  -modernize-use-trailing-return-type,
+  -readability-magic-numbers,
+  -readability-implicit-bool-conversion,
+  -bugprone-exception-escape
+
+WarningsAsErrors: >-
+  bugprone-*,performance-*,clang-analyzer-*
+
+HeaderFilterRegex: 'src/|extensions/'
+User: 'OpenCarDev'
+FormatStyle: none
+
+# Limit suggestions for include order etc., relying on clang-format.
+CheckOptions:
+  - { key: readability-braces-around-statements.ShortStatementLines, value: '2' }
+  - { key: readability-identifier-naming.VariableCase, value: lower_case }
+  - { key: readability-identifier-naming.ClassCase, value: CamelCase }
+  - { key: readability-identifier-naming.NamespaceCase, value: lower_case }
+  - { key: readability-identifier-naming.FunctionCase, value: lower_case }
+  - { key: modernize-use-nullptr.NullMacros, value: 'NULL' }
+  - { key: modernize-loop-convert.MaxCopySize, value: '32' }

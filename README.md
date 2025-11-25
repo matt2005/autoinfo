@@ -317,6 +317,31 @@ See [API Documentation](docs/api.md) for details on the core APIs and WebSocket 
 
 We welcome contributions! Please read our [Contributing Guide](docs/CONTRIBUTING.md) for details.
 
+### Development Standards Summary
+
+Core quality gates mirror CI and must pass before opening a pull request:
+
+- Formatting: `clang-format` (Google style, column 100). Use VS Code task `Check Formatting (clang-format)`.
+- Static Analysis: `cppcheck` (broad enable) and `clang-tidy` (see root `.clang-tidy`).
+- CMake Hygiene: `cmake-lint` on key `CMakeLists.txt` files.
+- License Compliance: GPL header required for all C++/QML/script files (see File Headers section in docs).
+- Security (optional): Python scripts scanned with `bandit`.
+
+Recommended workflow:
+
+1. Run `Install Dev Tools (WSL)` once per fresh environment.
+2. Implement changes.
+3. Run `Pre-commit Check` VS Code task (aggregates critical validation tasks).
+4. Address any failures before committing.
+
+Configuration artefacts:
+
+- `.editorconfig` enforces LF line endings and indentation conventions.
+- `.clang-tidy` defines analysis checks (warnings in critical groups treated as errors).
+- `.vscode/tasks.json` provides reproducible WSL-based tasks consistent with CI.
+
+For larger changes, include a brief summary in `docs/fix_summaries/` (lowercase underscored filename) describing rationale and impact.
+
 ## Developer Workflow (VS Code Tasks)
 
 The repository provides shared VS Code tasks (see `.vscode/tasks.json`) designed to run inside WSL for consistency with CI:
