@@ -1,0 +1,244 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Configure CMake (Debug)",
+            "type": "shell",
+            "command": "wsl",
+            "args": [
+                "bash",
+                "-lc",
+                "cd \"$(wslpath -a '${workspaceFolder}')\" && cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTS=ON -DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
+            ],
+            "presentation": { "reveal": "always", "panel": "shared" },
+            "problemMatcher": []
+        },
+        {
+            "label": "Configure CMake (Release)",
+            "type": "shell",
+            "command": "wsl",
+            "args": [
+                "bash",
+                "-lc",
+                "cd \"$(wslpath -a '${workspaceFolder}')\" && cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=ON -DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
+            ],
+            "presentation": { "reveal": "always", "panel": "shared" },
+            "problemMatcher": []
+        },
+        {
+            "label": "Build (Debug)",
+            "type": "shell",
+            "command": "wsl",
+            "args": [
+                "bash",
+                "-lc",
+                "cd \"$(wslpath -a '${workspaceFolder}')\" && cmake --build build --config Debug -j"
+            ],
+            "group": { "kind": "build", "isDefault": true },
+            "presentation": { "reveal": "always", "panel": "shared" },
+            "problemMatcher": ["$gcc"],
+            "dependsOn": ["Configure CMake (Debug)"]
+        },
+        {
+            "label": "Build (Release)",
+            "type": "shell",
+            "command": "wsl",
+            "args": [
+                "bash",
+                "-lc",
+                "cd \"$(wslpath -a '${workspaceFolder}')\" && cmake --build build --config Release -j"
+            ],
+            "group": "build",
+            "presentation": { "reveal": "always", "panel": "shared" },
+            "problemMatcher": ["$gcc"],
+            "dependsOn": ["Configure CMake (Release)"]
+        },
+        {
+            "label": "Clean Build",
+            "type": "shell",
+            "command": "wsl",
+            "args": [
+                "bash",
+                "-lc",
+                "cd \"$(wslpath -a '${workspaceFolder}')\" && rm -rf build"
+            ],
+            "presentation": { "reveal": "always", "panel": "shared" },
+            "problemMatcher": []
+        },
+        {
+            "label": "Run Tests",
+            "type": "shell",
+            "command": "wsl",
+            "args": [
+                "bash",
+                "-lc",
+                "cd \"$(wslpath -a '${workspaceFolder}')\" && ctest --test-dir build --output-on-failure"
+            ],
+            "group": { "kind": "test", "isDefault": true },
+            "presentation": { "reveal": "always", "panel": "shared" },
+            "problemMatcher": [],
+            "dependsOn": ["Build (Debug)"]
+        },
+        {
+            "label": "Format C++ Code",
+            "type": "shell",
+            "command": "wsl",
+            "args": [
+                "bash",
+                "-lc",
+                "cd \"$(wslpath -a '${workspaceFolder}')\" && find src extensions -type f \( -name '*.cpp' -o -name '*.hpp' -o -name '*.h' -o -name '*.cc' \) -print0 | xargs -0 clang-format -i"
+            ],
+            "presentation": { "reveal": "always", "panel": "shared" },
+            "problemMatcher": []
+        },
+        {
+            "label": "Check Formatting (clang-format)",
+            "type": "shell",
+            "command": "wsl",
+            "args": [
+                "bash",
+                "-lc",
+                "cd \"$(wslpath -a '${workspaceFolder}')\" && find src extensions -type f \( -name '*.cpp' -o -name '*.hpp' -o -name '*.h' -o -name '*.cc' \) -print0 | xargs -0 clang-format --dry-run --Werror"
+            ],
+            "presentation": { "reveal": "always", "panel": "shared" },
+            "problemMatcher": []
+        },
+        {
+            "label": "Lint C++ Code (clang-tidy)",
+            "type": "shell",
+            "command": "wsl",
+            "args": [
+                "bash",
+                "-lc",
+                "cd \"$(wslpath -a '${workspaceFolder}')\" && find src -name '*.cpp' -print0 | xargs -0 -I{} clang-tidy -p build {}"
+            ],
+            "presentation": { "reveal": "always", "panel": "shared" },
+            "problemMatcher": ["$gcc"],
+            "dependsOn": ["Configure CMake (Debug)"]
+        },
+        {
+            "label": "Check C++ Code (cppcheck)",
+            "type": "shell",
+            "command": "wsl",
+            "args": [
+                "bash",
+                "-lc",
+                "cd \"$(wslpath -a '${workspaceFolder}')\" && cppcheck --enable=all --inconclusive --std=c++17 --suppress=missingIncludeSystem --suppress=unknownMacro src/ extensions/"
+            ],
+            "presentation": { "reveal": "always", "panel": "shared" },
+            "problemMatcher": []
+        },
+        {
+            "label": "Check CMake Files",
+            "type": "shell",
+            "command": "wsl",
+            "args": [
+                "bash",
+                "-lc",
+                "cd \"$(wslpath -a '${workspaceFolder}')\" && cmake-lint CMakeLists.txt src/core/CMakeLists.txt src/ui/CMakeLists.txt src/extensions/CMakeLists.txt"
+            ],
+            "presentation": { "reveal": "always", "panel": "shared" },
+            "problemMatcher": []
+        },
+        {
+            "label": "Build Package (DEB)",
+            "type": "shell",
+            "command": "wsl",
+            "args": [
+                "bash",
+                "-lc",
+                "cd \"$(wslpath -a '${workspaceFolder}')\" && cd build && cpack -G DEB"
+            ],
+            "presentation": { "reveal": "always", "panel": "shared" },
+            "problemMatcher": [],
+            "dependsOn": ["Build (Release)"]
+        },
+        {
+            "label": "Install",
+            "type": "shell",
+            "command": "wsl",
+            "args": [
+                "bash",
+                "-lc",
+                "cd \"$(wslpath -a '${workspaceFolder}')\" && sudo cmake --install build"
+            ],
+            "presentation": { "reveal": "always", "panel": "shared" },
+            "problemMatcher": [],
+            "dependsOn": ["Build (Release)"]
+        },
+        {
+            "label": "Run Application (VNC Debug)",
+            "type": "shell",
+            "command": "wsl",
+            "args": [
+                "bash",
+                "-lc",
+                "cd \"$(wslpath -a '${workspaceFolder}')\" && QT_DEBUG_PLUGINS=1 QT_LOGGING_RULES='*=true' ./build/CrankshaftReborn -platform vnc:size=1024x600,port=5900"
+            ],
+            "presentation": { "reveal": "always", "panel": "dedicated" },
+            "problemMatcher": [],
+            "dependsOn": ["Build (Debug)"]
+        },
+        {
+            "label": "Generate Documentation",
+            "type": "shell",
+            "command": "wsl",
+            "args": [
+                "bash",
+                "-lc",
+                "cd \"$(wslpath -a '${workspaceFolder}')\" && if [ -f Doxyfile ]; then doxygen Doxyfile; else echo 'No Doxyfile found'; fi"
+            ],
+            "presentation": { "reveal": "always", "panel": "shared" },
+            "problemMatcher": []
+        },
+        {
+            "label": "Security Lint (Bandit)",
+            "type": "shell",
+            "command": "wsl",
+            "args": [
+                "bash",
+                "-lc",
+                "cd \"$(wslpath -a '${workspaceFolder}')\" && if command -v bandit >/dev/null 2>&1; then find . -name '*.py' -print0 | xargs -0 -I{} bandit -r {}; else echo 'Bandit not installed. Run: Install Dev Tools (WSL)'; fi"
+            ],
+            "presentation": { "reveal": "always", "panel": "shared" },
+            "problemMatcher": []
+        },
+        {
+            "label": "Check License Headers",
+            "type": "shell",
+            "command": "wsl",
+            "args": [
+                "bash",
+                "-lc",
+                "cd \"$(wslpath -a '${workspaceFolder}')\" && find src extensions -type f \( -name '*.cpp' -o -name '*.hpp' -o -name '*.h' \) -exec grep -L 'GNU General Public License' {} \; | tee /tmp/missing_license.txt && [ ! -s /tmp/missing_license.txt ] || (echo 'Files missing license headers:' && cat /tmp/missing_license.txt && exit 1)"
+            ],
+            "presentation": { "reveal": "always", "panel": "shared" },
+            "problemMatcher": []
+        },
+        {
+            "label": "Install Dev Tools (WSL)",
+            "type": "shell",
+            "command": "wsl",
+            "args": [
+                "bash",
+                "-lc",
+                "cd \"$(wslpath -a '${workspaceFolder}')\"; if command -v sudo >/dev/null 2>&1; then SUDO=sudo -n; else SUDO=; fi; $SUDO apt-get update || true; $SUDO apt-get install -y build-essential cmake ninja-build clang-format clang-tidy cppcheck doxygen bandit || true; ($SUDO apt-get install -y cmakelint) || (python3 -m pip install --user --upgrade pip && python3 -m pip install --user cmakelint); echo 'Dev tools install attempted. If cmakelint was installed via pip, ensure ~/.local/bin is on PATH.'"
+            ],
+            "presentation": { "reveal": "always", "panel": "shared" },
+            "problemMatcher": []
+        },
+        {
+            "label": "Pre-commit Check",
+            "dependsOn": [
+                "Check Formatting (clang-format)",
+                "Check C++ Code (cppcheck)",
+                "Check CMake Files",
+                "Check License Headers",
+                "Run Tests"
+            ],
+            "dependsOrder": "sequence",
+            "presentation": { "reveal": "always", "panel": "shared" },
+            "problemMatcher": []
+        }
+    ]
+}

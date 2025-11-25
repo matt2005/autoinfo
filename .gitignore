@@ -27,8 +27,8 @@ ui_*.h
 *.out
 
 # IDE files
-# Allow VS Code tasks.json for shared developer workflow
-.vscode/
+# Ignore VS Code metadata but keep shared task definitions
+.vscode/*
 !.vscode/tasks.json
 .idea/
 *.pro.user
