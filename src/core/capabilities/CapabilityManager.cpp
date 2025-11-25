@@ -22,6 +22,7 @@
 #include "NetworkCapabilityImpl.hpp"
 #include "FileSystemCapabilityImpl.hpp"
 #include "UICapabilityImpl.hpp"
+#include "EventCapabilityImpl.hpp"
 #include <QDateTime>
 #include <QDebug>
 #include <QDir>
@@ -183,106 +184,7 @@ class TokenCapabilityImpl : public capabilities::Capability {
 
 // UICapabilityImpl moved to UICapabilityImpl.{hpp,cpp}
 
-/**
- * Concrete EventCapability implementation.
- */
-class EventCapabilityImpl : public capabilities::EventCapability {
-  public:
-    EventCapabilityImpl(const QString& extension_id, CapabilityManager* manager,
-                        EventBus* event_bus)
-        : extension_id_(extension_id),
-          manager_(manager),
-          event_bus_(event_bus),
-          is_valid_(true),
-          next_subscription_id_(1) {}
-
-    QString extensionId() const override { return extension_id_; }
-    bool isValid() const override { return is_valid_; }
-
-    void invalidate() {
-        is_valid_ = false;
-        // Unsubscribe all
-        for (auto subId : subscriptions_.keys()) {
-            event_bus_->unsubscribe(subId);
-        }
-        subscriptions_.clear();
-    }
-
-    bool emitEvent(const QString& eventName, const QVariantMap& eventData) override {
-        if (!is_valid_ || !event_bus_)
-            return false;
-
-        // Prefix event name with extension namespace
-        QString fullEventName = extension_id_ + "." + eventName;
-
-        manager_->logCapabilityUsage(extension_id_, "event", "emit", fullEventName);
-
-        event_bus_->publish(fullEventName, eventData);
-        return true;
-    }
-
-    int subscribe(const QString& eventPattern,
-                  std::function<void(const QVariantMap&)> callback) override {
-        if (!is_valid_ || !event_bus_)
-            return -1;
-
-        // Check if extension can subscribe to this pattern
-        if (!canSubscribe(eventPattern)) {
-            qWarning() << "Extension" << extension_id_ << "denied subscription to" << eventPattern;
-            return -1;
-        }
-
-        int localId = next_subscription_id_++;
-        int busId = event_bus_->subscribe(eventPattern, callback);
-        subscriptions_[localId] = busId;
-
-        manager_->logCapabilityUsage(extension_id_, "event", "subscribe", eventPattern);
-
-        return localId;
-    }
-
-    void unsubscribe(int subscriptionId) override {
-        if (!is_valid_ || !event_bus_)
-            return;
-
-        if (subscriptions_.contains(subscriptionId)) {
-            event_bus_->unsubscribe(subscriptions_[subscriptionId]);
-            subscriptions_.remove(subscriptionId);
-
-            manager_->logCapabilityUsage(extension_id_, "event", "unsubscribe",
-                                         QString::number(subscriptionId));
-        }
-    }
-
-    bool canEmit(const QString& eventName) const override {
-        // Extensions can only emit events in their own namespace
-        return eventName.startsWith(extension_id_ + ".");
-    }
-
-    bool canSubscribe(const QString& eventPattern) const override {
-        // Extensions can subscribe to:
-        // - Their own events (extension_id.*)
-        // - Core public events (core.*)
-        // - All events (*) if granted permission
-
-        if (eventPattern.startsWith(extension_id_ + "."))
-            return true;
-        if (eventPattern.startsWith("core."))
-            return true;
-        if (eventPattern == "*" || eventPattern.startsWith("*."))
-            return true;
-
-        return false;
-    }
-
-  private:
-    QString extension_id_;
-    CapabilityManager* manager_;
-    EventBus* event_bus_;
-    bool is_valid_;
-    QMap<int, int> subscriptions_;  // local ID -> bus ID
-    int next_subscription_id_;
-};
+// EventCapabilityImpl moved to EventCapabilityImpl.{hpp,cpp}
 
 // ============================================================================
 // CapabilityManager Implementation
@@ -536,7 +438,7 @@ std::shared_ptr<capabilities::UICapability> CapabilityManager::createUICapabilit
 
 std::shared_ptr<capabilities::EventCapability> CapabilityManager::createEventCapability(
     const QString& extensionId, const QVariantMap& options) {
-    return std::make_shared<EventCapabilityImpl>(extensionId, this, event_bus_);
+    return createEventCapabilityInstance(extensionId, this, event_bus_);
 }
 
 std::shared_ptr<capabilities::Capability> CapabilityManager::createBluetoothCapability(
