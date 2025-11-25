@@ -6,6 +6,13 @@ set(CORE_SOURCES
     network/websocket_server.cpp
     capabilities/CapabilityManager.cpp
     capabilities/BluetoothCapability.cpp
+    capabilities/LocationCapabilityImpl.cpp
+    capabilities/NetworkCapabilityImpl.cpp
+    capabilities/FileSystemCapabilityImpl.cpp
+    capabilities/UICapabilityImpl.cpp
+    capabilities/EventCapabilityImpl.cpp
+    capabilities/AudioCapabilityImpl.cpp
+    capabilities/TokenCapabilityImpl.cpp
     capabilities/WirelessCapabilityImpl.cpp
     config/ConfigManager.cpp
     config/ConfigTypes.cpp
@@ -27,6 +34,13 @@ set(CORE_HEADERS
     capabilities/EventCapability.hpp
     capabilities/BluetoothCapability.hpp
     capabilities/WirelessCapability.hpp
+    capabilities/LocationCapabilityImpl.hpp
+    capabilities/NetworkCapabilityImpl.hpp
+    capabilities/FileSystemCapabilityImpl.hpp
+    capabilities/UICapabilityImpl.hpp
+    capabilities/EventCapabilityImpl.hpp
+    capabilities/AudioCapabilityImpl.hpp
+    capabilities/TokenCapabilityImpl.hpp
     capabilities/WirelessCapabilityImpl.hpp
     capabilities/AudioCapability.hpp
     capabilities/VideoCapability.hpp
