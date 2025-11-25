@@ -22,6 +22,7 @@
 #include <QVariantMap>
 #include "../../src/core/config/ConfigManager.hpp"
 #include "../../src/core/config/ConfigTypes.hpp"
+#include "../../src/core/capabilities/UICapability.hpp"
 
 namespace opencardev::crankshaft {
 namespace extensions {
