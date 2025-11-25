@@ -317,6 +317,40 @@ See [API Documentation](docs/api.md) for details on the core APIs and WebSocket 
 
 We welcome contributions! Please read our [Contributing Guide](docs/CONTRIBUTING.md) for details.
 
+## Developer Workflow (VS Code Tasks)
+
+The repository provides shared VS Code tasks (see `.vscode/tasks.json`) designed to run inside WSL for consistency with CI:
+
+- `Configure CMake (Debug/Release)`: Generates the build tree with tests enabled.
+- `Build (Debug/Release)`: Compiles using the configured build type.
+- `Run Tests`: Executes the test suite via `ctest`.
+- `Format C++ Code` / `Check Formatting (clang-format)`: Applies or validates formatting (CI uses `--dry-run --Werror`).
+- `Lint C++ Code (clang-tidy)`: Runs clang-tidy against sources (requires prior configure step).
+- `Check C++ Code (cppcheck)`: Performs static analysis with broad enable flags and suppressions for system/Qt macros.
+- `Check CMake Files`: Lints core CMake entry points with `cmake-lint`.
+- `Build Package (DEB)`: Invokes `cpack -G DEB` to create Debian packages (mirrors CI packaging step).
+- `Install`: Installs build outputs system-wide (uses `sudo cmake --install build`).
+- `Run Application (VNC Debug)`: Launches the app with the VNC platform plugin for headless UI testing.
+- `Generate Documentation`: Runs Doxygen if a `Doxyfile` is present.
+- `Security Lint (Bandit)`: Scans Python helper scripts (if any) for security issues.
+- `Check License Headers`: Verifies required GPL header presence in C++ sources.
+- `Install Dev Tools (WSL)`: Installs compiler, analysis, and doc tooling inside WSL.
+- `Pre-commit Check`: Sequential aggregate of critical validation tasks.
+
+Usage (from VS Code Command Palette):
+
+1. Open the workspace in VS Code.
+2. Ensure WSL extension is installed if on Windows.
+3. Run `Install Dev Tools (WSL)` first to provision dependencies.
+4. Use `Pre-commit Check` before pushing to catch formatting or header issues early.
+
+Environment expectations:
+
+- All tasks run via `wsl bash -lc` ensuring uniform LF endings and toolchain parity with CI.
+- Formatting and static analysis must pass locally; CI will fail on divergence.
+
+If you add new source file types, update `.editorconfig` and tasks accordingly. For additional analysis (e.g. sanitizers, coverage), create new tasks rather than modifying existing baseline tasks.
+
 ## Testing
 
 ```bash
