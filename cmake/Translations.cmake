@@ -109,4 +109,11 @@ add_custom_target(translations
     COMMENT "Building translation files"
 )
 
+# Copy generated QM files into the build tree for development runs (non-installed)
+add_custom_command(TARGET translations POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/i18n
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different ${ALL_QM_FILES} ${CMAKE_BINARY_DIR}/i18n
+    COMMENT "Copying .qm files to build directory i18n/ for runtime use"
+)
+
 message(STATUS "Translation targets configured: run 'make translations' to build")

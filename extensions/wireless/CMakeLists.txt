@@ -27,11 +27,10 @@ target_include_directories(WirelessExtension
 )
 
 # Add QRC resources to expose QML via qrc:/wireless/qml/WirelessView.qml
-# Properly add QRC resources (resources.qrc already defines prefix /wireless)
-qt_add_resources(WirelessExtension "wireless_resources"
-    FILES
-        resources.qrc
-)
+# The resources.qrc file defines the /wireless prefix and file alias
+set(WIRELESS_QRC ${CMAKE_CURRENT_SOURCE_DIR}/resources.qrc)
+target_sources(WirelessExtension PRIVATE ${WIRELESS_QRC})
+set_property(SOURCE ${WIRELESS_QRC} PROPERTY SKIP_AUTORCC OFF)
 
 # Copy manifest.json to build directory for development
 add_custom_command(TARGET WirelessExtension POST_BUILD

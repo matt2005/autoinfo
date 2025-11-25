@@ -292,7 +292,8 @@ Item {
                 contentItem: Text {
                     leftPadding: 10
                     rightPadding: selectionComboBox.indicator.width + selectionComboBox.spacing
-                    text: selectionComboBox.displayText
+                        // Guard against undefined displayText causing assignment warnings
+                        text: selectionComboBox.displayText !== undefined ? selectionComboBox.displayText : ""
                     font: selectionComboBox.font
                     color: ThemeManager.textColor
                     verticalAlignment: Text.AlignVCenter
