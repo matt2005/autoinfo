@@ -144,7 +144,10 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y \
           clang-format \
-          cppcheck
+          clang-tidy \
+          cppcheck \
+          cmake \
+          ninja-build
     
     - name: Check Code Formatting
       run: |
@@ -158,3 +161,16 @@ jobs:
           --suppress=missingIncludeSystem \
           --suppress=unknownMacro \
           src/ extensions/
+
+    - name: Configure CMake (for clang-tidy)
+      run: |
+        cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTS=ON -G Ninja
+
+    - name: Run clang-tidy
+      env:
+        # Ensure consistent locale and path expansion
+        LC_ALL: C.UTF-8
+      run: |
+        # Find all C++ sources in src and extensions and run clang-tidy with compile commands
+        find src extensions -type f -name '*.cpp' -print0 | \
+          xargs -0 -I{} bash -lc 'clang-tidy -p build "{}"'

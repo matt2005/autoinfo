@@ -118,7 +118,7 @@
             "args": [
                 "bash",
                 "-lc",
-                "find src -name '*.cpp' -print0 | xargs -0 -I{} clang-tidy -p build {}"
+                "find src extensions -type f -name '*.cpp' -print0 | xargs -0 -I{} clang-tidy -p build {}"
             ],
             "options": { "cwd": "${workspaceFolder}" },
             "presentation": { "reveal": "always", "panel": "shared" },
