@@ -17,6 +17,12 @@ add_library(WirelessExtension STATIC
     resources.qrc
 )
 
+# Give the QRC a unique resource name to avoid collisions and allow Q_INIT_RESOURCE
+set_source_files_properties(
+    ${CMAKE_CURRENT_SOURCE_DIR}/resources.qrc
+    PROPERTIES AUTORCC_OPTIONS "-name;wireless_resources"
+)
+
 target_link_libraries(WirelessExtension
     PUBLIC
         Qt6::Core

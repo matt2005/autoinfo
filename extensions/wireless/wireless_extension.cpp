@@ -67,6 +67,10 @@ bool WirelessExtension::initialize() {
 void WirelessExtension::start() {
     qInfo() << "Starting Wireless extension...";
 
+    // Ensure qrc resources compiled into this static library are registered
+    // The resource collection name is set in CMake via AUTORCC_OPTIONS (-name wireless_resources)
+    Q_INIT_RESOURCE(wireless_resources);
+
     // Register UI
     auto uiCap = getCapability<core::capabilities::UICapability>();
     if (uiCap) {
