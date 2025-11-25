@@ -22,6 +22,9 @@
 #include <QGeoCoordinate>
 #include <QMap>
 #include <QTimer>
+#include <QtPositioning/QGeoPositionInfo>
+#include <QtPositioning/QGeoPositionInfoSource>
+#include <functional>
 
 namespace opencardev::crankshaft::core {
 class CapabilityManager; // fwd
