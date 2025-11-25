@@ -113,6 +113,9 @@ Item {
             Layout.fillWidth: true
             Layout.fillHeight: true
             clip: true
+            ScrollBar.vertical: ScrollBar {
+                policy: ScrollBar.AsNeeded
+            }
             
             ColumnLayout {
                 width: parent.width
