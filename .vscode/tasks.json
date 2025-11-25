@@ -222,7 +222,7 @@
             "args": [
                 "bash",
                 "-lc",
-                "cd \"$(wslpath -a '${workspaceFolder}')\"; if command -v sudo >/dev/null 2>&1; then SUDO=sudo -n; else SUDO=; fi; $SUDO apt-get update || true; $SUDO apt-get install -y build-essential cmake ninja-build clang-format clang-tidy cppcheck doxygen bandit || true; ($SUDO apt-get install -y cmakelint) || (python3 -m pip install --user --upgrade pip && python3 -m pip install --user cmakelint); echo 'Dev tools install attempted. If cmakelint was installed via pip, ensure ~/.local/bin is on PATH.'"
+                "cd \"$(wslpath -a '${workspaceFolder}')\" && if command -v sudo >/dev/null 2>&1; then SUDO='sudo'; else SUDO=''; fi; $SUDO apt-get update && $SUDO apt-get install -y build-essential cmake ninja-build clang-format clang-tidy cppcheck doxygen python3-pip && ($SUDO apt-get install -y cmakelint || python3 -m pip install --user --upgrade pip cmakelint) && echo 'Dev tools installed. Ensure ~/.local/bin is on PATH for pip-installed tools.'"
             ],
             "presentation": { "reveal": "always", "panel": "shared" },
             "problemMatcher": []
