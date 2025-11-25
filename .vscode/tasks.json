@@ -8,7 +8,7 @@
             "args": [
                 "bash",
                 "-lc",
-                "cd $(wslpath '${workspaceFolder}') && cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTS=ON -DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
+                "cd \"$(wslpath \"${workspaceFolder}\")\" && cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTS=ON -DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
             ],
             "presentation": { "reveal": "always", "panel": "shared" },
             "problemMatcher": []
@@ -20,7 +20,7 @@
             "args": [
                 "bash",
                 "-lc",
-                "cd $(wslpath '${workspaceFolder}') && cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=ON -DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
+                "cd \"$(wslpath \"${workspaceFolder}\")\" && cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=ON -DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
             ],
             "presentation": { "reveal": "always", "panel": "shared" },
             "problemMatcher": []
@@ -32,7 +32,7 @@
             "args": [
                 "bash",
                 "-lc",
-                "cd $(wslpath '${workspaceFolder}') && cmake --build build --config Debug -j"
+                "cd \"$(wslpath \"${workspaceFolder}\")\" && cmake --build build --config Debug -j"
             ],
             "group": { "kind": "build", "isDefault": true },
             "presentation": { "reveal": "always", "panel": "shared" },
@@ -46,7 +46,7 @@
             "args": [
                 "bash",
                 "-lc",
-                "cd $(wslpath '${workspaceFolder}') && cmake --build build --config Release -j"
+                "cd \"$(wslpath \"${workspaceFolder}\")\" && cmake --build build --config Release -j"
             ],
             "group": "build",
             "presentation": { "reveal": "always", "panel": "shared" },
@@ -60,7 +60,7 @@
             "args": [
                 "bash",
                 "-lc",
-                "cd $(wslpath '${workspaceFolder}') && rm -rf build"
+                "cd \"$(wslpath \"${workspaceFolder}\")\" && rm -rf build"
             ],
             "presentation": { "reveal": "always", "panel": "shared" },
             "problemMatcher": []
@@ -72,7 +72,7 @@
             "args": [
                 "bash",
                 "-lc",
-                "cd $(wslpath '${workspaceFolder}') && ctest --test-dir build --output-on-failure"
+                "cd \"$(wslpath \"${workspaceFolder}\")\" && ctest --test-dir build --output-on-failure"
             ],
             "group": { "kind": "test", "isDefault": true },
             "presentation": { "reveal": "always", "panel": "shared" },
@@ -86,7 +86,7 @@
             "args": [
                 "bash",
                 "-lc",
-                "cd $(wslpath '${workspaceFolder}') && find src extensions -type f \( -name '*.cpp' -o -name '*.hpp' -o -name '*.h' -o -name '*.cc' \) -print0 | xargs -0 clang-format -i"
+                "cd \"$(wslpath \"${workspaceFolder}\")\" && find src extensions -type f \( -name '*.cpp' -o -name '*.hpp' -o -name '*.h' -o -name '*.cc' \) -print0 | xargs -0 clang-format -i"
             ],
             "presentation": { "reveal": "always", "panel": "shared" },
             "problemMatcher": []
@@ -98,7 +98,7 @@
             "args": [
                 "bash",
                 "-lc",
-                "cd $(wslpath '${workspaceFolder}') && find src extensions -type f \( -name '*.cpp' -o -name '*.hpp' -o -name '*.h' -o -name '*.cc' \) -print0 | xargs -0 clang-format --dry-run --Werror"
+                "cd \"$(wslpath \"${workspaceFolder}\")\" && find src extensions -type f \( -name '*.cpp' -o -name '*.hpp' -o -name '*.h' -o -name '*.cc' \) -print0 | xargs -0 clang-format --dry-run --Werror"
             ],
             "presentation": { "reveal": "always", "panel": "shared" },
             "problemMatcher": []
@@ -110,7 +110,7 @@
             "args": [
                 "bash",
                 "-lc",
-                "cd $(wslpath '${workspaceFolder}') && find src -name '*.cpp' -print0 | xargs -0 -I{} clang-tidy -p build {}"
+                "cd \"$(wslpath \"${workspaceFolder}\")\" && find src -name '*.cpp' -print0 | xargs -0 -I{} clang-tidy -p build {}"
             ],
             "presentation": { "reveal": "always", "panel": "shared" },
             "problemMatcher": ["$gcc"],
@@ -123,7 +123,7 @@
             "args": [
                 "bash",
                 "-lc",
-                "cd $(wslpath '${workspaceFolder}') && cppcheck --enable=all --inconclusive --std=c++17 --suppress=missingIncludeSystem --suppress=unknownMacro src/ extensions/"
+                "cd \"$(wslpath \"${workspaceFolder}\")\" && cppcheck --enable=all --inconclusive --std=c++17 --suppress=missingIncludeSystem --suppress=unknownMacro src/ extensions/"
             ],
             "presentation": { "reveal": "always", "panel": "shared" },
             "problemMatcher": []
@@ -135,7 +135,7 @@
             "args": [
                 "bash",
                 "-lc",
-                "cd $(wslpath '${workspaceFolder}') && cmake-lint CMakeLists.txt src/core/CMakeLists.txt src/ui/CMakeLists.txt src/extensions/CMakeLists.txt"
+                "cd \"$(wslpath \"${workspaceFolder}\")\" && cmake-lint CMakeLists.txt src/core/CMakeLists.txt src/ui/CMakeLists.txt src/extensions/CMakeLists.txt"
             ],
             "presentation": { "reveal": "always", "panel": "shared" },
             "problemMatcher": []
@@ -147,7 +147,7 @@
             "args": [
                 "bash",
                 "-lc",
-                "cd $(wslpath '${workspaceFolder}') && cd build && cpack -G DEB"
+                "cd \"$(wslpath \"${workspaceFolder}\")\" && cd build && cpack -G DEB"
             ],
             "presentation": { "reveal": "always", "panel": "shared" },
             "problemMatcher": [],
@@ -160,7 +160,7 @@
             "args": [
                 "bash",
                 "-lc",
-                "cd $(wslpath '${workspaceFolder}') && sudo cmake --install build"
+                "cd \"$(wslpath \"${workspaceFolder}\")\" && sudo cmake --install build"
             ],
             "presentation": { "reveal": "always", "panel": "shared" },
             "problemMatcher": [],
@@ -173,7 +173,7 @@
             "args": [
                 "bash",
                 "-lc",
-                "cd $(wslpath '${workspaceFolder}') && QT_DEBUG_PLUGINS=1 QT_LOGGING_RULES='*=true' ./build/CrankshaftReborn -platform vnc:size=1024x600,port=5900"
+                "cd \"$(wslpath \"${workspaceFolder}\")\" && QT_DEBUG_PLUGINS=1 QT_LOGGING_RULES='*=true' ./build/CrankshaftReborn -platform vnc:size=1024x600,port=5900"
             ],
             "presentation": { "reveal": "always", "panel": "dedicated" },
             "problemMatcher": [],
@@ -186,7 +186,7 @@
             "args": [
                 "bash",
                 "-lc",
-                "cd $(wslpath '${workspaceFolder}') && if [ -f Doxyfile ]; then doxygen Doxyfile; else echo 'No Doxyfile found'; fi"
+                "cd \"$(wslpath \"${workspaceFolder}\")\" && if [ -f Doxyfile ]; then doxygen Doxyfile; else echo 'No Doxyfile found'; fi"
             ],
             "presentation": { "reveal": "always", "panel": "shared" },
             "problemMatcher": []
@@ -198,7 +198,7 @@
             "args": [
                 "bash",
                 "-lc",
-                "cd $(wslpath '${workspaceFolder}') && if command -v bandit >/dev/null 2>&1; then find . -name '*.py' -print0 | xargs -0 -I{} bandit -r {}; else echo 'Bandit not installed. Run: Install Dev Tools (WSL)'; fi"
+                "cd \"$(wslpath \"${workspaceFolder}\")\" && if command -v bandit >/dev/null 2>&1; then find . -name '*.py' -print0 | xargs -0 -I{} bandit -r {}; else echo 'Bandit not installed. Run: Install Dev Tools (WSL)'; fi"
             ],
             "presentation": { "reveal": "always", "panel": "shared" },
             "problemMatcher": []
@@ -210,7 +210,7 @@
             "args": [
                 "bash",
                 "-lc",
-                "cd $(wslpath '${workspaceFolder}') && find src extensions -type f \( -name '*.cpp' -o -name '*.hpp' -o -name '*.h' \) -exec grep -L 'GNU General Public License' {} \; | tee /tmp/missing_license.txt && [ ! -s /tmp/missing_license.txt ] || (echo 'Files missing license headers:' && cat /tmp/missing_license.txt && exit 1)"
+                "cd \"$(wslpath \"${workspaceFolder}\")\" && find src extensions -type f \( -name '*.cpp' -o -name '*.hpp' -o -name '*.h' \) -exec grep -L 'GNU General Public License' {} \; | tee /tmp/missing_license.txt && [ ! -s /tmp/missing_license.txt ] || (echo 'Files missing license headers:' && cat /tmp/missing_license.txt && exit 1)"
             ],
             "presentation": { "reveal": "always", "panel": "shared" },
             "problemMatcher": []
@@ -222,7 +222,7 @@
             "args": [
                 "bash",
                 "-lc",
-                "cd $(wslpath '${workspaceFolder}') && if command -v sudo >/dev/null 2>&1; then SUDO='sudo'; else SUDO=''; fi; $SUDO apt-get update && $SUDO apt-get install -y build-essential cmake ninja-build clang-format clang-tidy cppcheck doxygen python3-pip && ($SUDO apt-get install -y cmakelint || python3 -m pip install --user --upgrade pip cmakelint) && echo 'Dev tools installed. Ensure ~/.local/bin is on PATH for pip-installed tools.'"
+                "cd \"$(wslpath \"${workspaceFolder}\")\" && if command -v sudo >/dev/null 2>&1; then SUDO='sudo'; else SUDO=''; fi; $SUDO apt-get update && $SUDO apt-get install -y build-essential cmake ninja-build clang-format clang-tidy cppcheck doxygen python3-pip && ($SUDO apt-get install -y cmakelint || python3 -m pip install --user --upgrade pip cmakelint) && echo 'Dev tools installed. Ensure ~/.local/bin is on PATH for pip-installed tools.'"
             ],
             "presentation": { "reveal": "always", "panel": "shared" },
             "problemMatcher": []
