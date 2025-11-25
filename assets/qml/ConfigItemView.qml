@@ -135,7 +135,8 @@ Item {
                 Text {
                     text: "(read-only)"
                     font.pixelSize: 11
-                    color: ThemeManager.secondaryTextColor
+                    // Use textSecondaryColor (correct property name) with fallback
+                    color: ThemeManager.textSecondaryColor || ThemeManager.textColor
                     visible: itemData && itemData.readOnly
                 }
             }
@@ -143,7 +144,8 @@ Item {
             Text {
                 text: itemData ? itemData.description : ""
                 font.pixelSize: 11
-                color: ThemeManager.secondaryTextColor
+                // Use textSecondaryColor (correct property name) with fallback
+                color: ThemeManager.textSecondaryColor || ThemeManager.textColor
                 wrapMode: Text.WordWrap
                 Layout.fillWidth: true
                 visible: itemData && itemData.description !== ""
@@ -456,7 +458,8 @@ Item {
                 visible: itemData && itemData.type === "custom"
                 text: "Custom widget not implemented"
                 font.pixelSize: 12
-                color: ThemeManager.secondaryTextColor
+                // Use textSecondaryColor (correct property name) with fallback
+                color: ThemeManager.textSecondaryColor || ThemeManager.textColor
                 font.italic: true
             }
         }
@@ -465,7 +468,8 @@ Item {
         Text {
             text: itemData ? itemData.unit : ""
             font.pixelSize: 12
-            color: ThemeManager.secondaryTextColor
+            // Use textSecondaryColor (correct property name) with fallback
+            color: ThemeManager.textSecondaryColor || ThemeManager.textColor
             visible: itemData && itemData.unit !== ""
             Layout.alignment: Qt.AlignVCenter
         }

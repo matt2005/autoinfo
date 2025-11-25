@@ -27,8 +27,8 @@ target_include_directories(WirelessExtension
 )
 
 # Add QRC resources to expose QML via qrc:/wireless/qml/WirelessView.qml
+# Properly add QRC resources (resources.qrc already defines prefix /wireless)
 qt_add_resources(WirelessExtension "wireless_resources"
-    PREFIX "/"
     FILES
         resources.qrc
 )
