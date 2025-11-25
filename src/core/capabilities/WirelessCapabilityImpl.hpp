@@ -74,11 +74,14 @@ class WirelessCapabilityImpl : public WirelessCapability {
         callback(false, QStringLiteral("Access point configuration not implemented"));
     }
 
-    // Base capability id
+    // Base capability conformance
     QString id() const override { return QStringLiteral("wireless"); }
+    bool isValid() const override { return is_valid_; }
+    QString extensionId() const override { return extension_id_; }
 
   private:
     QString extension_id_;
+        bool is_valid_ = true;
     bool enabled_ = true;
     int last_sub_id_ = 0;
     QMap<int, std::function<void(ConnectionState, const QString&)>> state_callbacks_;

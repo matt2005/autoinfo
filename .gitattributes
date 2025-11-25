@@ -1,13 +1,13 @@
-# Set default behavior to automatically normalize line endings
-* text=auto
+# Enforce LF line endings repo-wide
+* text eol=lf
 
 # Shell scripts should always use LF
 *.sh text eol=lf
 
-# Windows scripts should use CRLF
-*.ps1 text eol=crlf
-*.bat text eol=crlf
-*.cmd text eol=crlf
+# Windows scripts: still enforce LF to keep consistency across WSL/CI
+*.ps1 text eol=lf
+*.bat text eol=lf
+*.cmd text eol=lf
 
 # Dockerfile should use LF
 Dockerfile text eol=lf
