@@ -153,6 +153,8 @@ QT6_PACKAGES=(
     "qml6-module-qtpositioning"
     "qml6-module-qtlocation"
     "qt6-location-plugins"
+    "qt6-tools-dev"
+    "qt6-tools-dev-tools"
 )
 
 for package in "${QT6_PACKAGES[@]}"; do

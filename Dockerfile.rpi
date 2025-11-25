@@ -1,0 +1,86 @@
+# Project: Crankshaft
+# This file is part of Crankshaft project.
+# Copyright (C) 2025 OpenCarDev Team
+#
+#  Crankshaft is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation; either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  Crankshaft is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with Crankshaft. If not, see <http://www.gnu.org/licenses/>.
+
+# Raspberry Pi (ARM) build Dockerfile using Docker Buildx/QEMU
+# Accepts TARGET_ARCH (armhf|arm64) and BUILD_TYPE (release|debug)
+
+ARG TARGET_ARCH=armhf
+ARG BUILD_TYPE=release
+
+FROM debian:bookworm AS builder
+
+ARG TARGET_ARCH
+ARG BUILD_TYPE
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Update and install build dependencies, including Qt6 LinguistTools
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends \
+    build-essential \
+    cmake \
+    ninja-build \
+    git \
+    pkg-config \
+    qt6-base-dev \
+    qt6-declarative-dev \
+    qt6-websockets-dev \
+    qt6-multimedia-dev \
+    qt6-positioning-dev \
+    qt6-connectivity-dev \
+    qt6-tools-dev \
+    qt6-tools-dev-tools \
+    ca-certificates \
+    file \
+    dpkg-dev \
+    ccache \
+ && rm -rf /var/lib/apt/lists/*
+
+# Create work directories
+WORKDIR /src
+
+# Copy source into container
+COPY . /src
+
+# Configure and build
+RUN cmake -S /src -B /build -G Ninja \
+        -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
+        -DBUILD_TESTS=OFF \
+        -DBUILD_EXTENSIONS=ON \
+ && cmake --build /build \
+ && cmake --install /build --prefix /output
+
+# Runtime image (optional - for artefact extraction we only need /output)
+FROM debian:bookworm AS runtime
+ENV DEBIAN_FRONTEND=noninteractive
+# Install minimal runtime dependencies to run the app inside container if desired
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends \
+    qt6-base-dev \
+    qt6-qpa-plugins \
+    qml6-module-qtquick \
+    qml6-module-qtquick-controls \
+    qml6-module-qtquick-layouts \
+    qml6-module-qtquick-window \
+    libqt6bluetooth6 \
+    bluez \
+ && rm -rf /var/lib/apt/lists/*
+
+# Copy installed artefacts
+COPY --from=builder /output /output
+
+# Default command shows contents of output
+CMD ["bash", "-lc", "ls -al /output"]

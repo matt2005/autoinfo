@@ -20,7 +20,12 @@
 
 find_package(Qt6 COMPONENTS LinguistTools QUIET)
 
-if(NOT Qt6_FOUND OR NOT Qt6LinguistTools_FOUND)
+# Fallback to direct package in case component form isn't registered
+if(NOT Qt6LinguistTools_FOUND)
+    find_package(Qt6LinguistTools QUIET)
+endif()
+
+if(NOT Qt6LinguistTools_FOUND)
     message(STATUS "Qt6 LinguistTools not found; translation targets disabled")
     return()
 endif()
