@@ -25,6 +25,7 @@
 #include "EventCapabilityImpl.hpp"
 #include "AudioCapabilityImpl.hpp"
 #include "TokenCapabilityImpl.hpp"
+#include "WirelessCapabilityImpl.hpp"
 #include <QDateTime>
 #include <QDebug>
 #include <QDir>
@@ -82,19 +83,19 @@ CapabilityManager::~CapabilityManager() {
     // Invalidate all capabilities
     for (auto& extensionCaps : granted_capabilities_) {
         for (auto& cap : extensionCaps) {
-            if (auto locCap = std::dynamic_pointer_cast<LocationCapabilityImpl>(cap)) {
+            if (auto locCap = std::dynamic_pointer_cast<capabilities::LocationCapabilityImpl>(cap)) {
                 locCap->invalidate();
-            } else if (auto netCap = std::dynamic_pointer_cast<NetworkCapabilityImpl>(cap)) {
+            } else if (auto netCap = std::dynamic_pointer_cast<capabilities::NetworkCapabilityImpl>(cap)) {
                 netCap->invalidate();
-            } else if (auto fsCap = std::dynamic_pointer_cast<FileSystemCapabilityImpl>(cap)) {
+            } else if (auto fsCap = std::dynamic_pointer_cast<capabilities::FileSystemCapabilityImpl>(cap)) {
                 fsCap->invalidate();
-            } else if (auto uiCap = std::dynamic_pointer_cast<UICapabilityImpl>(cap)) {
+            } else if (auto uiCap = std::dynamic_pointer_cast<capabilities::UICapabilityImpl>(cap)) {
                 uiCap->invalidate();
-            } else if (auto evCap = std::dynamic_pointer_cast<EventCapabilityImpl>(cap)) {
+            } else if (auto evCap = std::dynamic_pointer_cast<capabilities::EventCapabilityImpl>(cap)) {
                 evCap->invalidate();
-            } else if (auto audCap = std::dynamic_pointer_cast<AudioCapabilityImpl>(cap)) {
+            } else if (auto audCap = std::dynamic_pointer_cast<capabilities::AudioCapabilityImpl>(cap)) {
                 audCap->invalidate();
-            } else if (auto tokCap = std::dynamic_pointer_cast<TokenCapabilityImpl>(cap)) {
+            } else if (auto tokCap = std::dynamic_pointer_cast<capabilities::TokenCapabilityImpl>(cap)) {
                 tokCap->invalidate();
             }
         }
@@ -166,19 +167,19 @@ void CapabilityManager::revokeCapability(const QString& extensionId,
         auto cap = granted_capabilities_[extensionId][capabilityType];
 
         // Invalidate capability
-        if (auto locCap = std::dynamic_pointer_cast<LocationCapabilityImpl>(cap)) {
+        if (auto locCap = std::dynamic_pointer_cast<capabilities::LocationCapabilityImpl>(cap)) {
             locCap->invalidate();
-        } else if (auto netCap = std::dynamic_pointer_cast<NetworkCapabilityImpl>(cap)) {
+        } else if (auto netCap = std::dynamic_pointer_cast<capabilities::NetworkCapabilityImpl>(cap)) {
             netCap->invalidate();
-        } else if (auto fsCap = std::dynamic_pointer_cast<FileSystemCapabilityImpl>(cap)) {
+        } else if (auto fsCap = std::dynamic_pointer_cast<capabilities::FileSystemCapabilityImpl>(cap)) {
             fsCap->invalidate();
-        } else if (auto uiCap = std::dynamic_pointer_cast<UICapabilityImpl>(cap)) {
+        } else if (auto uiCap = std::dynamic_pointer_cast<capabilities::UICapabilityImpl>(cap)) {
             uiCap->invalidate();
-        } else if (auto evCap = std::dynamic_pointer_cast<EventCapabilityImpl>(cap)) {
+        } else if (auto evCap = std::dynamic_pointer_cast<capabilities::EventCapabilityImpl>(cap)) {
             evCap->invalidate();
-        } else if (auto audCap = std::dynamic_pointer_cast<AudioCapabilityImpl>(cap)) {
+        } else if (auto audCap = std::dynamic_pointer_cast<capabilities::AudioCapabilityImpl>(cap)) {
             audCap->invalidate();
-        } else if (auto tokCap = std::dynamic_pointer_cast<TokenCapabilityImpl>(cap)) {
+        } else if (auto tokCap = std::dynamic_pointer_cast<capabilities::TokenCapabilityImpl>(cap)) {
             tokCap->invalidate();
         }
 
@@ -198,15 +199,15 @@ void CapabilityManager::revokeAllCapabilities(const QString& extensionId) {
             auto cap = granted_capabilities_[extensionId][capType];
 
             // Invalidate
-            if (auto locCap = std::dynamic_pointer_cast<LocationCapabilityImpl>(cap)) {
+            if (auto locCap = std::dynamic_pointer_cast<capabilities::LocationCapabilityImpl>(cap)) {
                 locCap->invalidate();
-            } else if (auto netCap = std::dynamic_pointer_cast<NetworkCapabilityImpl>(cap)) {
+            } else if (auto netCap = std::dynamic_pointer_cast<capabilities::NetworkCapabilityImpl>(cap)) {
                 netCap->invalidate();
-            } else if (auto fsCap = std::dynamic_pointer_cast<FileSystemCapabilityImpl>(cap)) {
+            } else if (auto fsCap = std::dynamic_pointer_cast<capabilities::FileSystemCapabilityImpl>(cap)) {
                 fsCap->invalidate();
-            } else if (auto uiCap = std::dynamic_pointer_cast<UICapabilityImpl>(cap)) {
+            } else if (auto uiCap = std::dynamic_pointer_cast<capabilities::UICapabilityImpl>(cap)) {
                 uiCap->invalidate();
-            } else if (auto evCap = std::dynamic_pointer_cast<EventCapabilityImpl>(cap)) {
+            } else if (auto evCap = std::dynamic_pointer_cast<capabilities::EventCapabilityImpl>(cap)) {
                 evCap->invalidate();
             }
         }
@@ -294,12 +295,12 @@ bool CapabilityManager::shouldGrantPermission(const QString& extensionId,
 
 std::shared_ptr<capabilities::LocationCapability> CapabilityManager::createLocationCapability(
     const QString& extensionId, const QVariantMap& options) {
-    return createLocationCapabilityInstance(extensionId, this);
+    return capabilities::createLocationCapabilityInstance(extensionId, this);
 }
 
 std::shared_ptr<capabilities::NetworkCapability> CapabilityManager::createNetworkCapability(
     const QString& extensionId, const QVariantMap& options) {
-    return createNetworkCapabilityInstance(extensionId, this);
+    return capabilities::createNetworkCapabilityInstance(extensionId, this);
 }
 
 std::shared_ptr<capabilities::FileSystemCapability> CapabilityManager::createFileSystemCapability(
@@ -313,17 +314,17 @@ std::shared_ptr<capabilities::FileSystemCapability> CapabilityManager::createFil
                     "/extensions/" + extensionId;
     }
 
-    return createFileSystemCapabilityInstance(extensionId, this, scopePath);
+    return capabilities::createFileSystemCapabilityInstance(extensionId, this, scopePath);
 }
 
 std::shared_ptr<capabilities::UICapability> CapabilityManager::createUICapability(
     const QString& extensionId, const QVariantMap& options) {
-    return createUICapabilityInstance(extensionId, this);
+    return capabilities::createUICapabilityInstance(extensionId, this);
 }
 
 std::shared_ptr<capabilities::EventCapability> CapabilityManager::createEventCapability(
     const QString& extensionId, const QVariantMap& options) {
-    return createEventCapabilityInstance(extensionId, this, event_bus_);
+    return capabilities::createEventCapabilityInstance(extensionId, this, event_bus_);
 }
 
 std::shared_ptr<capabilities::Capability> CapabilityManager::createBluetoothCapability(
@@ -342,7 +343,7 @@ std::shared_ptr<capabilities::Capability> CapabilityManager::createWirelessCapab
 std::shared_ptr<capabilities::AudioCapability> CapabilityManager::createAudioCapability(
     const QString& extensionId, const QVariantMap& options) {
     Q_UNUSED(options);
-    return createAudioCapabilityInstance(extensionId, this);
+    return capabilities::createAudioCapabilityInstance(extensionId, this);
 }
 
 std::shared_ptr<capabilities::Capability> CapabilityManager::createTokenCapability(
