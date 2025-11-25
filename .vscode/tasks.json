@@ -283,5 +283,20 @@
             "presentation": { "reveal": "always", "panel": "shared" },
             "problemMatcher": []
         }
+        ,
+        {
+            "label": "Build Translations",
+            "type": "shell",
+            "command": "wsl",
+            "args": [
+                "bash",
+                "-lc",
+                "cmake --build build --target translations -j || ninja -C build translations"
+            ],
+            "options": { "cwd": "${workspaceFolder}" },
+            "presentation": { "reveal": "always", "panel": "shared" },
+            "problemMatcher": [],
+            "dependsOn": ["Configure CMake (Debug)"]
+        }
     ]
 }

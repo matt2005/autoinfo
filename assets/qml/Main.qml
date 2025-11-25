@@ -229,8 +229,14 @@ ApplicationWindow {
                             
                             // Show image icon if modelData.icon looks like a path/qrc/svg
                             Image {
-                                visible: !!modelData.icon && (modelData.icon.indexOf(":/") >= 0 || modelData.icon.endsWith(".svg") || modelData.icon.endsWith(".png"))
-                                source: modelData.icon || ""
+                                visible: !!modelData.icon && (
+                                    modelData.icon.startsWith("qrc:") ||
+                                    modelData.icon.startsWith(":") ||
+                                    modelData.icon.indexOf('/') >= 0 ||
+                                    modelData.icon.indexOf('\\') >= 0 ||
+                                    modelData.icon.match(/\.(svg|png|jpg|jpeg|webp)$/) !== null
+                                )
+                                source: visible ? modelData.icon : ""
                                 width: 18
                                 height: 18
                                 fillMode: Image.PreserveAspectFit
@@ -694,6 +700,19 @@ ApplicationWindow {
                 configScreen.currentDomain = "core"
                 configScreen.currentExtension = "navigation"
             })
+        }
+
+        // First-run navigation: if enablefirstrun is true navigate directly
+        // to General settings then disable the flag.
+        var firstRun = ConfigManagerBridge.getValue("system.ui.general.enablefirstrun");
+        if (firstRun === true) {
+            // Settings tab index is after home + extension tabs
+            tabBar.currentIndex = 1 + ExtensionRegistry.mainComponents.length;
+            // Ensure General page is shown
+            configScreen.openPage("system", "ui");
+            // Disable flag for subsequent launches
+            ConfigManagerBridge.setValue("system.ui.general.enablefirstrun", false);
+            console.log("First run detected: opening General settings page");
         }
     }
 

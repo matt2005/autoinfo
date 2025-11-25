@@ -182,6 +182,18 @@ int main(int argc, char* argv[]) {
         language.complexity = ConfigComplexity::Basic;
         general.items.append(language);
 
+        // First-run flag: when true the application will open directly into
+        // the General settings page to encourage initial configuration.
+        // Automatically set to false after first run logic executes.
+        ConfigItem enableFirstRun;
+        enableFirstRun.key = "enablefirstrun";
+        enableFirstRun.label = "Enable first run setup"; // internal, not translated
+        enableFirstRun.description = "Show General settings on first application launch"; // internal
+        enableFirstRun.type = ConfigItemType::Boolean;
+        enableFirstRun.defaultValue = true;
+        enableFirstRun.complexity = ConfigComplexity::Basic;
+        general.items.append(enableFirstRun);
+
         ConfigSection shortcuts;
         shortcuts.key = "shortcuts";
         shortcuts.title = "Keyboard Shortcuts";

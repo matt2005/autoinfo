@@ -93,6 +93,23 @@ Rectangle {
             currentExtension = ""
         }
     }
+
+    // Programmatic navigation helper
+    function openPage(domain, extension) {
+        if (!domainsData || domainsData.length === 0) return;
+        for (var i = 0; i < domainsData.length; ++i) {
+            var d = domainsData[i];
+            if (d.domain === domain) {
+                for (var j = 0; j < d.pages.length; ++j) {
+                    if (d.pages[j].extension === extension) {
+                        currentDomain = domain;
+                        currentExtension = extension;
+                        return;
+                    }
+                }
+            }
+        }
+    }
     
     ColumnLayout {
         anchors.fill: parent
