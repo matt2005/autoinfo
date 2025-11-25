@@ -25,6 +25,11 @@
 #include "../../src/core/capabilities/EventCapability.hpp"
 #include "../../src/core/capabilities/UICapability.hpp"
 
+// Ensure QRC resources are initialised from global namespace to match rcc symbols
+static void init_wireless_resources() {
+    Q_INIT_RESOURCE(wireless_resources);
+}
+
 namespace opencardev {
 namespace crankshaft {
 namespace extensions {
@@ -67,9 +72,8 @@ bool WirelessExtension::initialize() {
 void WirelessExtension::start() {
     qInfo() << "Starting Wireless extension...";
 
-    // Ensure qrc resources compiled into this static library are registered
-    // The resource collection name is set in CMake via AUTORCC_OPTIONS (-name wireless_resources)
-    Q_INIT_RESOURCE(wireless_resources);
+    // Ensure qrc resources compiled into this library are registered
+    ::init_wireless_resources();
 
     // Register UI
     auto uiCap = getCapability<core::capabilities::UICapability>();

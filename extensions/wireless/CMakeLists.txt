@@ -11,7 +11,7 @@ set(WIRELESS_HEADERS
 # Enable Qt resource compilation
 set(CMAKE_AUTORCC ON)
 
-add_library(WirelessExtension STATIC
+add_library(WirelessExtension SHARED
     ${WIRELESS_SOURCES}
     ${WIRELESS_HEADERS}
     resources.qrc
