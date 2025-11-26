@@ -69,10 +69,23 @@ Rectangle {
             grouped[page.domain].push({ extension: page.extension, title: page.title })
         }
 
-        // Convert to ordered array for UI
+        // Convert to ordered array for UI, prioritising system and user interface
         var result = []
+        var priorityDomains = ["system", "user interface"]
+        
+        // Add priority domains first (in order)
+        for (var p = 0; p < priorityDomains.length; p++) {
+            var priorityDomain = priorityDomains[p]
+            if (grouped[priorityDomain]) {
+                result.push({ domain: priorityDomain, pages: grouped[priorityDomain] })
+            }
+        }
+        
+        // Add remaining domains
         for (var d in grouped) {
-            result.push({ domain: d, pages: grouped[d] })
+            if (priorityDomains.indexOf(d) === -1) {
+                result.push({ domain: d, pages: grouped[d] })
+            }
         }
         domainsData = result
 
@@ -192,7 +205,7 @@ Rectangle {
                         clip: true
                         model: domainsData
                         ScrollBar.vertical: ScrollBar {
-                            policy: ScrollBar.AsNeeded
+                            policy: ScrollBar.AlwaysOn
                         }
 
                         delegate: ColumnLayout {
