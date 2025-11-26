@@ -12,9 +12,7 @@ Checks: >
   hicpp-no-malloc
 WarningsAsErrors: ''
 HeaderFilterRegex: '^(src|extensions)/'
-AnalyzeTemporaryDtors: false
 FormatStyle: none
-User: auto
 # Qt-specific: allow slots/signals macros and generated moc files
 ExtraArgs: [
   '-DQT_CORE_LIB',
@@ -25,9 +23,6 @@ ExtraArgs: [
   '-DQT_MULTIMEDIA_LIB',
   '-DQT_CONNECTIVITY_LIB'
 ]
-# Exclude directories
-GlobList:
-  - 'build/**'
 
 # Limit suggestions for include order etc., relying on clang-format.
 CheckOptions:
