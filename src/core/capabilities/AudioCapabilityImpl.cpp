@@ -22,20 +22,16 @@
 using namespace opencardev::crankshaft::core::capabilities;
 using opencardev::crankshaft::core::CapabilityManager;
 
-AudioCapabilityImpl::AudioCapabilityImpl(const QString& extension_id, CapabilityManager* manager)
-    : extension_id_(extension_id),
+AudioCapabilityImpl::AudioCapabilityImpl(QString extension_id, CapabilityManager* manager)
+        : extension_id_(std::move(extension_id)),
       manager_(manager),
       is_valid_(true),
       next_playback_id_(1),
-      master_volume_(1.0f),
+            master_volume_(1.0F),
       muted_(false) {}
 
-QString AudioCapabilityImpl::extensionId() const {
-    return extension_id_;
-}
-bool AudioCapabilityImpl::isValid() const {
-    return is_valid_;
-}
+auto AudioCapabilityImpl::extensionId() const -> QString { return extension_id_; }
+auto AudioCapabilityImpl::isValid() const -> bool { return is_valid_; }
 void AudioCapabilityImpl::invalidate() {
     is_valid_ = false;
 }
@@ -48,10 +44,10 @@ void AudioCapabilityImpl::play(const QUrl& source, StreamType streamType,
     }
     Q_UNUSED(streamType);
     manager_->logCapabilityUsage(extension_id_, "audio", "play", source.toString());
-    const int id = next_playback_id_++;
-    playback_state_[id] = PlaybackState::Playing;
-    playback_volume_[id] = 1.0f;
-    callback(id, QString());
+    const int playback_id = next_playback_id_++;
+    playback_state_[playback_id] = PlaybackState::Playing;
+    playback_volume_[playback_id] = 1.0F;
+    callback(playback_id, QString());
 }
 
 void AudioCapabilityImpl::stop(int playbackId) {
@@ -70,41 +66,29 @@ void AudioCapabilityImpl::seek(int playbackId, qint64 positionMs) {
     Q_UNUSED(positionMs);
     manager_->logCapabilityUsage(extension_id_, "audio", "seek", QString::number(playbackId));
 }
-AudioCapability::PlaybackState AudioCapabilityImpl::getPlaybackState(int playbackId) const {
+auto AudioCapabilityImpl::getPlaybackState(int playbackId) const -> AudioCapability::PlaybackState {
     return playback_state_.value(playbackId, PlaybackState::Stopped);
 }
-qint64 AudioCapabilityImpl::getPosition(int playbackId) const {
+auto AudioCapabilityImpl::getPosition(int playbackId) const -> qint64 {
     Q_UNUSED(playbackId);
     return 0;
 }
-qint64 AudioCapabilityImpl::getDuration(int playbackId) const {
+auto AudioCapabilityImpl::getDuration(int playbackId) const -> qint64 {
     Q_UNUSED(playbackId);
     return 0;
 }
-void AudioCapabilityImpl::setVolume(int playbackId, float volume) {
-    playback_volume_[playbackId] = volume;
-}
-float AudioCapabilityImpl::getVolume(int playbackId) const {
-    return playback_volume_.value(playbackId, 1.0f);
-}
+void AudioCapabilityImpl::setVolume(int playbackId, float volume) { playback_volume_[playbackId] = volume; }
+auto AudioCapabilityImpl::getVolume(int playbackId) const -> float { return playback_volume_.value(playbackId, 1.0F); }
 void AudioCapabilityImpl::setMasterVolume(float volume) {
     master_volume_ = volume;
 }
-float AudioCapabilityImpl::getMasterVolume() const {
-    return master_volume_;
-}
+auto AudioCapabilityImpl::getMasterVolume() const -> float { return master_volume_; }
 void AudioCapabilityImpl::setMuted(bool muted) {
     muted_ = muted;
 }
-bool AudioCapabilityImpl::isMuted() const {
-    return muted_;
-}
-QList<AudioCapability::AudioDevice> AudioCapabilityImpl::getOutputDevices() const {
-    return {};
-}
-QList<AudioCapabilityImpl::AudioDevice> AudioCapabilityImpl::getInputDevices() const {
-    return {};
-}
+auto AudioCapabilityImpl::isMuted() const -> bool { return muted_; }
+auto AudioCapabilityImpl::getOutputDevices() const -> QList<AudioCapability::AudioDevice> { return {}; }
+auto AudioCapabilityImpl::getInputDevices() const -> QList<AudioCapabilityImpl::AudioDevice> { return {}; }
 void AudioCapabilityImpl::setOutputDevice(const QString& deviceId) {
     Q_UNUSED(deviceId);
 }
@@ -121,12 +105,12 @@ void AudioCapabilityImpl::startRecording(const QString& outputPath, int sampleRa
 void AudioCapabilityImpl::stopRecording(int recordingId) {
     Q_UNUSED(recordingId);
 }
-int AudioCapabilityImpl::subscribeToPlaybackState(int playbackId,
-                                                  std::function<void(PlaybackState)> callback) {
-    const int subId = ++next_subscription_id_;
-    state_subscribers_[subId] = callback;
+auto AudioCapabilityImpl::subscribeToPlaybackState(int playbackId,
+                                                  std::function<void(PlaybackState)> callback) -> int {
+    const int sub_id = ++next_subscription_id_;
+    state_subscribers_[sub_id] = callback;
     Q_UNUSED(playbackId);
-    return subId;
+    return sub_id;
 }
 void AudioCapabilityImpl::unsubscribe(int subscriptionId) {
     state_subscribers_.remove(subscriptionId);

@@ -22,8 +22,7 @@
 #include "../../extensions/extension_manager.hpp"
 #include "../config/ConfigManager.hpp"
 
-namespace opencardev::crankshaft {
-namespace core {
+namespace opencardev::crankshaft::core {
 
 Application::Application(QObject* parent)
     : QObject(parent),
@@ -39,7 +38,7 @@ Application::~Application() {
     delete extension_manager_;
 }
 
-bool Application::initialize() {
+auto Application::initialize() -> bool {
     qInfo() << "Initializing Crankshaft Reborn Application (Capability-Based Architecture)...";
 
     setupEventBus();
@@ -55,7 +54,7 @@ bool Application::initialize() {
 void Application::shutdown() {
     qInfo() << "Shutting down application...";
 
-    if (extension_manager_) {
+    if (extension_manager_ != nullptr) {
         extension_manager_->unloadAll();
     }
 
@@ -71,7 +70,8 @@ void Application::setupEventBus() {
 
 void Application::setupWebSocketServer() {
     qDebug() << "Setting up WebSocket server...";
-    websocket_server_->start(8080);
+    constexpr int kDefaultWebsocketPort = 8080;
+    websocket_server_->start(kDefaultWebsocketPort);
 }
 
 void Application::setupCapabilityManager() {
@@ -88,18 +88,18 @@ void Application::setupConfigManager() {
     qInfo() << "Config manager initialized";
 }
 
-opencardev::crankshaft::core::config::ConfigManager* Application::configManager() const {
+auto Application::configManager() const -> opencardev::crankshaft::core::config::ConfigManager* {
     return config_manager_;
 }
 
-opencardev::crankshaft::extensions::ExtensionManager* Application::extensionManager() const {
+auto Application::extensionManager() const -> opencardev::crankshaft::extensions::ExtensionManager* {
     return extension_manager_;
 }
 
 void Application::registerBuiltInExtensions() {
     qDebug() << "Registering built-in extensions...";
     // Create extension manager if not already created
-    if (!extension_manager_) {
+    if (extension_manager_ == nullptr) {
         extension_manager_ = new opencardev::crankshaft::extensions::ExtensionManager();
     }
     // Built-in extensions will be registered here before loadAll() is called
@@ -109,12 +109,11 @@ void Application::registerBuiltInExtensions() {
 void Application::loadExtensions() {
     qDebug() << "Loading extensions with capability-based security...";
     // Create extension manager if not already created
-    if (!extension_manager_) {
+    if (extension_manager_ == nullptr) {
         extension_manager_ = new opencardev::crankshaft::extensions::ExtensionManager();
     }
     extension_manager_->initialize(capability_manager_.get(), config_manager_);
     extension_manager_->loadAll();
 }
 
-}  // namespace core
-}  // namespace opencardev::crankshaft
+}  // namespace opencardev::crankshaft::core

@@ -29,7 +29,7 @@ namespace opencardev::crankshaft::core::capabilities {
 
 class AudioCapabilityImpl : public AudioCapability {
   public:
-    AudioCapabilityImpl(const QString& extension_id, core::CapabilityManager* manager);
+    AudioCapabilityImpl(QString extension_id, core::CapabilityManager* manager);
     QString extensionId() const override;
     bool isValid() const override;
     void invalidate();
