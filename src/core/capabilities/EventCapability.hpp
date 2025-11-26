@@ -42,7 +42,7 @@ namespace capabilities {
  */
 class EventCapability : public Capability {
   public:
-    virtual ~EventCapability() = default;
+    ~EventCapability() override = default;
 
     QString id() const override { return "event"; }
 

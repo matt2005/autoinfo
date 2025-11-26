@@ -39,7 +39,7 @@ namespace capabilities {
  */
 class LocationCapability : public Capability {
   public:
-    virtual ~LocationCapability() = default;
+    ~LocationCapability() override = default;
 
     QString id() const override { return "location"; }
 

@@ -44,7 +44,7 @@ namespace capabilities {
  */
 class VideoCapability : public Capability {
   public:
-    virtual ~VideoCapability() = default;
+    ~VideoCapability() override = default;
 
     QString id() const override { return "video"; }
 

@@ -42,7 +42,7 @@ namespace capabilities {
  */
 class NetworkCapability : public Capability {
   public:
-    virtual ~NetworkCapability() = default;
+    ~NetworkCapability() override = default;
 
     QString id() const override { return "network"; }
 

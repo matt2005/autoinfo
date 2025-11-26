@@ -40,7 +40,7 @@ namespace capabilities {
  */
 class UICapability : public Capability {
   public:
-    virtual ~UICapability() = default;
+    ~UICapability() override = default;
 
     QString id() const override { return "ui"; }
 

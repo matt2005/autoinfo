@@ -43,7 +43,7 @@ namespace capabilities {
  */
 class FileSystemCapability : public Capability {
   public:
-    virtual ~FileSystemCapability() = default;
+    ~FileSystemCapability() override = default;
 
     QString id() const override { return "filesystem"; }
 

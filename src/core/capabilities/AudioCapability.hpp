@@ -44,7 +44,7 @@ namespace capabilities {
  */
 class AudioCapability : public Capability {
   public:
-    virtual ~AudioCapability() = default;
+    ~AudioCapability() override = default;
 
     QString id() const override { return "audio"; }
 

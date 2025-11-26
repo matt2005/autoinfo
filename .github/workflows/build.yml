@@ -139,38 +139,24 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     
-    - name: Install Dependencies
+    - name: Install Dev Tools
       run: |
-        sudo apt-get update
-        sudo apt-get install -y \
-          clang-format \
-          clang-tidy \
-          cppcheck \
-          cmake \
-          ninja-build
+        bash ./scripts/install_dev_tools.sh
     
     - name: Check Code Formatting
       run: |
-        # Include both core src and extensions for formatting checks
-        find src extensions -type f \( -name '*.cpp' -o -name '*.hpp' -o -name '*.cc' -o -name '*.h' \) | xargs clang-format --dry-run --Werror
+        bash ./scripts/lint_cpp.sh format-check
     
     - name: Run Cppcheck
       run: |
-        # Run cppcheck over src and extensions; fail on findings (remove '|| true')
-        cppcheck --enable=all --inconclusive --std=c++17 \
-          --suppress=missingIncludeSystem \
-          --suppress=unknownMacro \
-          src/ extensions/
+        bash ./scripts/lint_cpp.sh cppcheck
 
     - name: Configure CMake (for clang-tidy)
       run: |
-        cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTS=ON -G Ninja
+        cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTS=ON -G Ninja -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
 
     - name: Run clang-tidy
       env:
-        # Ensure consistent locale and path expansion
         LC_ALL: C.UTF-8
       run: |
-        # Find all C++ sources in src and extensions and run clang-tidy with compile commands
-        find src extensions -type f -name '*.cpp' -print0 | \
-          xargs -0 -I{} bash -lc 'clang-tidy -p build "{}"'
+        bash ./scripts/lint_cpp.sh clang-tidy

@@ -44,7 +44,7 @@ namespace capabilities {
  */
 class WirelessCapability : public Capability {
   public:
-    virtual ~WirelessCapability() = default;
+    ~WirelessCapability() override = default;
 
     QString id() const override { return "wireless"; }
 

@@ -56,7 +56,7 @@ class BluetoothCapability : public Capability {
         int rssi;  // -1 if unknown
     };
 
-    virtual ~BluetoothCapability() = default;
+    ~BluetoothCapability() override = default;
 
     QString id() const override { return "bluetooth"; }
 

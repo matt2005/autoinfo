@@ -44,9 +44,14 @@ ${SUDO} apt-get install -y \
   qt6-tools-dev \
   qt6-tools-dev-tools
 
-# Install cmakelint via apt or pip (fallback)
+# Install cmakelint via apt or pipx (fallback for PEP 668)
 if ! ${SUDO} apt-get install -y cmakelint; then
-  python3 -m pip install --user --upgrade pip cmakelint
+  echo "cmakelint not available via apt, trying pipx..."
+  if command -v pipx >/dev/null 2>&1; then
+    pipx install cmakelint || echo "Warning: pipx install cmakelint failed"
+  else
+    echo "Warning: cmakelint not installed. Install via: pipx install cmakelint"
+  fi
 fi
 
-echo "Dev tools + Qt6 installed. Ensure ~/.local/bin is on PATH for pip-installed tools."
+echo "Dev tools + Qt6 installed. Ensure ~/.local/bin is on PATH for pip/pipx-installed tools."
