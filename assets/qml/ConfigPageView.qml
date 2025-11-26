@@ -114,7 +114,7 @@ Item {
             Layout.fillHeight: true
             clip: true
             ScrollBar.vertical: ScrollBar {
-                policy: ScrollBar.AsNeeded
+                policy: ScrollBar.AlwaysOn
             }
             
             ColumnLayout {

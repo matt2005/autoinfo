@@ -274,6 +274,9 @@ Rectangle {
                 border.color: ThemeManager.borderColor
                 border.width: 1
                 radius: 5
+                ScrollBar.vertical: ScrollBar {
+                    policy: ScrollBar.AlwaysOn
+                }
                 
                 ConfigPageView {
                     id: pageView

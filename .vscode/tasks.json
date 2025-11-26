@@ -194,6 +194,20 @@
             "dependsOn": ["Build (Debug)"]
         },
         {
+            "label": "Run Application",
+            "type": "shell",
+            "command": "wsl",
+            "args": [
+                "bash",
+                "-lc",
+                "QT_DEBUG_PLUGINS=0 ./build/CrankshaftReborn"
+            ],
+            "options": { "cwd": "${workspaceFolder}" },
+            "presentation": { "reveal": "always", "panel": "dedicated" },
+            "problemMatcher": [],
+            "dependsOn": ["Build (Debug)"]
+        },
+        {
             "label": "Generate Documentation",
             "type": "shell",
             "command": "wsl",
