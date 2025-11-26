@@ -39,7 +39,7 @@ struct PhoneCall {
 
 class BluetoothExtension : public Extension {
   public:
-    BluetoothExtension() = default;
+    BluetoothExtension() : scanning_(false), activeCall_(false) {}
     ~BluetoothExtension() override = default;
 
     // Lifecycle methods
