@@ -23,7 +23,15 @@ using namespace opencardev::crankshaft::core::capabilities;
 TokenCapabilityImpl::TokenCapabilityImpl(const QString& extension_id, const QString& cap_id)
     : extension_id_(extension_id), cap_id_(cap_id), valid_(true) {}
 
-QString TokenCapabilityImpl::id() const { return cap_id_; }
-bool TokenCapabilityImpl::isValid() const { return valid_; }
-QString TokenCapabilityImpl::extensionId() const { return extension_id_; }
-void TokenCapabilityImpl::invalidate() { valid_ = false; }
+QString TokenCapabilityImpl::id() const {
+    return cap_id_;
+}
+bool TokenCapabilityImpl::isValid() const {
+    return valid_;
+}
+QString TokenCapabilityImpl::extensionId() const {
+    return extension_id_;
+}
+void TokenCapabilityImpl::invalidate() {
+    valid_ = false;
+}

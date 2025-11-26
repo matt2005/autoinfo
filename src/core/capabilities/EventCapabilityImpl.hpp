@@ -18,35 +18,44 @@
  */
 #pragma once
 
-#include "EventCapability.hpp"
 #include <QMap>
+#include "EventCapability.hpp"
 
-namespace opencardev::crankshaft::core { class CapabilityManager; class EventBus; }
+namespace opencardev::crankshaft::core {
+class CapabilityManager;
+class EventBus;
+}  // namespace opencardev::crankshaft::core
 
 namespace opencardev::crankshaft::core::capabilities {
 
 class EventCapabilityImpl : public EventCapability {
   public:
-    EventCapabilityImpl(const QString& extension_id, core::CapabilityManager* manager, core::EventBus* event_bus);
+    EventCapabilityImpl(const QString& extension_id, core::CapabilityManager* manager,
+                        core::EventBus* event_bus);
     QString extensionId() const override;
     bool isValid() const override;
     void invalidate();
     bool emitEvent(const QString& eventName, const QVariantMap& eventData) override;
-    int subscribe(const QString& eventPattern, std::function<void(const QVariantMap&)> callback) override;
+    int subscribe(const QString& eventPattern,
+                  std::function<void(const QVariantMap&)> callback) override;
     void unsubscribe(int subscriptionId) override;
     bool canEmit(const QString& eventName) const override;
     bool canSubscribe(const QString& eventPattern) const override;
+
   private:
     QString extension_id_;
     core::CapabilityManager* manager_;
     core::EventBus* event_bus_;
     bool is_valid_;
-    QMap<int, int> subscriptions_; // local ID -> bus ID
+    QMap<int, int> subscriptions_;  // local ID -> bus ID
     int next_subscription_id_;
 };
 
-inline std::shared_ptr<EventCapability> createEventCapabilityInstance(const QString& extensionId, core::CapabilityManager* mgr, core::EventBus* bus) {
-    return std::static_pointer_cast<EventCapability>(std::make_shared<EventCapabilityImpl>(extensionId, mgr, bus));
+inline std::shared_ptr<EventCapability> createEventCapabilityInstance(const QString& extensionId,
+                                                                      core::CapabilityManager* mgr,
+                                                                      core::EventBus* bus) {
+    return std::static_pointer_cast<EventCapability>(
+        std::make_shared<EventCapabilityImpl>(extensionId, mgr, bus));
 }
 
-} // namespace opencardev::crankshaft::core::capabilities
+}  // namespace opencardev::crankshaft::core::capabilities

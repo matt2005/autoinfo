@@ -20,9 +20,9 @@
 #include "bluetooth_extension.hpp"
 #include <QDebug>
 #include <QVariantMap>
+#include "../../src/core/capabilities/UICapability.hpp"
 #include "../../src/core/config/ConfigManager.hpp"
 #include "../../src/core/config/ConfigTypes.hpp"
-#include "../../src/core/capabilities/UICapability.hpp"
 
 namespace opencardev::crankshaft {
 namespace extensions {

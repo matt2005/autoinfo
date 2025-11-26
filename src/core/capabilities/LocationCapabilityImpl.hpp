@@ -18,16 +18,16 @@
  */
 #pragma once
 
-#include "LocationCapability.hpp"
 #include <QGeoCoordinate>
 #include <QMap>
 #include <QTimer>
 #include <QtPositioning/QGeoPositionInfo>
 #include <QtPositioning/QGeoPositionInfoSource>
 #include <functional>
+#include "LocationCapability.hpp"
 
 namespace opencardev::crankshaft::core {
-class CapabilityManager; // fwd
+class CapabilityManager;  // fwd
 }
 
 namespace opencardev::crankshaft::core::capabilities {
@@ -66,8 +66,10 @@ class LocationCapabilityImpl : public LocationCapability {
 };
 
 // Factory helper
-inline std::shared_ptr<LocationCapability> createLocationCapabilityInstance(const QString& extensionId, core::CapabilityManager* mgr) {
-    return std::static_pointer_cast<LocationCapability>(std::make_shared<LocationCapabilityImpl>(extensionId, mgr));
+inline std::shared_ptr<LocationCapability> createLocationCapabilityInstance(
+    const QString& extensionId, core::CapabilityManager* mgr) {
+    return std::static_pointer_cast<LocationCapability>(
+        std::make_shared<LocationCapabilityImpl>(extensionId, mgr));
 }
 
-} // namespace opencardev::crankshaft::core::capabilities
+}  // namespace opencardev::crankshaft::core::capabilities

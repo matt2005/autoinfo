@@ -17,36 +17,53 @@
  *  along with Crankshaft. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "EventCapabilityImpl.hpp"
-#include "CapabilityManager.hpp"
-#include "../events/event_bus.hpp"
 #include <QDebug>
+#include "../events/event_bus.hpp"
+#include "CapabilityManager.hpp"
 
 using namespace opencardev::crankshaft::core::capabilities;
 using opencardev::crankshaft::core::CapabilityManager;
 using opencardev::crankshaft::core::EventBus;
 
-EventCapabilityImpl::EventCapabilityImpl(const QString& extension_id, CapabilityManager* manager, EventBus* event_bus)
-    : extension_id_(extension_id), manager_(manager), event_bus_(event_bus), is_valid_(true), next_subscription_id_(1) {}
+EventCapabilityImpl::EventCapabilityImpl(const QString& extension_id, CapabilityManager* manager,
+                                         EventBus* event_bus)
+    : extension_id_(extension_id),
+      manager_(manager),
+      event_bus_(event_bus),
+      is_valid_(true),
+      next_subscription_id_(1) {}
 
-QString EventCapabilityImpl::extensionId() const { return extension_id_; }
-bool EventCapabilityImpl::isValid() const { return is_valid_; }
+QString EventCapabilityImpl::extensionId() const {
+    return extension_id_;
+}
+bool EventCapabilityImpl::isValid() const {
+    return is_valid_;
+}
 void EventCapabilityImpl::invalidate() {
     is_valid_ = false;
-    for (auto subId : subscriptions_.keys()) { event_bus_->unsubscribe(subId); }
+    for (auto subId : subscriptions_.keys()) {
+        event_bus_->unsubscribe(subId);
+    }
     subscriptions_.clear();
 }
 
 bool EventCapabilityImpl::emitEvent(const QString& eventName, const QVariantMap& eventData) {
-    if (!is_valid_ || !event_bus_) return false;
+    if (!is_valid_ || !event_bus_)
+        return false;
     QString fullEventName = extension_id_ + "." + eventName;
     manager_->logCapabilityUsage(extension_id_, "event", "emit", fullEventName);
     event_bus_->publish(fullEventName, eventData);
     return true;
 }
 
-int EventCapabilityImpl::subscribe(const QString& eventPattern, std::function<void(const QVariantMap&)> callback) {
-    if (!is_valid_ || !event_bus_) return -1;
-    if (!canSubscribe(eventPattern)) { qWarning() << "Extension" << extension_id_ << "denied subscription to" << eventPattern; return -1; }
+int EventCapabilityImpl::subscribe(const QString& eventPattern,
+                                   std::function<void(const QVariantMap&)> callback) {
+    if (!is_valid_ || !event_bus_)
+        return -1;
+    if (!canSubscribe(eventPattern)) {
+        qWarning() << "Extension" << extension_id_ << "denied subscription to" << eventPattern;
+        return -1;
+    }
     int localId = next_subscription_id_++;
     int busId = event_bus_->subscribe(eventPattern, callback);
     subscriptions_[localId] = busId;
@@ -55,19 +72,26 @@ int EventCapabilityImpl::subscribe(const QString& eventPattern, std::function<vo
 }
 
 void EventCapabilityImpl::unsubscribe(int subscriptionId) {
-    if (!is_valid_ || !event_bus_) return;
+    if (!is_valid_ || !event_bus_)
+        return;
     if (subscriptions_.contains(subscriptionId)) {
         event_bus_->unsubscribe(subscriptions_[subscriptionId]);
         subscriptions_.remove(subscriptionId);
-        manager_->logCapabilityUsage(extension_id_, "event", "unsubscribe", QString::number(subscriptionId));
+        manager_->logCapabilityUsage(extension_id_, "event", "unsubscribe",
+                                     QString::number(subscriptionId));
     }
 }
 
-bool EventCapabilityImpl::canEmit(const QString& eventName) const { return eventName.startsWith(extension_id_ + "."); }
+bool EventCapabilityImpl::canEmit(const QString& eventName) const {
+    return eventName.startsWith(extension_id_ + ".");
+}
 
 bool EventCapabilityImpl::canSubscribe(const QString& eventPattern) const {
-    if (eventPattern.startsWith(extension_id_ + ".")) return true;
-    if (eventPattern.startsWith("core.")) return true;
-    if (eventPattern == "*" || eventPattern.startsWith("*.")) return true;
+    if (eventPattern.startsWith(extension_id_ + "."))
+        return true;
+    if (eventPattern.startsWith("core."))
+        return true;
+    if (eventPattern == "*" || eventPattern.startsWith("*."))
+        return true;
     return false;
 }

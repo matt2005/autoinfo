@@ -29,14 +29,17 @@ class TokenCapabilityImpl : public Capability {
     bool isValid() const override;
     QString extensionId() const override;
     void invalidate();
+
   private:
     QString extension_id_;
     QString cap_id_;
     bool valid_;
 };
 
-inline std::shared_ptr<Capability> createTokenCapabilityInstance(const QString& extensionId, const QString& capabilityId) {
-    return std::static_pointer_cast<Capability>(std::make_shared<TokenCapabilityImpl>(extensionId, capabilityId));
+inline std::shared_ptr<Capability> createTokenCapabilityInstance(const QString& extensionId,
+                                                                 const QString& capabilityId) {
+    return std::static_pointer_cast<Capability>(
+        std::make_shared<TokenCapabilityImpl>(extensionId, capabilityId));
 }
 
-} // namespace opencardev::crankshaft::core::capabilities
+}  // namespace opencardev::crankshaft::core::capabilities

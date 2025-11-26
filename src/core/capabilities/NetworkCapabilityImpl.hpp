@@ -18,10 +18,12 @@
  */
 #pragma once
 
-#include "NetworkCapability.hpp"
 #include <QNetworkAccessManager>
+#include "NetworkCapability.hpp"
 
-namespace opencardev::crankshaft::core { class CapabilityManager; }
+namespace opencardev::crankshaft::core {
+class CapabilityManager;
+}
 
 namespace opencardev::crankshaft::core::capabilities {
 
@@ -48,8 +50,10 @@ class NetworkCapabilityImpl : public NetworkCapability {
     QNetworkAccessManager* network_manager_;
 };
 
-inline std::shared_ptr<NetworkCapability> createNetworkCapabilityInstance(const QString& extensionId, core::CapabilityManager* mgr) {
-    return std::static_pointer_cast<NetworkCapability>(std::make_shared<NetworkCapabilityImpl>(extensionId, mgr));
+inline std::shared_ptr<NetworkCapability> createNetworkCapabilityInstance(
+    const QString& extensionId, core::CapabilityManager* mgr) {
+    return std::static_pointer_cast<NetworkCapability>(
+        std::make_shared<NetworkCapabilityImpl>(extensionId, mgr));
 }
 
-} // namespace opencardev::crankshaft::core::capabilities
+}  // namespace opencardev::crankshaft::core::capabilities

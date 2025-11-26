@@ -18,19 +18,22 @@
  */
 #pragma once
 
-#include "FileSystemCapability.hpp"
 #include <QDir>
 #include <QDirIterator>
 #include <QFile>
 #include <QStorageInfo>
+#include "FileSystemCapability.hpp"
 
-namespace opencardev::crankshaft::core { class CapabilityManager; }
+namespace opencardev::crankshaft::core {
+class CapabilityManager;
+}
 
 namespace opencardev::crankshaft::core::capabilities {
 
 class FileSystemCapabilityImpl : public FileSystemCapability {
   public:
-    FileSystemCapabilityImpl(const QString& extension_id, core::CapabilityManager* manager, const QString& scope_path);
+    FileSystemCapabilityImpl(const QString& extension_id, core::CapabilityManager* manager,
+                             const QString& scope_path);
     QString extensionId() const override;
     bool isValid() const override;
     void invalidate();
@@ -42,6 +45,7 @@ class FileSystemCapabilityImpl : public FileSystemCapability {
     bool deleteFile(const QString& relativePath) override;
     QString scopePath() const override;
     qint64 availableSpace() const override;
+
   private:
     QString extension_id_;
     core::CapabilityManager* manager_;
@@ -49,8 +53,10 @@ class FileSystemCapabilityImpl : public FileSystemCapability {
     QString scope_path_;
 };
 
-inline std::shared_ptr<FileSystemCapability> createFileSystemCapabilityInstance(const QString& extensionId, core::CapabilityManager* mgr, const QString& scopePath) {
-    return std::static_pointer_cast<FileSystemCapability>(std::make_shared<FileSystemCapabilityImpl>(extensionId, mgr, scopePath));
+inline std::shared_ptr<FileSystemCapability> createFileSystemCapabilityInstance(
+    const QString& extensionId, core::CapabilityManager* mgr, const QString& scopePath) {
+    return std::static_pointer_cast<FileSystemCapability>(
+        std::make_shared<FileSystemCapabilityImpl>(extensionId, mgr, scopePath));
 }
 
-} // namespace opencardev::crankshaft::core::capabilities
+}  // namespace opencardev::crankshaft::core::capabilities

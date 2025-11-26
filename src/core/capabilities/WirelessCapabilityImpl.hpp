@@ -18,9 +18,9 @@
  */
 #pragma once
 
-#include "WirelessCapability.hpp"
 #include <QMap>
 #include <QTimer>
+#include "WirelessCapability.hpp"
 
 namespace opencardev::crankshaft::core::capabilities {
 
@@ -35,8 +35,9 @@ class WirelessCapabilityImpl : public WirelessCapability {
         callback(QList<NetworkInfo>());
     }
 
-    void connectToNetwork(const QString& ssid, const QString& password,
-                          std::function<void(bool success, const QString& error)> callback) override {
+    void connectToNetwork(
+        const QString& ssid, const QString& password,
+        std::function<void(bool success, const QString& error)> callback) override {
         Q_UNUSED(ssid);
         Q_UNUSED(password);
         // Stub: always fail (no backend yet)
@@ -67,8 +68,9 @@ class WirelessCapabilityImpl : public WirelessCapability {
 
     bool isEnabled() const override { return enabled_; }
 
-    void configureAccessPoint(const QString& ssid, const QString& password,
-                              std::function<void(bool success, const QString& error)> callback) override {
+    void configureAccessPoint(
+        const QString& ssid, const QString& password,
+        std::function<void(bool success, const QString& error)> callback) override {
         Q_UNUSED(ssid);
         Q_UNUSED(password);
         callback(false, QStringLiteral("Access point configuration not implemented"));
@@ -81,15 +83,17 @@ class WirelessCapabilityImpl : public WirelessCapability {
 
   private:
     QString extension_id_;
-        bool is_valid_ = true;
+    bool is_valid_ = true;
     bool enabled_ = true;
     int last_sub_id_ = 0;
     QMap<int, std::function<void(ConnectionState, const QString&)>> state_callbacks_;
 };
 
 // Factory helper used by CapabilityManager
-inline std::shared_ptr<WirelessCapability> createWirelessCapabilityInstance(const QString& extensionId) {
-    return std::static_pointer_cast<WirelessCapability>(std::make_shared<WirelessCapabilityImpl>(extensionId));
+inline std::shared_ptr<WirelessCapability> createWirelessCapabilityInstance(
+    const QString& extensionId) {
+    return std::static_pointer_cast<WirelessCapability>(
+        std::make_shared<WirelessCapabilityImpl>(extensionId));
 }
 
-} // namespace opencardev::crankshaft::core::capabilities
+}  // namespace opencardev::crankshaft::core::capabilities

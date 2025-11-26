@@ -18,14 +18,6 @@
  */
 
 #include "CapabilityManager.hpp"
-#include "LocationCapabilityImpl.hpp"
-#include "NetworkCapabilityImpl.hpp"
-#include "FileSystemCapabilityImpl.hpp"
-#include "UICapabilityImpl.hpp"
-#include "EventCapabilityImpl.hpp"
-#include "AudioCapabilityImpl.hpp"
-#include "TokenCapabilityImpl.hpp"
-#include "WirelessCapabilityImpl.hpp"
 #include <QDateTime>
 #include <QDebug>
 #include <QDir>
@@ -43,6 +35,14 @@
 #include "../events/event_bus.hpp"
 #include "../network/websocket_server.hpp"
 #include "../ui/UIRegistrar.hpp"
+#include "AudioCapabilityImpl.hpp"
+#include "EventCapabilityImpl.hpp"
+#include "FileSystemCapabilityImpl.hpp"
+#include "LocationCapabilityImpl.hpp"
+#include "NetworkCapabilityImpl.hpp"
+#include "TokenCapabilityImpl.hpp"
+#include "UICapabilityImpl.hpp"
+#include "WirelessCapabilityImpl.hpp"
 
 // Forward declaration of Bluetooth capability factory to avoid header circular dependency.
 namespace opencardev::crankshaft {
@@ -83,19 +83,26 @@ CapabilityManager::~CapabilityManager() {
     // Invalidate all capabilities
     for (auto& extensionCaps : granted_capabilities_) {
         for (auto& cap : extensionCaps) {
-            if (auto locCap = std::dynamic_pointer_cast<capabilities::LocationCapabilityImpl>(cap)) {
+            if (auto locCap =
+                    std::dynamic_pointer_cast<capabilities::LocationCapabilityImpl>(cap)) {
                 locCap->invalidate();
-            } else if (auto netCap = std::dynamic_pointer_cast<capabilities::NetworkCapabilityImpl>(cap)) {
+            } else if (auto netCap =
+                           std::dynamic_pointer_cast<capabilities::NetworkCapabilityImpl>(cap)) {
                 netCap->invalidate();
-            } else if (auto fsCap = std::dynamic_pointer_cast<capabilities::FileSystemCapabilityImpl>(cap)) {
+            } else if (auto fsCap =
+                           std::dynamic_pointer_cast<capabilities::FileSystemCapabilityImpl>(cap)) {
                 fsCap->invalidate();
-            } else if (auto uiCap = std::dynamic_pointer_cast<capabilities::UICapabilityImpl>(cap)) {
+            } else if (auto uiCap =
+                           std::dynamic_pointer_cast<capabilities::UICapabilityImpl>(cap)) {
                 uiCap->invalidate();
-            } else if (auto evCap = std::dynamic_pointer_cast<capabilities::EventCapabilityImpl>(cap)) {
+            } else if (auto evCap =
+                           std::dynamic_pointer_cast<capabilities::EventCapabilityImpl>(cap)) {
                 evCap->invalidate();
-            } else if (auto audCap = std::dynamic_pointer_cast<capabilities::AudioCapabilityImpl>(cap)) {
+            } else if (auto audCap =
+                           std::dynamic_pointer_cast<capabilities::AudioCapabilityImpl>(cap)) {
                 audCap->invalidate();
-            } else if (auto tokCap = std::dynamic_pointer_cast<capabilities::TokenCapabilityImpl>(cap)) {
+            } else if (auto tokCap =
+                           std::dynamic_pointer_cast<capabilities::TokenCapabilityImpl>(cap)) {
                 tokCap->invalidate();
             }
         }
@@ -169,17 +176,21 @@ void CapabilityManager::revokeCapability(const QString& extensionId,
         // Invalidate capability
         if (auto locCap = std::dynamic_pointer_cast<capabilities::LocationCapabilityImpl>(cap)) {
             locCap->invalidate();
-        } else if (auto netCap = std::dynamic_pointer_cast<capabilities::NetworkCapabilityImpl>(cap)) {
+        } else if (auto netCap =
+                       std::dynamic_pointer_cast<capabilities::NetworkCapabilityImpl>(cap)) {
             netCap->invalidate();
-        } else if (auto fsCap = std::dynamic_pointer_cast<capabilities::FileSystemCapabilityImpl>(cap)) {
+        } else if (auto fsCap =
+                       std::dynamic_pointer_cast<capabilities::FileSystemCapabilityImpl>(cap)) {
             fsCap->invalidate();
         } else if (auto uiCap = std::dynamic_pointer_cast<capabilities::UICapabilityImpl>(cap)) {
             uiCap->invalidate();
         } else if (auto evCap = std::dynamic_pointer_cast<capabilities::EventCapabilityImpl>(cap)) {
             evCap->invalidate();
-        } else if (auto audCap = std::dynamic_pointer_cast<capabilities::AudioCapabilityImpl>(cap)) {
+        } else if (auto audCap =
+                       std::dynamic_pointer_cast<capabilities::AudioCapabilityImpl>(cap)) {
             audCap->invalidate();
-        } else if (auto tokCap = std::dynamic_pointer_cast<capabilities::TokenCapabilityImpl>(cap)) {
+        } else if (auto tokCap =
+                       std::dynamic_pointer_cast<capabilities::TokenCapabilityImpl>(cap)) {
             tokCap->invalidate();
         }
 
@@ -199,15 +210,20 @@ void CapabilityManager::revokeAllCapabilities(const QString& extensionId) {
             auto cap = granted_capabilities_[extensionId][capType];
 
             // Invalidate
-            if (auto locCap = std::dynamic_pointer_cast<capabilities::LocationCapabilityImpl>(cap)) {
+            if (auto locCap =
+                    std::dynamic_pointer_cast<capabilities::LocationCapabilityImpl>(cap)) {
                 locCap->invalidate();
-            } else if (auto netCap = std::dynamic_pointer_cast<capabilities::NetworkCapabilityImpl>(cap)) {
+            } else if (auto netCap =
+                           std::dynamic_pointer_cast<capabilities::NetworkCapabilityImpl>(cap)) {
                 netCap->invalidate();
-            } else if (auto fsCap = std::dynamic_pointer_cast<capabilities::FileSystemCapabilityImpl>(cap)) {
+            } else if (auto fsCap =
+                           std::dynamic_pointer_cast<capabilities::FileSystemCapabilityImpl>(cap)) {
                 fsCap->invalidate();
-            } else if (auto uiCap = std::dynamic_pointer_cast<capabilities::UICapabilityImpl>(cap)) {
+            } else if (auto uiCap =
+                           std::dynamic_pointer_cast<capabilities::UICapabilityImpl>(cap)) {
                 uiCap->invalidate();
-            } else if (auto evCap = std::dynamic_pointer_cast<capabilities::EventCapabilityImpl>(cap)) {
+            } else if (auto evCap =
+                           std::dynamic_pointer_cast<capabilities::EventCapabilityImpl>(cap)) {
                 evCap->invalidate();
             }
         }

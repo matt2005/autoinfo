@@ -18,10 +18,12 @@
  */
 #pragma once
 
-#include "AudioCapability.hpp"
 #include <QHash>
+#include "AudioCapability.hpp"
 
-namespace opencardev::crankshaft::core { class CapabilityManager; }
+namespace opencardev::crankshaft::core {
+class CapabilityManager;
+}
 
 namespace opencardev::crankshaft::core::capabilities {
 
@@ -32,7 +34,8 @@ class AudioCapabilityImpl : public AudioCapability {
     bool isValid() const override;
     void invalidate();
 
-    void play(const QUrl& source, StreamType streamType, std::function<void(int, const QString&)> callback) override;
+    void play(const QUrl& source, StreamType streamType,
+              std::function<void(int, const QString&)> callback) override;
     void stop(int playbackId) override;
     void pause(int playbackId) override;
     void resume(int playbackId) override;
@@ -50,9 +53,11 @@ class AudioCapabilityImpl : public AudioCapability {
     QList<AudioDevice> getInputDevices() const override;
     void setOutputDevice(const QString& deviceId) override;
     void setInputDevice(const QString& deviceId) override;
-    void startRecording(const QString& outputPath, int sampleRate, int channels, std::function<void(int, const QString&)> callback) override;
+    void startRecording(const QString& outputPath, int sampleRate, int channels,
+                        std::function<void(int, const QString&)> callback) override;
     void stopRecording(int recordingId) override;
-    int subscribeToPlaybackState(int playbackId, std::function<void(PlaybackState)> callback) override;
+    int subscribeToPlaybackState(int playbackId,
+                                 std::function<void(PlaybackState)> callback) override;
     void unsubscribe(int subscriptionId) override;
 
   private:
@@ -68,8 +73,10 @@ class AudioCapabilityImpl : public AudioCapability {
     bool muted_;
 };
 
-inline std::shared_ptr<AudioCapability> createAudioCapabilityInstance(const QString& extensionId, core::CapabilityManager* mgr) {
-    return std::static_pointer_cast<AudioCapability>(std::make_shared<AudioCapabilityImpl>(extensionId, mgr));
+inline std::shared_ptr<AudioCapability> createAudioCapabilityInstance(
+    const QString& extensionId, core::CapabilityManager* mgr) {
+    return std::static_pointer_cast<AudioCapability>(
+        std::make_shared<AudioCapabilityImpl>(extensionId, mgr));
 }
 
-} // namespace opencardev::crankshaft::core::capabilities
+}  // namespace opencardev::crankshaft::core::capabilities

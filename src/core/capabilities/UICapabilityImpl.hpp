@@ -18,10 +18,15 @@
  */
 #pragma once
 
-#include "UICapability.hpp"
 #include <QVariantMap>
+#include "UICapability.hpp"
 
-namespace opencardev::crankshaft::core { class CapabilityManager; namespace ui { class UIRegistrar; } }
+namespace opencardev::crankshaft::core {
+class CapabilityManager;
+namespace ui {
+class UIRegistrar;
+}
+}  // namespace opencardev::crankshaft::core
 
 namespace opencardev::crankshaft::core::capabilities {
 
@@ -33,17 +38,21 @@ class UICapabilityImpl : public UICapability {
     void invalidate();
     bool registerMainView(const QString& qmlPath, const QVariantMap& metadata) override;
     bool registerWidget(const QString& qmlPath, const QVariantMap& metadata) override;
-    void showNotification(const QString& title, const QString& message, int duration, const QString& icon) override;
+    void showNotification(const QString& title, const QString& message, int duration,
+                          const QString& icon) override;
     void updateStatusBar(const QString& itemId, const QString& text, const QString& icon) override;
     void unregisterComponent(const QString& componentId) override;
+
   private:
     QString extension_id_;
     core::CapabilityManager* manager_;
     bool is_valid_;
 };
 
-inline std::shared_ptr<UICapability> createUICapabilityInstance(const QString& extensionId, core::CapabilityManager* mgr) {
-    return std::static_pointer_cast<UICapability>(std::make_shared<UICapabilityImpl>(extensionId, mgr));
+inline std::shared_ptr<UICapability> createUICapabilityInstance(const QString& extensionId,
+                                                                core::CapabilityManager* mgr) {
+    return std::static_pointer_cast<UICapability>(
+        std::make_shared<UICapabilityImpl>(extensionId, mgr));
 }
 
-} // namespace opencardev::crankshaft::core::capabilities
+}  // namespace opencardev::crankshaft::core::capabilities

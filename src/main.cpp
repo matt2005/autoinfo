@@ -187,8 +187,9 @@ int main(int argc, char* argv[]) {
         // Automatically set to false after first run logic executes.
         ConfigItem enableFirstRun;
         enableFirstRun.key = "enablefirstrun";
-        enableFirstRun.label = "Enable first run setup"; // internal, not translated
-        enableFirstRun.description = "Show General settings on first application launch"; // internal
+        enableFirstRun.label = "Enable first run setup";  // internal, not translated
+        enableFirstRun.description =
+            "Show General settings on first application launch";  // internal
         enableFirstRun.type = ConfigItemType::Boolean;
         enableFirstRun.defaultValue = true;
         enableFirstRun.complexity = ConfigComplexity::Basic;
