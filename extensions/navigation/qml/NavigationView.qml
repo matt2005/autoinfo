@@ -96,8 +96,8 @@ Item {
             bottom: controlPanel.top
         }
         plugin: mapPlugin
-        center: QtPositioning.coordinate(currentLat, currentLng)
-        zoomLevel: isNavigating ? 16 : 14
+        center: QtPositioning.coordinate(root.currentLat, root.currentLng)
+        zoomLevel: root.isNavigating ? 16 : 14
         
         // Smooth animations
         Behavior on center {
@@ -110,7 +110,7 @@ Item {
         // Current position marker
         MapQuickItem {
             id: positionMarker
-            coordinate: QtPositioning.coordinate(currentLat, currentLng)
+            coordinate: QtPositioning.coordinate(root.currentLat, root.currentLng)
             anchorPoint.x: locationPin.width / 2
             anchorPoint.y: locationPin.height
             
@@ -125,7 +125,7 @@ Item {
                     width: 60
                     height: 60
                     radius: 30
-                    color: accentColor
+                    color: root.accentColor
                     opacity: 0.3
                     
                     SequentialAnimation on scale {
@@ -142,21 +142,21 @@ Item {
                     width: 20
                     height: 20
                     radius: 10
-                    color: accentColor
-                    border.color: surfaceColor
+                    color: root.accentColor
+                    border.color: root.surfaceColor
                     border.width: 3
                 }
                 
                 // Direction indicator (when navigating)
                 Canvas {
-                    visible: isNavigating
+                    visible: root.isNavigating
                     anchors.centerIn: parent
                     width: 40
                     height: 40
                     onPaint: {
                         var ctx = getContext("2d")
                         ctx.reset()
-                        ctx.fillStyle = accentColor
+                        ctx.fillStyle = root.accentColor
                         ctx.beginPath()
                         ctx.moveTo(20, 5)
                         ctx.lineTo(25, 15)
@@ -171,8 +171,8 @@ Item {
         // Destination marker
         MapQuickItem {
             id: destinationMarker
-            visible: isNavigating
-            coordinate: QtPositioning.coordinate(destLat, destLng)
+            visible: root.isNavigating
+            coordinate: QtPositioning.coordinate(root.destLat, root.destLng)
             anchorPoint.x: destPin.width / 2
             anchorPoint.y: destPin.height
             
@@ -186,8 +186,8 @@ Item {
                     width: 50
                     height: 50
                     radius: 25
-                    color: errorColor
-                    border.color: surfaceColor
+                    color: root.errorColor
+                    border.color: root.surfaceColor
                     border.width: 3
                     
                     Text {
@@ -204,7 +204,7 @@ Item {
                     anchors.topMargin: 45
                     width: 8
                     height: 15
-                    color: errorColor
+                    color: root.errorColor
                     
                     Rectangle {
                         anchors.bottom: parent.bottom
@@ -212,7 +212,7 @@ Item {
                         width: 4
                         height: 4
                         radius: 2
-                        color: errorColor
+                        color: root.errorColor
                     }
                 }
             }
@@ -221,10 +221,10 @@ Item {
         // Route line
         MapPolyline {
             id: routeLine
-            visible: isNavigating && routeCoordinates.length > 0
+            visible: root.isNavigating && root.routeCoordinates.length > 0
             line.width: 5
-            line.color: accentColor
-            path: routeCoordinates
+            line.color: root.accentColor
+            path: root.routeCoordinates
         }
     }
     
@@ -237,7 +237,7 @@ Item {
             right: parent.right
             bottom: controlPanel.top
         }
-        color: surfaceColor
+        color: root.surfaceColor
         opacity: 0.98
         visible: searchOverlayVisible
         z: 10
@@ -252,18 +252,18 @@ Item {
             Rectangle {
                 width: parent.width
                 height: 60
-                color: surfaceVariant
+                color: root.surfaceVariant
                 
                 RowLayout {
                     anchors.fill: parent
-                    anchors.margins: paddingSize
-                    spacing: spacingSize
+                    anchors.margins: root.paddingSize
+                    spacing: root.spacingSize
                     
                     Text {
                         text: "📍 Set Destination"
                         font.pixelSize: 20
                         font.bold: true
-                        color: textColor
+                        color: root.textColor
                     }
                     
                     Item { Layout.fillWidth: true }
@@ -274,7 +274,7 @@ Item {
                         text: "✕"
                         
                         background: Rectangle {
-                            color: errorColor
+                            color: root.errorColor
                             radius: 8
                             opacity: parent.pressed ? 0.8 : 0.6
                         }
@@ -305,8 +305,8 @@ Item {
                 onLoaded: {
                     if (item) {
                         item.destinationSelected.connect(function(lat, lng, address) {
-                            destLat = lat
-                            destLng = lng
+                            root.destLat = lat
+                            root.destLng = lng
                             console.log("Destination selected:", address, lat, lng)
                             
                             // Send navigation command
@@ -316,13 +316,13 @@ Item {
                             }
                             
                             searchOverlay.searchOverlayVisible = false
-                            isNavigating = true
+                            root.isNavigating = true
                             
                             // Calculate example distance (would be real calculation in production)
-                            var latDiff = Math.abs(currentLat - destLat)
-                            var lngDiff = Math.abs(currentLng - destLng)
-                            distanceRemaining = Math.sqrt(latDiff * latDiff + lngDiff * lngDiff) * 111000 // rough km to meters
-                            etaSeconds = Math.floor(distanceRemaining / 15) // ~54 km/h average
+                            var latDiff = Math.abs(root.currentLat - root.destLat);
+                            var lngDiff = Math.abs(root.currentLng - root.destLng);
+                            root.distanceRemaining = Math.sqrt(latDiff * latDiff + lngDiff * lngDiff) * 111000; // rough km to meters
+                            root.etaSeconds = Math.floor(root.distanceRemaining / 15); // ~54 km/h average
                         })
                     }
                 }
@@ -348,10 +348,10 @@ Item {
             left: parent.left
             right: parent.right
         }
-        height: isNavigating ? 180 : 0
+        height: root.isNavigating ? 180 : 0
         visible: height > 0
-        color: surfaceColor
-        border.color: outlineColor
+        color: root.surfaceColor
+        border.color: root.outlineColor
         border.width: 1
         
         Behavior on height {
@@ -360,20 +360,20 @@ Item {
         
         Column {
             anchors.fill: parent
-            anchors.margins: paddingSize * 2
-            spacing: spacingSize
+            anchors.margins: root.paddingSize * 2
+            spacing: root.spacingSize
             
             // Current instruction
             Row {
                 width: parent.width
-                spacing: spacingSize * 2
+                spacing: root.spacingSize * 2
                 
                 // Turn icon
                 Rectangle {
                     width: 80
                     height: 80
                     radius: 8
-                    color: accentColor
+                    color: root.accentColor
                     
                     Text {
                         anchors.centerIn: parent
@@ -385,21 +385,21 @@ Item {
                 // Instruction details
                 Column {
                     width: parent.width - 100
-                    spacing: spacingSize / 2
+                    spacing: root.spacingSize / 2
                     
                     // Distance to turn
                     Text {
                         text: formatDistance(distanceToNextTurn)
                         font.pixelSize: 32
                         font.bold: true
-                        color: textColor
+                        color: root.textColor
                     }
                     
                     // Instruction text
                     Text {
                         text: currentInstruction || "Continue on current road"
                         font.pixelSize: 18
-                        color: textColor
+                        color: root.textColor
                         wrapMode: Text.WordWrap
                         width: parent.width
                     }
@@ -409,24 +409,24 @@ Item {
             Rectangle {
                 width: parent.width
                 height: 1
-                color: dividerColor
+                color: root.dividerColor
             }
             
             // Next instruction preview
             Row {
                 width: parent.width
-                spacing: spacingSize * 2
+                spacing: root.spacingSize * 2
                 
                 Text {
                     text: getTurnIcon(nextInstruction)
                     font.pixelSize: 24
-                    color: textSecondary
+                    color: root.textSecondary
                 }
                 
                 Text {
                     text: nextInstruction || "Then continue"
                     font.pixelSize: 14
-                    color: textSecondary
+                    color: root.textSecondary
                     elide: Text.ElideRight
                     width: parent.width - 50
                 }
@@ -443,22 +443,22 @@ Item {
             right: parent.right
         }
         height: 100
-        color: surfaceVariant
+        color: root.surfaceVariant
         
         RowLayout {
             anchors.fill: parent
-            anchors.margins: paddingSize
-            spacing: spacingSize
+            anchors.margins: root.paddingSize
+            spacing: root.spacingSize
             
             // Set Destination button
             Button {
                 Layout.fillWidth: true
                 Layout.preferredHeight: 60
-                text: isNavigating ? "📍 Change Destination" : "📍 Set Destination"
-                visible: !isNavigating || true // Always show for now
+                text: root.isNavigating ? "📍 Change Destination" : "📍 Set Destination"
+                visible: !root.isNavigating || true // Always show for now
                 
-                background: Rectangle {
-                    color: accentColor
+                    background: Rectangle {
+                    color: root.accentColor
                     radius: 8
                 }
                 
@@ -480,11 +480,11 @@ Item {
             Button {
                 Layout.fillWidth: true
                 Layout.preferredHeight: 60
-                text: isNavigating ? "Stop Navigation" : "Start Navigation"
-                visible: isNavigating // Only show when navigating
+                text: root.isNavigating ? "Stop Navigation" : "Start Navigation"
+                visible: root.isNavigating // Only show when navigating
                 
-                background: Rectangle {
-                    color: isNavigating ? errorColor : accentColor
+                    background: Rectangle {
+                    color: root.isNavigating ? root.errorColor : root.accentColor
                     radius: 8
                 }
                 
@@ -497,10 +497,10 @@ Item {
                     verticalAlignment: Text.AlignVCenter
                 }
                 
-                onClicked: {
-                    isNavigating = false
-                    distanceRemaining = 0
-                    etaSeconds = 0
+                    onClicked: {
+                    root.isNavigating = false
+                    root.distanceRemaining = 0
+                    root.etaSeconds = 0
                 }
             }
             
@@ -509,12 +509,12 @@ Item {
                 Layout.preferredWidth: 60
                 Layout.preferredHeight: 60
                 text: "⭐"
-                visible: isNavigating
+                visible: root.isNavigating
                 
-                background: Rectangle {
-                    color: surfaceColor
+                    background: Rectangle {
+                    color: root.surfaceColor
                     radius: 8
-                    border.color: outlineColor
+                    border.color: root.outlineColor
                     border.width: 2
                 }
                 
@@ -537,9 +537,9 @@ Item {
                 text: "⚙️"
                 
                 background: Rectangle {
-                    color: surfaceColor
+                    color: root.surfaceColor
                     radius: 8
-                    border.color: outlineColor
+                    border.color: root.outlineColor
                     border.width: 2
                 }
                 
@@ -570,8 +570,8 @@ Item {
             left: parent.left
             right: parent.right
         }
-        height: isNavigating ? 80 : 0
-        color: surfaceColor
+        height: root.isNavigating ? 80 : 0
+        color: root.surfaceColor
         opacity: 0.95
         visible: height > 0
         
@@ -581,9 +581,9 @@ Item {
         
         RowLayout {
             anchors.fill: parent
-            anchors.margins: paddingSize
-            spacing: spacingSize * 2
-            visible: isNavigating
+            anchors.margins: root.paddingSize
+            spacing: root.spacingSize * 2
+            visible: root.isNavigating
             
             // Distance
             Column {
@@ -600,13 +600,13 @@ Item {
                     }
                     font.pixelSize: 24
                     font.bold: true
-                    color: textColor
+                    color: root.textColor
                 }
                 
                 Text {
                     text: "Distance"
                     font.pixelSize: 12
-                    color: textSecondary
+                    color: root.textSecondary
                 }
             }
             
@@ -619,13 +619,13 @@ Item {
                     text: Math.floor(etaSeconds / 60) + " min"
                     font.pixelSize: 24
                     font.bold: true
-                    color: textColor
+                    color: root.textColor
                 }
                 
                 Text {
                     text: "ETA"
                     font.pixelSize: 12
-                    color: textSecondary
+                    color: root.textSecondary
                 }
             }
             
@@ -638,13 +638,13 @@ Item {
                     text: distanceUnit === "imperial" ? "31 mph" : "50 km/h"
                     font.pixelSize: 24
                     font.bold: true
-                    color: textColor
+                    color: root.textColor
                 }
                 
                 Text {
                     text: "Speed"
                     font.pixelSize: 12
-                    color: textSecondary
+                    color: root.textSecondary
                 }
             }
 
@@ -657,13 +657,13 @@ Item {
                     text: selectedGpsDevice
                     font.pixelSize: 24
                     font.bold: true
-                    color: textColor
+                    color: root.textColor
                 }
 
                 Text {
                     text: "GPS"
                     font.pixelSize: 12
-                    color: textSecondary
+                    color: root.textSecondary
                 }
             }
         }
@@ -678,13 +678,13 @@ Item {
         width: 400
         
         contentItem: Column {
-            spacing: spacingSize * 2
-            padding: paddingSize * 2
+            spacing: root.spacingSize * 2
+            padding: root.paddingSize * 2
             
             Text {
                 text: "Save this location as a favourite?"
                 font.pixelSize: 16
-                color: textColor
+                color: root.textColor
                 wrapMode: Text.WordWrap
                 width: parent.width
             }
@@ -697,23 +697,23 @@ Item {
                     text: "Name:"
                     font.pixelSize: 14
                     font.bold: true
-                    color: textColor
+                    color: root.textColor
                 }
                 
                 Rectangle {
                     width: parent.width
                     height: 45
-                    color: surfaceVariant
+                    color: root.surfaceVariant
                     radius: 6
-                    border.color: favouriteNameField.activeFocus ? accentColor : outlineColor
+                    border.color: favouriteNameField.activeFocus ? root.accentColor : root.outlineColor
                     border.width: 2
                     
                     TextField {
                         id: favouriteNameField
                         anchors.fill: parent
-                        anchors.margins: paddingSize
+                        anchors.margins: root.paddingSize
                         placeholderText: "e.g., Home, Work, etc."
-                        color: textColor
+                        color: root.textColor
                         font.pixelSize: 16
                         
                         background: Rectangle {
@@ -726,11 +726,11 @@ Item {
             Text {
                 text: "📍 " + destLat.toFixed(6) + ", " + destLng.toFixed(6)
                 font.pixelSize: 12
-                color: textSecondary
+                color: root.textSecondary
             }
             
             Row {
-                spacing: spacingSize
+                spacing: root.spacingSize
                 anchors.horizontalCenter: parent.horizontalCenter
                 
                 Button {
@@ -738,17 +738,17 @@ Item {
                     width: 120
                     height: 45
                     
-                    background: Rectangle {
-                        color: surfaceVariant
+                        background: Rectangle {
+                        color: root.surfaceVariant
                         radius: 6
-                        border.color: outlineColor
+                        border.color: root.outlineColor
                         border.width: 1
                     }
                     
                     contentItem: Text {
                         text: parent.text
                         font.pixelSize: 16
-                        color: textColor
+                        color: root.textColor
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
                     }
@@ -766,7 +766,7 @@ Item {
                     enabled: favouriteNameField.text.trim().length > 0
                     
                     background: Rectangle {
-                        color: parent.enabled ? accentColor : surfaceVariant
+                        color: parent.enabled ? root.accentColor : root.surfaceVariant
                         radius: 6
                     }
                     
@@ -774,7 +774,7 @@ Item {
                         text: parent.text
                         font.pixelSize: 16
                         font.bold: true
-                        color: parent.enabled ? "white" : textSecondary
+                        color: parent.enabled ? "white" : root.textSecondary
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
                     }
@@ -798,9 +798,9 @@ Item {
         }
         
         background: Rectangle {
-            color: surfaceColor
+            color: root.surfaceColor
             radius: 12
-            border.color: outlineColor
+            border.color: root.outlineColor
             border.width: 2
         }
     }

@@ -47,14 +47,14 @@ Item {
     
     Rectangle {
         anchors.fill: parent
-        color: surfaceVariant
+        color: root.surfaceVariant
         radius: 8
         
         ListView {
             id: favouritesListView
             anchors.fill: parent
-            anchors.margins: paddingSize
-            spacing: spacingSize
+            anchors.margins: root.paddingSize
+            spacing: root.spacingSize
             clip: true
             visible: favourites.length > 0
             
@@ -63,15 +63,15 @@ Item {
             delegate: Rectangle {
                 width: favouritesListView.width
                 height: 90
-                color: surfaceColor
+                color: root.surfaceColor
                 radius: 6
-                border.color: outlineColor
+                border.color: root.outlineColor
                 border.width: 1
                 
-                RowLayout {
+                    RowLayout {
                     anchors.fill: parent
-                    anchors.margins: paddingSize
-                    spacing: spacingSize
+                    anchors.margins: root.paddingSize
+                    spacing: root.spacingSize
                     
                     // Star icon
                     Text {
@@ -89,7 +89,7 @@ Item {
                             text: modelData.name || "Unnamed"
                             font.pixelSize: 18
                             font.bold: true
-                            color: textColor
+                            color: root.textColor
                             elide: Text.ElideRight
                             width: parent.width
                         }
@@ -97,7 +97,7 @@ Item {
                         Text {
                             text: modelData.address || ""
                             font.pixelSize: 12
-                            color: textSecondary
+                            color: root.textSecondary
                             elide: Text.ElideRight
                             width: parent.width
                             wrapMode: Text.WordWrap
@@ -107,32 +107,33 @@ Item {
                         Text {
                             text: "📍 " + modelData.latitude.toFixed(6) + ", " + modelData.longitude.toFixed(6)
                             font.pixelSize: 11
-                            color: textSecondary
+                            color: root.textSecondary
                             opacity: 0.7
                         }
                     }
                     
                     // Navigate button
                     Button {
+                        id: navBtn
                         Layout.preferredWidth: 60
                         Layout.preferredHeight: 60
                         text: "→"
-                        
+
                         background: Rectangle {
-                            color: accentColor
+                            color: root.accentColor
                             radius: 8
-                            opacity: parent.pressed ? 0.8 : 1.0
+                            opacity: navBtn.pressed ? 0.8 : 1.0
                         }
-                        
+
                         contentItem: Text {
-                            text: parent.text
+                            text: navBtn.text
                             font.pixelSize: 24
                             font.bold: true
                             color: "white"
                             horizontalAlignment: Text.AlignHCenter
                             verticalAlignment: Text.AlignVCenter
                         }
-                        
+
                         onClicked: {
                             root.favouriteSelected(modelData)
                         }
@@ -140,23 +141,24 @@ Item {
                     
                     // Delete button
                     Button {
+                        id: delBtn
                         Layout.preferredWidth: 60
                         Layout.preferredHeight: 60
                         text: "🗑️"
-                        
+
                         background: Rectangle {
-                            color: errorColor
+                            color: root.errorColor
                             radius: 8
-                            opacity: parent.pressed ? 0.8 : 0.6
+                            opacity: delBtn.pressed ? 0.8 : 0.6
                         }
-                        
+
                         contentItem: Text {
-                            text: parent.text
+                            text: delBtn.text
                             font.pixelSize: 20
                             horizontalAlignment: Text.AlignHCenter
                             verticalAlignment: Text.AlignVCenter
                         }
-                        
+
                         onClicked: {
                             deleteDialog.favouriteIndex = index
                             deleteDialog.favouriteName = modelData.name
@@ -212,63 +214,65 @@ Item {
         property string favouriteName: ""
         
         contentItem: Column {
-            spacing: spacingSize * 2
-            padding: paddingSize * 2
+            spacing: root.spacingSize * 2
+            padding: root.paddingSize * 2
             
             Text {
                 text: "Delete '" + deleteDialog.favouriteName + "' from favourites?"
                 font.pixelSize: 16
-                color: textColor
+                color: root.textColor
                 wrapMode: Text.WordWrap
                 width: parent.width
             }
             
             Row {
-                spacing: spacingSize
+                spacing: root.spacingSize
                 anchors.horizontalCenter: parent.horizontalCenter
                 
                 Button {
+                    id: cancelBtn
                     text: "Cancel"
                     width: 120
                     height: 45
-                    
+
                     background: Rectangle {
-                        color: surfaceVariant
+                        color: root.surfaceVariant
                         radius: 6
-                        border.color: outlineColor
+                        border.color: root.outlineColor
                         border.width: 1
                     }
-                    
+
                     contentItem: Text {
-                        text: parent.text
+                        text: cancelBtn.text
                         font.pixelSize: 16
-                        color: textColor
+                        color: root.textColor
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
                     }
-                    
+
                     onClicked: deleteDialog.close()
                 }
                 
                 Button {
+                    id: deleteBtn
                     text: "Delete"
                     width: 120
                     height: 45
-                    
+
                     background: Rectangle {
-                        color: errorColor
+                        color: root.errorColor
                         radius: 6
                     }
-                    
+
                     contentItem: Text {
-                        text: parent.text
+                        text: deleteBtn.text
                         font.pixelSize: 16
                         font.bold: true
                         color: "white"
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
                     }
-                    
+
                     onClicked: {
                         root.favouriteDeleted(deleteDialog.favouriteIndex)
                         deleteDialog.close()
@@ -278,9 +282,9 @@ Item {
         }
         
         background: Rectangle {
-            color: surfaceColor
+            color: root.surfaceColor
             radius: 12
-            border.color: outlineColor
+            border.color: root.outlineColor
             border.width: 2
         }
     }
