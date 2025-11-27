@@ -48,38 +48,39 @@ Item {
     
     Column {
         anchors.fill: parent
-        spacing: spacingSize
+        spacing: root.spacingSize
         
         // Search input
         RowLayout {
-            width: parent.width
+            anchors.left: parent.left
+            anchors.right: parent.right
             height: 50
-            spacing: spacingSize
+            spacing: root.spacingSize
             
             Rectangle {
                 Layout.fillWidth: true
-                height: parent.height
-                color: surfaceVariant
+                Layout.preferredHeight: parent.height
+                color: root.surfaceVariant
                 radius: 8
-                border.color: searchField.activeFocus ? accentColor : outlineColor
+                border.color: searchField.activeFocus ? root.accentColor : root.outlineColor
                 border.width: 2
                 
                 RowLayout {
                     anchors.fill: parent
-                    anchors.margins: paddingSize
-                    spacing: spacingSize
+                    anchors.margins: root.paddingSize
+                    spacing: root.spacingSize
                     
                     Text {
                         text: "🔍"
                         font.pixelSize: 20
-                        color: textSecondary
+                        color: root.textSecondary
                     }
                     
                     TextField {
                         id: searchField
                         Layout.fillWidth: true
                         placeholderText: "Search for address or place..."
-                        color: textColor
+                        color: root.textColor
                         font.pixelSize: 16
                         
                         background: Rectangle {
@@ -100,27 +101,28 @@ Item {
                     }
                     
                     Button {
+                        id: clearBtn
                         visible: searchField.text.length > 0
-                        width: 30
-                        height: 30
+                        Layout.preferredWidth: 30
+                        Layout.preferredHeight: 30
                         text: "✕"
-                        
+
                         background: Rectangle {
                             color: "transparent"
                             radius: 15
                         }
-                        
+
                         contentItem: Text {
-                            text: parent.text
+                            text: clearBtn.text
                             font.pixelSize: 16
-                            color: textSecondary
+                            color: root.textSecondary
                             horizontalAlignment: Text.AlignHCenter
                             verticalAlignment: Text.AlignVCenter
                         }
-                        
+
                         onClicked: {
                             searchField.text = ""
-                            searchResults = []
+                            root.searchResults = []
                         }
                     }
                 }
@@ -128,52 +130,53 @@ Item {
             
             Button {
                 Layout.preferredWidth: 100
-                height: parent.height
+                Layout.preferredHeight: parent.height
                 text: "Search"
-                enabled: searchField.text.trim().length > 0 && !isSearching
-                
+                enabled: searchField.text.trim().length > 0 && !root.isSearching
+
                 background: Rectangle {
-                    color: parent.enabled ? accentColor : surfaceVariant
+                    color: parent.enabled ? root.accentColor : root.surfaceVariant
                     radius: 8
                     opacity: parent.pressed ? 0.8 : 1.0
                 }
-                
+
                 contentItem: Text {
                     text: parent.text
                     font.pixelSize: 16
                     font.bold: true
-                    color: parent.enabled ? "white" : textSecondary
+                    color: parent.enabled ? "white" : root.textSecondary
                     horizontalAlignment: Text.AlignHCenter
                     verticalAlignment: Text.AlignVCenter
                 }
-                
+
                 onClicked: performSearch()
             }
         }
         
         // Results area
-        Rectangle {
-            width: parent.width
+            Rectangle {
+            anchors.left: parent.left
+            anchors.right: parent.right
             height: parent.height - 58
-            color: surfaceVariant
+            color: root.surfaceVariant
             radius: 8
             
             ListView {
                 id: resultsListView
                 anchors.fill: parent
-                anchors.margins: paddingSize
-                spacing: spacingSize
+                anchors.margins: root.paddingSize
+                spacing: root.spacingSize
                 clip: true
-                visible: searchResults.length > 0
+                visible: root.searchResults.length > 0
                 
                 model: searchResults
                 
                 delegate: Rectangle {
                     width: resultsListView.width
                     height: 80
-                    color: surfaceColor
+                    color: root.surfaceColor
                     radius: 6
-                    border.color: outlineColor
+                    border.color: root.outlineColor
                     border.width: 1
                     
                     MouseArea {
@@ -187,10 +190,10 @@ Item {
                         }
                     }
                     
-                    RowLayout {
+                        RowLayout {
                         anchors.fill: parent
-                        anchors.margins: paddingSize
-                        spacing: spacingSize
+                        anchors.margins: root.paddingSize
+                        spacing: root.spacingSize
                         
                         Column {
                             Layout.fillWidth: true
@@ -200,7 +203,7 @@ Item {
                                 text: modelData.name || "Unknown"
                                 font.pixelSize: 16
                                 font.bold: true
-                                color: textColor
+                                color: root.textColor
                                 elide: Text.ElideRight
                                 width: parent.width
                             }
@@ -208,7 +211,7 @@ Item {
                             Text {
                                 text: modelData.display_name || ""
                                 font.pixelSize: 12
-                                color: textSecondary
+                                color: root.textSecondary
                                 elide: Text.ElideRight
                                 width: parent.width
                                 wrapMode: Text.WordWrap
@@ -219,7 +222,7 @@ Item {
                         Text {
                             text: "→"
                             font.pixelSize: 24
-                            color: accentColor
+                            color: root.accentColor
                         }
                     }
                 }
