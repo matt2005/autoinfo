@@ -52,13 +52,14 @@ Item {
     
     Column {
         anchors.fill: parent
-        spacing: spacingSize
+        spacing: root.spacingSize
         
         // Header with tabs
         Rectangle {
-            width: parent.width
+            anchors.left: parent.left
+            anchors.right: parent.right
             height: 50
-            color: surfaceVariant
+            color: root.surfaceVariant
             radius: 8
             
             Row {
@@ -68,87 +69,88 @@ Item {
                 
                 // Search tab
                 Button {
-                    width: (parent.width - 12) / 3
-                    height: parent.height
+                    id: searchTab
+                    Layout.preferredWidth: (parent.width - 12) / 3
+                    Layout.preferredHeight: parent.height
                     text: "🔍 Search"
-                    
+
                     background: Rectangle {
-                        color: !showAdvanced && searchTab.active ? accentColor : "transparent"
+                        color: !root.showAdvanced && searchTab.active ? root.accentColor : "transparent"
                         radius: 6
                     }
-                    
+
                     contentItem: Text {
-                        text: parent.text
+                        text: searchTab.text
                         font.pixelSize: 14
-                        font.bold: !showAdvanced && searchTab.active
-                        color: !showAdvanced && searchTab.active ? "white" : textColor
+                        font.bold: !root.showAdvanced && searchTab.active
+                        color: !root.showAdvanced && searchTab.active ? "white" : root.textColor
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
                     }
-                    
+
                     onClicked: {
-                        showAdvanced = false
+                        root.showAdvanced = false
                         searchTab.active = true
                         favouritesTab.active = false
                     }
-                    
+
                     property bool active: true
                     Component.onCompleted: searchTab.active = true
-                    id: searchTab
                 }
                 
                 // Favourites tab
                 Button {
-                    width: (parent.width - 12) / 3
-                    height: parent.height
+                    id: favouritesTab
+                    Layout.preferredWidth: (parent.width - 12) / 3
+                    Layout.preferredHeight: parent.height
                     text: "⭐ Favourites"
-                    
+
                     background: Rectangle {
-                        color: !showAdvanced && favouritesTab.active ? accentColor : "transparent"
+                        color: !root.showAdvanced && favouritesTab.active ? root.accentColor : "transparent"
                         radius: 6
                     }
-                    
+
                     contentItem: Text {
-                        text: parent.text
+                        text: favouritesTab.text
                         font.pixelSize: 14
-                        font.bold: !showAdvanced && favouritesTab.active
-                        color: !showAdvanced && favouritesTab.active ? "white" : textColor
+                        font.bold: !root.showAdvanced && favouritesTab.active
+                        color: !root.showAdvanced && favouritesTab.active ? "white" : root.textColor
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
                     }
-                    
+
                     onClicked: {
-                        showAdvanced = false
+                        root.showAdvanced = false
                         searchTab.active = false
                         favouritesTab.active = true
                     }
-                    
+
                     property bool active: false
-                    id: favouritesTab
                 }
                 
                 // Advanced tab
                 Button {
-                    width: (parent.width - 12) / 3
-                    height: parent.height
+                    id: advancedTab
+                    Layout.preferredWidth: (parent.width - 12) / 3
+                    Layout.preferredHeight: parent.height
                     text: "⚙️ Advanced"
-                    
+
                     background: Rectangle {
-                        color: showAdvanced ? accentColor : "transparent"
+                        color: root.showAdvanced ? root.accentColor : "transparent"
                         radius: 6
                     }
-                    
+
                     contentItem: Text {
-                        text: parent.text
+                        text: advancedTab.text
                         font.pixelSize: 14
-                        font.bold: showAdvanced
-                        color: showAdvanced ? "white" : textColor
+                        font.bold: root.showAdvanced
+                        color: root.showAdvanced ? "white" : root.textColor
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
                     }
-                    
+
                     onClicked: {
-                        showAdvanced = true
+                        root.showAdvanced = true
                         searchTab.active = false
                         favouritesTab.active = false
                     }
@@ -158,9 +160,10 @@ Item {
         
         // Content area
         StackLayout {
-            width: parent.width
+            anchors.left: parent.left
+            anchors.right: parent.right
             height: parent.height - 58
-            currentIndex: showAdvanced ? 2 : (searchTab.active ? 0 : 1)
+            currentIndex: root.showAdvanced ? 2 : (searchTab.active ? 0 : 1)
             
             // Search view
             GeocodingSearch {
@@ -174,17 +177,17 @@ Item {
             }
             
             // Favourites view
-            FavouritesList {
+                FavouritesList {
                 id: favouritesList
                 favourites: root.favourites
                 onFavouriteSelected: function(favourite) {
                     root.destinationSelected(favourite.latitude, favourite.longitude, favourite.name)
                 }
                 onFavouriteDeleted: function(index) {
-                    var newFavourites = root.favourites.slice()
-                    newFavourites.splice(index, 1)
-                    root.favourites = newFavourites
-                    saveFavourites()
+                    var newFavourites = root.favourites.slice();
+                    newFavourites.splice(index, 1);
+                    root.favourites = newFavourites;
+                    saveFavourites();
                 }
             }
             
@@ -214,17 +217,17 @@ Item {
             "timestamp": Date.now()
         }
         
-        var newFavourites = root.favourites.slice()
-        newFavourites.push(newFavourite)
-        root.favourites = newFavourites
-        saveFavourites()
+        var newFavourites = root.favourites.slice();
+        newFavourites.push(newFavourite);
+        root.favourites = newFavourites;
+        saveFavourites();
     }
     
     function loadFavourites() {
         if (NavigationBridge) {
-            var loaded = NavigationBridge.loadFavourites()
+            var loaded = NavigationBridge.loadFavourites();
             if (loaded && loaded.length > 0) {
-                root.favourites = loaded
+                root.favourites = loaded;
             }
         }
     }
