@@ -17,9 +17,9 @@
  *  along with Crankshaft. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import QtQuick
-import QtQuick.Controls
-import QtQuick.Layouts
+import QtQuick 2.15
+import QtQuick.Controls 2.15
+import QtQuick.Layouts 1.15
 
 /**
  * Favourites list component
@@ -56,12 +56,12 @@ Item {
             anchors.margins: root.paddingSize
             spacing: root.spacingSize
             clip: true
-            visible: favourites.length > 0
-            
-            model: favourites
-            
+            visible: root.favourites.length > 0
+
+            model: root.favourites
+
             delegate: Rectangle {
-                width: favouritesListView.width
+                width: parent.width
                 height: 90
                 color: root.surfaceColor
                 radius: 6
@@ -69,9 +69,9 @@ Item {
                 border.width: 1
                 
                     RowLayout {
-                    anchors.fill: parent
-                    anchors.margins: root.paddingSize
-                    spacing: root.spacingSize
+                        anchors.fill: parent
+                        anchors.margins: root.paddingSize
+                        spacing: root.spacingSize
                     
                     // Star icon
                     Text {
@@ -113,25 +113,17 @@ Item {
                     }
                     
                     // Navigate button
-                    Button {
+                    StyledButton {
                         id: navBtn
                         Layout.preferredWidth: 60
                         Layout.preferredHeight: 60
                         text: "→"
+                        Accessible.name: "Navigate to favourite"
 
                         background: Rectangle {
                             color: root.accentColor
                             radius: 8
                             opacity: navBtn.pressed ? 0.8 : 1.0
-                        }
-
-                        contentItem: Text {
-                            text: navBtn.text
-                            font.pixelSize: 24
-                            font.bold: true
-                            color: "white"
-                            horizontalAlignment: Text.AlignHCenter
-                            verticalAlignment: Text.AlignVCenter
                         }
 
                         onClicked: {
@@ -140,23 +132,17 @@ Item {
                     }
                     
                     // Delete button
-                    Button {
+                    StyledButton {
                         id: delBtn
                         Layout.preferredWidth: 60
                         Layout.preferredHeight: 60
                         text: "🗑️"
+                        Accessible.name: "Delete favourite"
 
                         background: Rectangle {
                             color: root.errorColor
                             radius: 8
                             opacity: delBtn.pressed ? 0.8 : 0.6
-                        }
-
-                        contentItem: Text {
-                            text: delBtn.text
-                            font.pixelSize: 20
-                            horizontalAlignment: Text.AlignHCenter
-                            verticalAlignment: Text.AlignVCenter
                         }
 
                         onClicked: {
@@ -170,10 +156,10 @@ Item {
         }
         
         // Empty state
-        Column {
+            Column {
             anchors.centerIn: parent
-            spacing: spacingSize * 2
-            visible: favourites.length === 0
+            spacing: root.spacingSize * 2
+            visible: root.favourites.length === 0
             
             Text {
                 text: "⭐"
@@ -182,18 +168,18 @@ Item {
                 opacity: 0.3
             }
             
-            Text {
+                Text {
                 text: "No favourites yet"
                 font.pixelSize: 18
                 font.bold: true
-                color: textColor
+                color: root.textColor
                 anchors.horizontalCenter: parent.horizontalCenter
             }
             
             Text {
                 text: "Search for a location and save it\nas a favourite for quick access"
                 font.pixelSize: 14
-                color: textSecondary
+                color: root.textSecondary
                 horizontalAlignment: Text.AlignHCenter
                 anchors.horizontalCenter: parent.horizontalCenter
                 lineHeight: 1.5
@@ -229,9 +215,10 @@ Item {
                 spacing: root.spacingSize
                 anchors.horizontalCenter: parent.horizontalCenter
                 
-                Button {
+                StyledButton {
                     id: cancelBtn
                     text: "Cancel"
+                    Accessible.name: "Cancel"
                     width: 120
                     height: 45
 
@@ -242,35 +229,19 @@ Item {
                         border.width: 1
                     }
 
-                    contentItem: Text {
-                        text: cancelBtn.text
-                        font.pixelSize: 16
-                        color: root.textColor
-                        horizontalAlignment: Text.AlignHCenter
-                        verticalAlignment: Text.AlignVCenter
-                    }
-
                     onClicked: deleteDialog.close()
                 }
-                
-                Button {
+
+                StyledButton {
                     id: deleteBtn
                     text: "Delete"
+                    Accessible.name: "Delete"
                     width: 120
                     height: 45
 
                     background: Rectangle {
                         color: root.errorColor
                         radius: 6
-                    }
-
-                    contentItem: Text {
-                        text: deleteBtn.text
-                        font.pixelSize: 16
-                        font.bold: true
-                        color: "white"
-                        horizontalAlignment: Text.AlignHCenter
-                        verticalAlignment: Text.AlignVCenter
                     }
 
                     onClicked: {

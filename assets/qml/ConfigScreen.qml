@@ -172,20 +172,32 @@ Rectangle {
             }
         }
         
-        // Main content area
-        RowLayout {
+        // Main content area (scrollable when window is small)
+        ScrollView {
             Layout.fillWidth: true
             Layout.fillHeight: true
-            spacing: 10
+            clip: true
+            ScrollBar.vertical: ScrollBar { }
+
+            RowLayout {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                spacing: 10
             
             // Left sidebar - Domain and extension selector
-            Rectangle {
+            Item {
                 Layout.preferredWidth: 250
                 Layout.fillHeight: true
-                color: ThemeManager.cardColor
-                border.color: ThemeManager.borderColor
-                border.width: 1
-                radius: 5
+                clip: true
+
+                // Background card (visual) separate so `Item` can provide clipping.
+                Rectangle {
+                    anchors.fill: parent
+                    color: ThemeManager.cardColor
+                    border.color: ThemeManager.borderColor
+                    border.width: 1
+                    radius: 5
+                }
 
                 ColumnLayout {
                     anchors.fill: parent
@@ -203,7 +215,6 @@ Rectangle {
                     ListView {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
-                        // clip not supported by some linters; use implicit clipping via delegate
                         model: domainsData
                         ScrollBar.vertical: ScrollBar { }
 
@@ -349,9 +360,9 @@ Rectangle {
                 highlighted: true
                 onClicked: {
                     if (ConfigManagerBridge.save()) {
-                        console.log("Configuration saved successfully")
+                        console.log("Configuration saved successfully");
                     } else {
-                        console.error("Failed to save configuration")
+                        console.error("Failed to save configuration");
                     }
                 }
             }
@@ -387,9 +398,9 @@ Rectangle {
         standardButtons: Dialog.Ok | Dialog.Cancel
         
         onAccepted: {
-            var config = ConfigManagerBridge.exportConfig(maskSecretsCheck.checked)
+            var config = ConfigManagerBridge.exportConfig(maskSecretsCheck.checked);
             // TODO: Show save file dialog and save JSON
-            console.log("Exported config:", JSON.stringify(config, null, 2))
+            console.log("Exported config:", JSON.stringify(config, null, 2));
         }
     }
     
@@ -424,7 +435,7 @@ Rectangle {
         onAccepted: {
             // TODO: Show open file dialog and load JSON
             // ConfigManagerBridge.importConfig(config, overwriteCheck.checked)
-            console.log("Import requested")
+            console.log("Import requested");
         }
     }
     
@@ -465,7 +476,7 @@ Rectangle {
         onAccepted: {
             // TODO: Show save file dialog
             // ConfigManagerBridge.backupToFile(filePath, !includeSecretsCheck.checked, compressCheck.checked)
-            console.log("Backup requested")
+            console.log("Backup requested");
         }
     }
 

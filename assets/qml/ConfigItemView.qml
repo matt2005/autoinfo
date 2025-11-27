@@ -332,7 +332,7 @@ Item {
                             text: parent.text
                             font: parent.font
                             color: ThemeManager.textColor
-                            leftPadding: parent.indicator.width + parent.spacing
+                            leftPadding: parent.indicator.width + 8
                             verticalAlignment: Text.AlignVCenter
                         }
                     }

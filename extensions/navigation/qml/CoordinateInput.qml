@@ -48,8 +48,8 @@ Item {
         
         Column {
             anchors.centerIn: parent
-            width: parent.width - paddingSize * 4
-            spacing: spacingSize * 2
+            width: parent.width - root.paddingSize * 4
+            spacing: root.spacingSize * 2
             
             // Header
             Column {
@@ -60,14 +60,14 @@ Item {
                     text: "⚙️ Advanced Coordinate Input"
                     font.pixelSize: 20
                     font.bold: true
-                    color: textColor
+                    color: root.textColor
                     anchors.horizontalCenter: parent.horizontalCenter
                 }
                 
                 Text {
                     text: "Enter GPS coordinates directly"
                     font.pixelSize: 14
-                    color: textSecondary
+                    color: root.textSecondary
                     anchors.horizontalCenter: parent.horizontalCenter
                 }
             }
@@ -87,21 +87,21 @@ Item {
                 Rectangle {
                     width: parent.width
                     height: 50
-                    color: surfaceColor
+                    color: root.surfaceColor
                     radius: 8
-                    border.color: latitudeField.activeFocus ? accentColor : outlineColor
+                    border.color: latitudeField.activeFocus ? root.accentColor : root.outlineColor
                     border.width: 2
                     
                     RowLayout {
                         anchors.fill: parent
-                        anchors.margins: paddingSize
-                        spacing: spacingSize
+                        anchors.margins: root.paddingSize
+                        spacing: root.spacingSize
                         
                         TextField {
                             id: latitudeField
                             Layout.fillWidth: true
                             placeholderText: "e.g., 51.5074"
-                            color: textColor
+                            color: root.textColor
                             font.pixelSize: 16
                             validator: DoubleValidator {
                                 bottom: -90.0
@@ -118,7 +118,7 @@ Item {
                         Text {
                             text: "°"
                             font.pixelSize: 18
-                            color: textSecondary
+                            color: root.textSecondary
                         }
                     }
                 }
@@ -126,7 +126,7 @@ Item {
                 Text {
                     text: "Range: -90° to +90° (South to North)"
                     font.pixelSize: 11
-                    color: textSecondary
+                    color: root.textSecondary
                     opacity: 0.7
                 }
             }
@@ -146,15 +146,15 @@ Item {
                 Rectangle {
                     width: parent.width
                     height: 50
-                    color: surfaceColor
+                    color: root.surfaceColor
                     radius: 8
-                    border.color: longitudeField.activeFocus ? accentColor : outlineColor
+                    border.color: longitudeField.activeFocus ? root.accentColor : root.outlineColor
                     border.width: 2
                     
                     RowLayout {
                         anchors.fill: parent
-                        anchors.margins: paddingSize
-                        spacing: spacingSize
+                        anchors.margins: root.paddingSize
+                        spacing: root.spacingSize
                         
                         TextField {
                             id: longitudeField
@@ -177,7 +177,7 @@ Item {
                         Text {
                             text: "°"
                             font.pixelSize: 18
-                            color: textSecondary
+                            color: root.textSecondary
                         }
                     }
                 }
@@ -185,7 +185,7 @@ Item {
                 Text {
                     text: "Range: -180° to +180° (West to East)"
                     font.pixelSize: 11
-                    color: textSecondary
+                    color: root.textSecondary
                     opacity: 0.7
                 }
             }
@@ -199,15 +199,15 @@ Item {
                     text: "Label (Optional)"
                     font.pixelSize: 14
                     font.bold: true
-                    color: textColor
+                    color: root.textColor
                 }
                 
                 Rectangle {
                     width: parent.width
                     height: 50
-                    color: surfaceColor
+                    color: root.surfaceColor
                     radius: 8
-                    border.color: labelField.activeFocus ? accentColor : outlineColor
+                    border.color: labelField.activeFocus ? root.accentColor : root.outlineColor
                     border.width: 2
                     
                     TextField {
@@ -226,49 +226,50 @@ Item {
             }
             
             // Submit button
-            Button {
-                width: parent.width
-                height: 60
-                enabled: isValid()
-                
-                background: Rectangle {
-                    color: parent.enabled ? accentColor : surfaceVariant
-                    radius: 8
-                    opacity: parent.pressed ? 0.8 : 1.0
-                }
-                
-                contentItem: Text {
-                    text: "Set Destination"
-                    font.pixelSize: 18
-                    font.bold: true
-                    color: parent.enabled ? "white" : textSecondary
-                    horizontalAlignment: Text.AlignHCenter
-                    verticalAlignment: Text.AlignVCenter
-                }
-                
-                onClicked: {
-                    if (isValid()) {
-                        var lat = parseFloat(latitudeField.text)
-                        var lng = parseFloat(longitudeField.text)
-                        var label = labelField.text.trim() || "Custom Location (" + lat.toFixed(4) + ", " + lng.toFixed(4) + ")"
-                        
-                        root.coordinatesSubmitted(lat, lng, label)
-                        
-                        // Clear fields
-                        latitudeField.text = ""
-                        longitudeField.text = ""
-                        labelField.text = ""
+                Button {
+                    id: submitBtn
+                    width: parent.width
+                    height: 60
+                    enabled: isValid()
+
+                    background: Rectangle {
+                        color: submitBtn.enabled ? root.accentColor : root.surfaceVariant
+                        radius: 8
+                        opacity: submitBtn.pressed ? 0.8 : 1.0
+                    }
+
+                    contentItem: Text {
+                        text: "Set Destination"
+                        font.pixelSize: 18
+                        font.bold: true
+                        color: submitBtn.enabled ? "white" : root.textSecondary
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                    }
+
+                    onClicked: {
+                        if (isValid()) {
+                            var lat = parseFloat(latitudeField.text);
+                            var lng = parseFloat(longitudeField.text);
+                            var label = labelField.text.trim() || "Custom Location (" + lat.toFixed(4) + ", " + lng.toFixed(4) + ")";
+
+                            root.coordinatesSubmitted(lat, lng, label)
+
+                            // Clear fields
+                            latitudeField.text = ""
+                            longitudeField.text = ""
+                            labelField.text = ""
+                        }
                     }
                 }
-            }
             
             // Examples
-            Rectangle {
-                width: parent.width
-                height: examplesColumn.height + paddingSize * 2
-                color: surfaceColor
-                radius: 6
-                opacity: 0.5
+                Rectangle {
+                    width: parent.width
+                    height: examplesColumn.height + root.paddingSize * 2
+                    color: root.surfaceColor
+                    radius: 6
+                    opacity: 0.5
                 
                 Column {
                     id: examplesColumn
@@ -313,8 +314,8 @@ Item {
             return false
         }
         
-        var lat = parseFloat(latitudeField.text)
-        var lng = parseFloat(longitudeField.text)
+    var lat = parseFloat(latitudeField.text);
+    var lng = parseFloat(longitudeField.text);
         
         if (isNaN(lat) || isNaN(lng)) {
             return false

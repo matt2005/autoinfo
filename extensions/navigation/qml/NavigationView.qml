@@ -27,11 +27,11 @@
  * - Extension cannot directly access core services
  */
 
-import QtQuick
-import QtQuick.Controls
-import QtQuick.Layouts
-import QtPositioning
-import QtLocation
+import QtQuick 2.15
+import QtQuick.Controls 2.15
+import QtQuick.Layouts 1.15
+import QtPositioning 5.15
+import QtLocation 5.15
 
 Item {
     id: root
@@ -53,10 +53,9 @@ Item {
     property real currentLng: -0.1278
     property real destLat: 51.5074
     property real destLng: -0.1278
-    property bool isNavigating: false
     property real distanceRemaining: 0
     property int etaSeconds: 0
-    property var routeCoordinates: []
+    property var routeCoordinates: [];
     property string currentInstruction: ""
     property string nextInstruction: ""
     property real distanceToNextTurn: 0
@@ -68,7 +67,7 @@ Item {
     property bool avoidMotorways: false
     property string distanceUnit: "metric" // "metric" or "imperial"
     // GPS hardware settings
-    property var gpsDevices: ["Internal", "USB Receiver", "GNSS Hat", "Mock (Static)", "Mock (IP)"]
+    property var gpsDevices: ["Internal", "USB Receiver", "GNSS Hat", "Mock (Static)", "Mock (IP)"];
     property string selectedGpsDevice: "Internal"
     signal gpsDeviceChanged(string device)
     
@@ -154,7 +153,7 @@ Item {
                     width: 40
                     height: 40
                     onPaint: {
-                        var ctx = getContext("2d")
+                        var ctx = getContext("2d");
                         ctx.reset()
                         ctx.fillStyle = root.accentColor
                         ctx.beginPath()
@@ -237,14 +236,13 @@ Item {
             right: parent.right
             bottom: controlPanel.top
         }
-        color: root.surfaceColor
-        opacity: 0.98
-        visible: searchOverlayVisible
-        z: 10
-        
-        property bool searchOverlayVisible: false
-        
-        Column {
+                opacity: 0.98
+                visible: searchOverlayVisible
+                z: 10
+
+                property bool searchOverlayVisible: false
+
+                Column {
             anchors.fill: parent
             spacing: 0
             
@@ -265,35 +263,26 @@ Item {
                         font.bold: true
                         color: root.textColor
                     }
-                    
                     Item { Layout.fillWidth: true }
-                    
-                    Button {
+
+                    StyledButton {
+                        id: closeBtn
                         width: 50
                         height: 50
                         text: "✕"
-                        
+                        Accessible.name: "Close search overlay"
+
                         background: Rectangle {
                             color: root.errorColor
                             radius: 8
-                            opacity: parent.pressed ? 0.8 : 0.6
+                            opacity: closeBtn.pressed ? 0.8 : 0.6
                         }
-                        
-                        contentItem: Text {
-                            text: parent.text
-                            font.pixelSize: 20
-                            font.bold: true
-                            color: "white"
-                            horizontalAlignment: Text.AlignHCenter
-                            verticalAlignment: Text.AlignVCenter
-                        }
-                        
+
                         onClicked: {
                             searchOverlay.searchOverlayVisible = false
                         }
                     }
                 }
-            }
             
             // Search component
             Loader {
@@ -307,19 +296,18 @@ Item {
                         item.destinationSelected.connect(function(lat, lng, address) {
                             root.destLat = lat
                             root.destLng = lng
-                            console.log("Destination selected:", address, lat, lng)
+                            console.log("Destination selected:", address, lat, lng);
                             
                             // Send navigation command
-                            if (NavigationBridge) {
+                            if (root.NavigationBridge) {
                                 // This would trigger the backend navigation
-                                console.log("Triggering navigation to:", lat, lng)
+                                console.log("Triggering navigation to:", lat, lng);
                             }
                             
                             searchOverlay.searchOverlayVisible = false
                             root.isNavigating = true
                             
                             // Calculate example distance (would be real calculation in production)
-                            var latDiff = Math.abs(root.currentLat - root.destLat);
                             var lngDiff = Math.abs(root.currentLng - root.destLng);
                             root.distanceRemaining = Math.sqrt(latDiff * latDiff + lngDiff * lngDiff) * 111000; // rough km to meters
                             root.etaSeconds = Math.floor(root.distanceRemaining / 15); // ~54 km/h average
@@ -376,10 +364,10 @@ Item {
                     color: root.accentColor
                     
                     Text {
-                        anchors.centerIn: parent
-                        text: getTurnIcon(currentInstruction)
-                        font.pixelSize: 48
-                    }
+                            anchors.centerIn: parent
+                            text: getTurnIcon(root.currentInstruction)
+                            font.pixelSize: 48
+                        }
                 }
                 
                 // Instruction details
@@ -389,7 +377,7 @@ Item {
                     
                     // Distance to turn
                     Text {
-                        text: formatDistance(distanceToNextTurn)
+                        text: formatDistance(root.distanceToNextTurn)
                         font.pixelSize: 32
                         font.bold: true
                         color: root.textColor
@@ -397,7 +385,7 @@ Item {
                     
                     // Instruction text
                     Text {
-                        text: currentInstruction || "Continue on current road"
+                        text: root.currentInstruction || "Continue on current road"
                         font.pixelSize: 18
                         color: root.textColor
                         wrapMode: Text.WordWrap
@@ -418,13 +406,13 @@ Item {
                 spacing: root.spacingSize * 2
                 
                 Text {
-                    text: getTurnIcon(nextInstruction)
+                    text: getTurnIcon(root.nextInstruction)
                     font.pixelSize: 24
                     color: root.textSecondary
                 }
                 
                 Text {
-                    text: nextInstruction || "Then continue"
+                    text: root.nextInstruction || "Then continue"
                     font.pixelSize: 14
                     color: root.textSecondary
                     elide: Text.ElideRight
@@ -451,53 +439,41 @@ Item {
             spacing: root.spacingSize
             
             // Set Destination button
-            Button {
+            StyledButton {
+                id: setDestBtn
                 Layout.fillWidth: true
                 Layout.preferredHeight: 60
                 text: root.isNavigating ? "📍 Change Destination" : "📍 Set Destination"
                 visible: !root.isNavigating || true // Always show for now
-                
-                    background: Rectangle {
+
+                background: Rectangle {
                     color: root.accentColor
                     radius: 8
                 }
-                
-                contentItem: Text {
-                    text: parent.text
-                    font.pixelSize: 18
-                    font.bold: true
-                    color: "white"
-                    horizontalAlignment: Text.AlignHCenter
-                    verticalAlignment: Text.AlignVCenter
-                }
-                
+
+                Accessible.name: root.isNavigating ? "Change Destination" : "Set Destination"
+
                 onClicked: {
                     searchOverlay.searchOverlayVisible = true
                 }
             }
             
             // Start/Stop navigation button
-            Button {
+            StyledButton {
+                id: navToggleBtn
                 Layout.fillWidth: true
                 Layout.preferredHeight: 60
                 text: root.isNavigating ? "Stop Navigation" : "Start Navigation"
                 visible: root.isNavigating // Only show when navigating
-                
-                    background: Rectangle {
+
+                background: Rectangle {
                     color: root.isNavigating ? root.errorColor : root.accentColor
                     radius: 8
                 }
-                
-                contentItem: Text {
-                    text: parent.text
-                    font.pixelSize: 18
-                    font.bold: true
-                    color: "white"
-                    horizontalAlignment: Text.AlignHCenter
-                    verticalAlignment: Text.AlignVCenter
-                }
-                
-                    onClicked: {
+
+                Accessible.name: root.isNavigating ? "Stop Navigation" : "Start Navigation"
+
+                onClicked: {
                     root.isNavigating = false
                     root.distanceRemaining = 0
                     root.etaSeconds = 0
@@ -505,55 +481,47 @@ Item {
             }
             
             // Save as favourite button
-            Button {
+            StyledButton {
+                id: saveFavBtn
                 Layout.preferredWidth: 60
                 Layout.preferredHeight: 60
                 text: "⭐"
                 visible: root.isNavigating
-                
-                    background: Rectangle {
-                    color: root.surfaceColor
-                    radius: 8
-                    border.color: root.outlineColor
-                    border.width: 2
-                }
-                
-                contentItem: Text {
-                    text: parent.text
-                    font.pixelSize: 24
-                    horizontalAlignment: Text.AlignHCenter
-                    verticalAlignment: Text.AlignVCenter
-                }
-                
-                onClicked: {
-                    saveFavouriteDialog.open()
-                }
-            }
-            
-            // Settings button - opens config page
-            Button {
-                Layout.preferredWidth: 60
-                Layout.preferredHeight: 60
-                text: "⚙️"
-                
+
                 background: Rectangle {
                     color: root.surfaceColor
                     radius: 8
                     border.color: root.outlineColor
                     border.width: 2
                 }
-                
-                contentItem: Text {
-                    text: parent.text
-                    font.pixelSize: 24
-                    horizontalAlignment: Text.AlignHCenter
-                    verticalAlignment: Text.AlignVCenter
+
+                Accessible.name: "Save Favourite"
+
+                onClicked: {
+                    saveFavouriteDialog.open()
                 }
-                
+            }
+            
+            // Settings button - opens config page
+            StyledButton {
+                id: settingsBtn
+                Layout.preferredWidth: 60
+                Layout.preferredHeight: 60
+                text: "⚙️"
+
+                background: Rectangle {
+                    color: root.surfaceColor
+                    radius: 8
+                    border.color: root.outlineColor
+                    border.width: 2
+                }
+
+                Accessible.name: "Settings"
+
                 onClicked: {
                     // Open the Settings tab and navigate to navigation config page
-                    if (NavigationBridge) {
-                        NavigationBridge.requestOpenSettings()
+                    if (root.NavigationBridge) {
+                        root.NavigationBridge.requestOpenSettings()
                     }
                 }
             }
@@ -592,10 +560,10 @@ Item {
                 
                 Text {
                     text: {
-                        if (distanceUnit === "imperial") {
-                            return (distanceRemaining / 1609.34).toFixed(1) + " mi";
+                        if (root.distanceUnit === "imperial") {
+                            return (root.distanceRemaining / 1609.34).toFixed(1) + " mi";
                         } else {
-                            return (distanceRemaining / 1000).toFixed(1) + " km";
+                            return (root.distanceRemaining / 1000).toFixed(1) + " km";
                         }
                     }
                     font.pixelSize: 24
@@ -616,7 +584,7 @@ Item {
                 spacing: 4
                 
                 Text {
-                    text: Math.floor(etaSeconds / 60) + " min"
+                    text: Math.floor(root.etaSeconds / 60) + " min"
                     font.pixelSize: 24
                     font.bold: true
                     color: root.textColor
@@ -635,7 +603,7 @@ Item {
                 spacing: 4
                 
                 Text {
-                    text: distanceUnit === "imperial" ? "31 mph" : "50 km/h"
+                    text: root.distanceUnit === "imperial" ? "31 mph" : "50 km/h"
                     font.pixelSize: 24
                     font.bold: true
                     color: root.textColor
@@ -654,7 +622,7 @@ Item {
                 spacing: 4
 
                 Text {
-                    text: selectedGpsDevice
+                    text: root.selectedGpsDevice
                     font.pixelSize: 24
                     font.bold: true
                     color: root.textColor
@@ -713,18 +681,13 @@ Item {
                         anchors.fill: parent
                         anchors.margins: root.paddingSize
                         placeholderText: "e.g., Home, Work, etc."
-                        color: root.textColor
                         font.pixelSize: 16
-                        
-                        background: Rectangle {
-                            color: "transparent"
-                        }
                     }
                 }
             }
             
             Text {
-                text: "📍 " + destLat.toFixed(6) + ", " + destLng.toFixed(6)
+                text: "📍 " + root.destLat.toFixed(6) + ", " + root.destLng.toFixed(6)
                 font.pixelSize: 12
                 color: root.textSecondary
             }
@@ -733,59 +696,46 @@ Item {
                 spacing: root.spacingSize
                 anchors.horizontalCenter: parent.horizontalCenter
                 
-                Button {
+                StyledButton {
+                    id: cancelBtn
                     text: "Cancel"
+                    Accessible.name: "Cancel"
                     width: 120
                     height: 45
-                    
-                        background: Rectangle {
+
+                    background: Rectangle {
                         color: root.surfaceVariant
                         radius: 6
                         border.color: root.outlineColor
                         border.width: 1
                     }
-                    
-                    contentItem: Text {
-                        text: parent.text
-                        font.pixelSize: 16
-                        color: root.textColor
-                        horizontalAlignment: Text.AlignHCenter
-                        verticalAlignment: Text.AlignVCenter
-                    }
-                    
+
                     onClicked: {
                         favouriteNameField.text = ""
                         saveFavouriteDialog.close()
                     }
                 }
                 
-                Button {
+                StyledButton {
+                    id: saveBtn
                     text: "Save"
+                    Accessible.name: "Save"
                     width: 120
                     height: 45
                     enabled: favouriteNameField.text.trim().length > 0
-                    
+
                     background: Rectangle {
-                        color: parent.enabled ? root.accentColor : root.surfaceVariant
+                        color: saveBtn.enabled ? root.accentColor : root.surfaceVariant
                         radius: 6
                     }
-                    
-                    contentItem: Text {
-                        text: parent.text
-                        font.pixelSize: 16
-                        font.bold: true
-                        color: parent.enabled ? "white" : root.textSecondary
-                        horizontalAlignment: Text.AlignHCenter
-                        verticalAlignment: Text.AlignVCenter
-                    }
-                    
+
                     onClicked: {
                         if (favouriteNameField.text.trim().length > 0) {
                             if (destinationSearchLoader.item) {
                                 destinationSearchLoader.item.addFavourite(
                                     favouriteNameField.text.trim(),
-                                    destLat,
-                                    destLng,
+                                    root.destLat,
+                                    root.destLng,
                                     "Saved location"
                                 )
                             }
@@ -807,47 +757,47 @@ Item {
     
     // Helper functions
     function getTurnIcon(instruction: string): string {
-        if (!instruction) return "➡️"
-        
-        const lowerInst = instruction.toLowerCase()
-        if (lowerInst.includes("left")) return "↰"
-        if (lowerInst.includes("right")) return "↱"
-        if (lowerInst.includes("u-turn") || lowerInst.includes("uturn")) return "↶"
-        if (lowerInst.includes("straight") || lowerInst.includes("continue")) return "⬆️"
-        if (lowerInst.includes("roundabout")) return "⭮"
-        if (lowerInst.includes("exit")) return "🛣️"
-        if (lowerInst.includes("arrive") || lowerInst.includes("destination")) return "🏁"
-        return "➡️"
+        if (!instruction) { return "➡️"; }
+
+        const lowerInst = instruction.toLowerCase();
+        if (lowerInst.includes("left")) { return "↰"; }
+        if (lowerInst.includes("right")) { return "↱"; }
+        if (lowerInst.includes("u-turn") || lowerInst.includes("uturn")) { return "↶"; }
+        if (lowerInst.includes("straight") || lowerInst.includes("continue")) { return "⬆️"; }
+        if (lowerInst.includes("roundabout")) { return "⭮"; }
+        if (lowerInst.includes("exit")) { return "🛣️"; }
+        if (lowerInst.includes("arrive") || lowerInst.includes("destination")) { return "🏁"; }
+        return "➡️";
     }
     
     function formatDistance(meters: real): string {
-        if (distanceUnit === "imperial") {
-            const feet = meters * 3.28084
+        if (root.distanceUnit === "imperial") {
+            const feet = meters * 3.28084;
             if (feet < 1000) {
-                return Math.round(feet) + " ft"
+                return Math.round(feet) + " ft";
             } else {
-                const miles = feet / 5280
-                return miles.toFixed(1) + " mi"
+                const miles = feet / 5280;
+                return miles.toFixed(1) + " mi";
             }
         } else {
             if (meters < 1000) {
-                return Math.round(meters) + " m"
+                return Math.round(meters) + " m";
             } else {
-                const km = meters / 1000
-                return km.toFixed(1) + " km"
+                const km = meters / 1000;
+                return km.toFixed(1) + " km";
             }
         }
     }
     
     function formatETA(seconds: int): string {
         if (seconds < 60) {
-            return "< 1 min"
+            return "< 1 min";
         } else if (seconds < 3600) {
-            return Math.round(seconds / 60) + " min"
+            return Math.round(seconds / 60) + " min";
         } else {
-            const hours = Math.floor(seconds / 3600)
-            const mins = Math.round((seconds % 3600) / 60)
-            return hours + " h " + mins + " min"
+            const hours = Math.floor(seconds / 3600);
+            const mins = Math.round((seconds % 3600) / 60);
+            return hours + " h " + mins + " min";
         }
     }
     
@@ -856,6 +806,6 @@ Item {
     // For now, routing happens in C++ backend and can be tested via console logs
     
     Component.onCompleted: {
-        console.log("Navigation view loaded")
+        console.log("Navigation view loaded");
     }
 }

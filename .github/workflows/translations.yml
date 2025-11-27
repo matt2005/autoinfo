@@ -1,5 +1,7 @@
 name: Translations
-
+permissions:
+  contents: read
+  pull-requests: write
 # GitHub Actions workflow for translation maintenance.
 # - Ensures lupdate has been run (fails if .ts changes are uncommitted)
 # - Compiles .qm artefacts for inspection / potential release packaging

@@ -17,9 +17,9 @@
  *  along with Crankshaft. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import QtQuick
-import QtQuick.Controls
-import QtQuick.Layouts
+import QtQuick 2.15
+import QtQuick.Controls 2.15
+import QtQuick.Layouts 1.15
 
 /**
  * Geocoding search component using Nominatim/OpenStreetMap
@@ -80,12 +80,7 @@ Item {
                         id: searchField
                         Layout.fillWidth: true
                         placeholderText: "Search for address or place..."
-                        color: root.textColor
                         font.pixelSize: 16
-                        
-                        background: Rectangle {
-                            color: "transparent"
-                        }
                         
                         onAccepted: {
                             if (text.trim().length > 0) {
@@ -100,24 +95,17 @@ Item {
                         }
                     }
                     
-                    Button {
+                    StyledButton {
                         id: clearBtn
                         visible: searchField.text.length > 0
                         Layout.preferredWidth: 30
                         Layout.preferredHeight: 30
                         text: "✕"
+                        Accessible.name: "Clear search"
 
                         background: Rectangle {
                             color: "transparent"
                             radius: 15
-                        }
-
-                        contentItem: Text {
-                            text: clearBtn.text
-                            font.pixelSize: 16
-                            color: root.textSecondary
-                            horizontalAlignment: Text.AlignHCenter
-                            verticalAlignment: Text.AlignVCenter
                         }
 
                         onClicked: {
@@ -128,25 +116,17 @@ Item {
                 }
             }
             
-            Button {
+            StyledButton {
                 Layout.preferredWidth: 100
                 Layout.preferredHeight: parent.height
                 text: "Search"
+                Accessible.name: "Search"
                 enabled: searchField.text.trim().length > 0 && !root.isSearching
 
                 background: Rectangle {
                     color: parent.enabled ? root.accentColor : root.surfaceVariant
                     radius: 8
                     opacity: parent.pressed ? 0.8 : 1.0
-                }
-
-                contentItem: Text {
-                    text: parent.text
-                    font.pixelSize: 16
-                    font.bold: true
-                    color: parent.enabled ? "white" : root.textSecondary
-                    horizontalAlignment: Text.AlignHCenter
-                    verticalAlignment: Text.AlignVCenter
                 }
 
                 onClicked: performSearch()
@@ -169,7 +149,7 @@ Item {
                 clip: true
                 visible: root.searchResults.length > 0
                 
-                model: searchResults
+                model: root.searchResults
                 
                 delegate: Rectangle {
                     width: resultsListView.width
@@ -191,9 +171,9 @@ Item {
                     }
                     
                         RowLayout {
-                        anchors.fill: parent
-                        anchors.margins: root.paddingSize
-                        spacing: root.spacingSize
+                            anchors.fill: parent
+                            anchors.margins: root.paddingSize
+                            spacing: root.spacingSize
                         
                         Column {
                             Layout.fillWidth: true
@@ -231,8 +211,8 @@ Item {
             // Empty state
             Column {
                 anchors.centerIn: parent
-                spacing: spacingSize
-                visible: !isSearching && searchResults.length === 0
+                spacing: root.spacingSize
+                visible: !root.isSearching && root.searchResults.length === 0
                 
                 Text {
                     text: searchQuery.length > 0 ? "🔍" : "📍"
@@ -244,7 +224,7 @@ Item {
                 Text {
                     text: searchQuery.length > 0 ? "No results found" : "Enter an address or place to search"
                     font.pixelSize: 16
-                    color: textSecondary
+                    color: root.textSecondary
                     anchors.horizontalCenter: parent.horizontalCenter
                 }
             }
@@ -252,18 +232,18 @@ Item {
             // Loading state
             Column {
                 anchors.centerIn: parent
-                spacing: spacingSize
-                visible: isSearching
+                spacing: root.spacingSize
+                visible: root.isSearching
                 
                 BusyIndicator {
                     anchors.horizontalCenter: parent.horizontalCenter
-                    running: isSearching
+                    running: root.isSearching
                 }
                 
                 Text {
                     text: "Searching..."
                     font.pixelSize: 16
-                    color: textSecondary
+                    color: root.textSecondary
                     anchors.horizontalCenter: parent.horizontalCenter
                 }
             }

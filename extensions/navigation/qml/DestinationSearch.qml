@@ -17,9 +17,9 @@
  *  along with Crankshaft. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import QtQuick
-import QtQuick.Controls
-import QtQuick.Layouts
+import QtQuick 2.15
+import QtQuick.Controls 2.15
+import QtQuick.Layouts 1.15
 
 /**
  * Destination search component with geocoding, direct coordinates, and favourites
@@ -68,24 +68,18 @@ Item {
                 spacing: 4
                 
                 // Search tab
-                Button {
+                StyledButton {
                     id: searchTab
                     Layout.preferredWidth: (parent.width - 12) / 3
                     Layout.preferredHeight: parent.height
                     text: "🔍 Search"
+                    Accessible.name: "Search tab"
+                    font.pixelSize: 14
+                    font.bold: !root.showAdvanced && searchTab.active
 
                     background: Rectangle {
                         color: !root.showAdvanced && searchTab.active ? root.accentColor : "transparent"
                         radius: 6
-                    }
-
-                    contentItem: Text {
-                        text: searchTab.text
-                        font.pixelSize: 14
-                        font.bold: !root.showAdvanced && searchTab.active
-                        color: !root.showAdvanced && searchTab.active ? "white" : root.textColor
-                        horizontalAlignment: Text.AlignHCenter
-                        verticalAlignment: Text.AlignVCenter
                     }
 
                     onClicked: {
@@ -99,24 +93,18 @@ Item {
                 }
                 
                 // Favourites tab
-                Button {
+                StyledButton {
                     id: favouritesTab
                     Layout.preferredWidth: (parent.width - 12) / 3
                     Layout.preferredHeight: parent.height
                     text: "⭐ Favourites"
+                    Accessible.name: "Favourites tab"
+                    font.pixelSize: 14
+                    font.bold: !root.showAdvanced && favouritesTab.active
 
                     background: Rectangle {
                         color: !root.showAdvanced && favouritesTab.active ? root.accentColor : "transparent"
                         radius: 6
-                    }
-
-                    contentItem: Text {
-                        text: favouritesTab.text
-                        font.pixelSize: 14
-                        font.bold: !root.showAdvanced && favouritesTab.active
-                        color: !root.showAdvanced && favouritesTab.active ? "white" : root.textColor
-                        horizontalAlignment: Text.AlignHCenter
-                        verticalAlignment: Text.AlignVCenter
                     }
 
                     onClicked: {
@@ -129,24 +117,18 @@ Item {
                 }
                 
                 // Advanced tab
-                Button {
+                StyledButton {
                     id: advancedTab
                     Layout.preferredWidth: (parent.width - 12) / 3
                     Layout.preferredHeight: parent.height
                     text: "⚙️ Advanced"
+                    Accessible.name: "Advanced tab"
+                    font.pixelSize: 14
+                    font.bold: root.showAdvanced
 
                     background: Rectangle {
                         color: root.showAdvanced ? root.accentColor : "transparent"
                         radius: 6
-                    }
-
-                    contentItem: Text {
-                        text: advancedTab.text
-                        font.pixelSize: 14
-                        font.bold: root.showAdvanced
-                        color: root.showAdvanced ? "white" : root.textColor
-                        horizontalAlignment: Text.AlignHCenter
-                        verticalAlignment: Text.AlignVCenter
                     }
 
                     onClicked: {
@@ -187,7 +169,7 @@ Item {
                     var newFavourites = root.favourites.slice();
                     newFavourites.splice(index, 1);
                     root.favourites = newFavourites;
-                    saveFavourites();
+                    root.saveFavourites();
                 }
             }
             
@@ -220,12 +202,12 @@ Item {
         var newFavourites = root.favourites.slice();
         newFavourites.push(newFavourite);
         root.favourites = newFavourites;
-        saveFavourites();
+        root.saveFavourites();
     }
     
     function loadFavourites() {
-        if (NavigationBridge) {
-            var loaded = NavigationBridge.loadFavourites();
+        if (root.NavigationBridge) {
+            var loaded = root.NavigationBridge.loadFavourites();
             if (loaded && loaded.length > 0) {
                 root.favourites = loaded;
             }

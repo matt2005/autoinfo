@@ -81,28 +81,28 @@ Item {
             
             Button {
                 text: "Scan"
-                onClicked: requestScan()
+                onClicked: root.requestScan()
             }
             
             Button {
                 text: "Create Hotspot"
-                onClicked: showApDialog = true
+                onClicked: root.showApDialog = true
             }
             
             Button {
-                text: isConnected ? "Disconnect" : "Disconnected"
-                enabled: isConnected
-                onClicked: disconnect()
+                text: root.isConnected ? "Disconnect" : "Disconnected"
+                enabled: root.isConnected
+                onClicked: root.disconnect()
             }
         }
         
         // Connection status
         Rectangle {
             Layout.fillWidth: true
-            height: 60
-            color: isConnected ? "#4CAF50" : "#757575"
+            Layout.preferredHeight: 60
+            color: root.isConnected ? "#4CAF50" : "#757575"
             radius: 8
-            visible: currentSsid !== ""
+            visible: root.currentSsid !== ""
             
             RowLayout {
                 anchors.fill: parent
@@ -114,7 +114,7 @@ Item {
                 }
                 
                 Label {
-                    text: isConnected ? "Connected to: " + currentSsid : "Disconnected"
+                    text: root.isConnected ? "Connected to: " + root.currentSsid : "Disconnected"
                     font.pixelSize: 18
                     color: "white"
                     Layout.fillWidth: true
@@ -206,10 +206,10 @@ Item {
                                 enabled: !modelData.isConnected
                                 onClicked: {
                                     if (modelData.isSecure) {
-                                        selectedSsid = modelData.ssid
-                                        showPasswordDialog = true
+                                        root.selectedSsid = modelData.ssid
+                                        root.showPasswordDialog = true
                                     } else {
-                                        connectToNetwork(modelData.ssid, "")
+                                        root.connectToNetwork(modelData.ssid, "")
                                     }
                                 }
                             }
@@ -217,7 +217,7 @@ Item {
                             Button {
                                 text: "Forget"
                                 visible: modelData.isConnected
-                                onClicked: forgetNetwork(modelData.ssid)
+                                onClicked: root.forgetNetwork(modelData.ssid)
                             }
                         }
                     }
@@ -226,22 +226,22 @@ Item {
         }
         
         // Empty state
-        Label {
+            Label {
             text: "No networks found. Click Scan to search for networks."
             font.pixelSize: 16
             color: "#999999"
             horizontalAlignment: Text.AlignHCenter
             Layout.fillWidth: true
-            visible: networks.length === 0
+            visible: root.networks.length === 0
         }
     }
     
     // Password dialog
     Dialog {
         id: passwordDialog
-        visible: showPasswordDialog
+        visible: root.showPasswordDialog
         modal: true
-        title: "Connect to " + selectedSsid
+        title: "Connect to " + root.selectedSsid
         anchors.centerIn: parent
         width: 400
         
@@ -254,14 +254,14 @@ Item {
                 font.pixelSize: 14
             }
             
-            TextField {
+                TextField {
                 id: passwordField
                 Layout.fillWidth: true
                 placeholderText: "Password"
                 echoMode: TextInput.Password
                 onAccepted: {
-                    connectToNetwork(selectedSsid, passwordField.text)
-                    showPasswordDialog = false
+                    root.connectToNetwork(root.selectedSsid, passwordField.text)
+                    root.showPasswordDialog = false
                     passwordField.text = ""
                 }
             }
@@ -273,7 +273,7 @@ Item {
                 Button {
                     text: "Cancel"
                     onClicked: {
-                        showPasswordDialog = false
+                        root.showPasswordDialog = false
                         passwordField.text = ""
                     }
                 }
@@ -281,8 +281,8 @@ Item {
                 Button {
                     text: "Connect"
                     onClicked: {
-                        connectToNetwork(selectedSsid, passwordField.text)
-                        showPasswordDialog = false
+                        root.connectToNetwork(root.selectedSsid, passwordField.text)
+                        root.showPasswordDialog = false
                         passwordField.text = ""
                     }
                 }
@@ -293,7 +293,7 @@ Item {
     // Access Point configuration dialog
     Dialog {
         id: apDialog
-        visible: showApDialog
+        visible: root.showApDialog
         modal: true
         title: "Configure WiFi Hotspot"
         anchors.centerIn: parent
@@ -342,7 +342,7 @@ Item {
                 Button {
                     text: "Cancel"
                     onClicked: {
-                        showApDialog = false
+                        root.showApDialog = false
                         apPasswordField.text = ""
                     }
                 }
@@ -351,8 +351,8 @@ Item {
                     text: "Create Hotspot"
                     enabled: apSsidField.text !== "" && apPasswordField.text.length >= 8
                     onClicked: {
-                        configureAccessPoint(apSsidField.text, apPasswordField.text)
-                        showApDialog = false
+                        root.configureAccessPoint(apSsidField.text, apPasswordField.text)
+                        root.showApDialog = false
                         apPasswordField.text = ""
                     }
                 }

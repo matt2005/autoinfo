@@ -155,25 +155,25 @@ ApplicationWindow {
                     StyledButton {
                         text: "Primary"
                         buttonType: "primary"
-                        onClicked: console.log("Primary clicked")
+                        onClicked: console.log("Primary clicked");
                     }
                     
                     StyledButton {
                         text: "Secondary"
                         buttonType: "secondary"
-                        onClicked: console.log("Secondary clicked")
+                        onClicked: console.log("Secondary clicked");
                     }
                     
                     StyledButton {
                         text: "Accent"
                         buttonType: "accent"
-                        onClicked: console.log("Accent clicked")
+                        onClicked: console.log("Accent clicked");
                     }
                     
                     StyledButton {
                         text: "Outline"
                         buttonType: "outline"
-                        onClicked: console.log("Outline clicked")
+                        onClicked: console.log("Outline clicked");
                     }
                 }
                 
