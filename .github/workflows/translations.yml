@@ -1,0 +1,71 @@
+name: Translations
+
+# GitHub Actions workflow for translation maintenance.
+# - Ensures lupdate has been run (fails if .ts changes are uncommitted)
+# - Compiles .qm artefacts for inspection / potential release packaging
+# - Designed for Qt6 (adjust packages for Qt5 if needed)
+
+on:
+  pull_request:
+    paths:
+      - 'src/**'
+      - 'assets/qml/**'
+      - 'extensions/**'
+      - 'i18n/**'
+      - 'scripts/update_translations.sh'
+      - 'cmake/Translations.cmake'
+  push:
+    branches: [ main ]
+    paths:
+      - 'src/**'
+      - 'assets/qml/**'
+      - 'extensions/**'
+      - 'i18n/**'
+      - 'scripts/update_translations.sh'
+      - 'cmake/Translations.cmake'
+  workflow_dispatch:
+
+jobs:
+  verify-and-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Qt tools (Qt6)
+        run: sudo apt-get update && sudo apt-get install -y qtbase5-dev qttools6-dev-tools
+
+      - name: Show lupdate/lrelease versions
+        run: |
+          which lupdate || true
+          which lrelease || true
+          lupdate -version || true
+
+      - name: Run lupdate (extract translations)
+        run: |
+          bash scripts/update_translations.sh extract
+
+      - name: Check for stale .ts changes
+        run: |
+          if ! git diff --quiet -- i18n extensions/*/i18n; then
+            echo "Error: Translation files out of date. Run scripts/update_translations.sh and commit changes." >&2
+            git diff --name-only -- i18n extensions/*/i18n
+            exit 1
+          fi
+
+      - name: Compile .qm files
+        run: |
+          bash scripts/update_translations.sh compile
+
+      - name: Archive compiled .qm artefacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: qm-files
+          path: |
+            i18n/*.qm
+            extensions/*/i18n/*.qm
+          if-no-files-found: warn
+
+      - name: Summary
+        run: |
+          echo "Translation workflow completed successfully."

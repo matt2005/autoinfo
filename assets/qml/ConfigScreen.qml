@@ -17,11 +17,12 @@
  *  along with Crankshaft. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import QtQuick
-import QtQuick.Controls
-import QtQuick.Layouts
+import QtQuick 2.15
+import QtQuick.Controls 2.15
+import QtQuick.Layouts 1.15
 import CrankshaftReborn.UI 1.0
 import Crankshaft.ConfigManagerBridge 1.0
+import CrankshaftReborn.I18n 1.0
 
 Rectangle {
     id: root
@@ -42,68 +43,68 @@ Rectangle {
     }
     
     // Domain/page data for sidebar; array of { domain, pages: [{extension,title}] }
-    property var domainsData: []
+    property var domainsData: [];
 
     function complexityToIndex(c) {
-        var v = (c || "basic").toString().toLowerCase()
-        if (v === "advanced") return 1
-        if (v === "expert") return 2
-        if (v === "developer" || v === "dev") return 3
-        return 0
+        var v = (c || "basic").toString().toLowerCase();
+        if (v === "advanced") return 1;
+        if (v === "expert") return 2;
+        if (v === "developer" || v === "dev") return 3;
+        return 0;
     }
 
     function loadConfigPages() {
-        var pages = ConfigManagerBridge.getAllConfigPages()
-        var grouped = {}
+        var pages = ConfigManagerBridge.getAllConfigPages();
+        var grouped = {};
 
         // Group pages by domain, filtering by complexity level
         for (var i = 0; i < pages.length; i++) {
-            var page = pages[i]
+            var page = pages[i];
             // Filter pages by complexity level
             if (complexityToIndex(page.complexity) > currentComplexity) {
                 continue
             }
             if (!grouped[page.domain]) {
-                grouped[page.domain] = []
+                grouped[page.domain] = [];
             }
-            grouped[page.domain].push({ extension: page.extension, title: page.title })
+            grouped[page.domain].push({ extension: page.extension, title: page.title });
         }
 
         // Convert to ordered array for UI, prioritising system and user interface
-        var result = []
-        var priorityDomains = ["system", "user interface"]
+        var result = [];
+        var priorityDomains = ["system", "user interface"];
         
         // Add priority domains first (in order)
         for (var p = 0; p < priorityDomains.length; p++) {
-            var priorityDomain = priorityDomains[p]
+            var priorityDomain = priorityDomains[p];
             if (grouped[priorityDomain]) {
-                result.push({ domain: priorityDomain, pages: grouped[priorityDomain] })
+                result.push({ domain: priorityDomain, pages: grouped[priorityDomain] });
             }
         }
         
         // Add remaining domains
         for (var d in grouped) {
             if (priorityDomains.indexOf(d) === -1) {
-                result.push({ domain: d, pages: grouped[d] })
+                result.push({ domain: d, pages: grouped[d] });
             }
         }
-        domainsData = result
+        domainsData = result;
 
         // Select initial or first domain and extension
         if (initialDomain !== "" && initialExtension !== "") {
-            currentDomain = initialDomain
-            currentExtension = initialExtension
+            currentDomain = initialDomain;
+            currentExtension = initialExtension;
         } else if (domainsData.length > 0) {
-            currentDomain = domainsData[0].domain
-            var firstPages = domainsData[0].pages || []
+            currentDomain = domainsData[0].domain;
+            var firstPages = domainsData[0].pages || [];
             if (firstPages.length > 0) {
-                currentExtension = firstPages[0].extension
+                currentExtension = firstPages[0].extension;
             } else {
-                currentExtension = ""
+                currentExtension = "";
             }
         } else {
-            currentDomain = ""
-            currentExtension = ""
+            currentDomain = "";
+            currentExtension = "";
         }
     }
 
@@ -202,11 +203,9 @@ Rectangle {
                     ListView {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
-                        clip: true
+                        // clip not supported by some linters; use implicit clipping via delegate
                         model: domainsData
-                        ScrollBar.vertical: ScrollBar {
-                            policy: ScrollBar.AlwaysOn
-                        }
+                        ScrollBar.vertical: ScrollBar { }
 
                         delegate: ColumnLayout {
                             width: parent ? parent.width : 0
@@ -274,9 +273,6 @@ Rectangle {
                 border.color: ThemeManager.borderColor
                 border.width: 1
                 radius: 5
-                ScrollBar.vertical: ScrollBar {
-                    policy: ScrollBar.AlwaysOn
-                }
                 
                 ConfigPageView {
                     id: pageView
@@ -301,6 +297,31 @@ Rectangle {
                         ConfigManagerBridge.resetToDefaults(currentDomain, currentExtension)
                         pageView.refresh()
                     }
+                }
+            }
+
+            // Language selector (runtime)
+            RowLayout {
+                spacing: 6
+                visible: true
+                Text { text: qsTr("Language:"); color: ThemeManager.textColor }
+                ComboBox {
+                    id: languageCombo
+                    model: I18nManager.availableLocales()
+                    currentIndex: (function(loc){ var idx = model.indexOf(loc); return idx >= 0 ? idx : 0; })(I18nManager.currentLocale);
+                    onCurrentIndexChanged: {
+                        var loc = model[currentIndex];
+                        if (loc && loc.length > 0) {
+                            I18nManager.setLocale(loc);
+                            ConfigManagerBridge.setValue("system","ui","general","language", loc);
+                        }
+                    }
+                    Accessible.name: qsTr("Language Selector")
+                }
+                StyledButton {
+                    text: qsTr("Diagnostics")
+                    Accessible.name: qsTr("Open Translation Diagnostics")
+                    onClicked: translationDiagDialog.open();
                 }
             }
             
@@ -445,6 +466,21 @@ Rectangle {
             // TODO: Show save file dialog
             // ConfigManagerBridge.backupToFile(filePath, !includeSecretsCheck.checked, compressCheck.checked)
             console.log("Backup requested")
+        }
+    }
+
+    // Translation diagnostics dialog
+    Dialog {
+        id: translationDiagDialog
+        title: qsTr("Translation Diagnostics")
+        modal: true
+        width: 520
+        height: 400
+        standardButtons: Dialog.Close
+
+        TranslationDiagnostics {
+            anchors.fill: parent
+            anchors.margins: 10
         }
     }
 }

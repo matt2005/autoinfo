@@ -42,9 +42,21 @@ ${SUDO} apt-get install -y \
   qt6-positioning-dev \
   qt6-connectivity-dev \
   qt6-tools-dev \
-  qt6-tools-dev-tools
+  qt6-tools-dev-tools \
+  linguist-qt6 \
+  # Qt Linguist tools installed separately due to distro differences
+    libgstreamer1.0-dev \
+    libgstreamer-plugins-base1.0-dev \
+    gstreamer1.0-plugins-base \
+    gstreamer1.0-plugins-good \
+    gstreamer1.0-plugins-bad \
+    gstreamer1.0-plugins-ugly \
+    gstreamer1.0-libav \
+    gstreamer1.0-alsa \
+    gstreamer1.0-pulseaudio \
+    gstreamer1.0-tools
 
-# Install cmakelint via apt or pipx (fallback for PEP 668)
+  # Install cmakelint via apt or pipx (fallback for PEP 668)
 if ! ${SUDO} apt-get install -y cmakelint; then
   echo "cmakelint not available via apt, trying pipx..."
   if command -v pipx >/dev/null 2>&1; then
@@ -55,3 +67,18 @@ if ! ${SUDO} apt-get install -y cmakelint; then
 fi
 
 echo "Dev tools + Qt6 installed. Ensure ~/.local/bin is on PATH for pip/pipx-installed tools."
+
+# Ensure lupdate/lrelease available (Qt Linguist). Try Qt6 first, then Qt5 fallback.
+if ! command -v lupdate >/dev/null 2>&1 || ! command -v lrelease >/dev/null 2>&1; then
+  if ${SUDO} apt-get install -y qt6-tools-dev-tools; then
+    echo "Installed qt6-tools-dev-tools"
+  else
+    echo "Warning: Could not install Qt Linguist tools. Translations targets will be stubbed."
+  fi
+fi
+
+if command -v lupdate >/dev/null 2>&1 && command -v lrelease >/dev/null 2>&1; then
+  echo "Qt Linguist tools available"
+else
+  echo "Warning: lupdate/lrelease still not found."
+fi

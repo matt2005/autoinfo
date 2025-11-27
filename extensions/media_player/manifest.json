@@ -2,7 +2,7 @@
   "id": "media_player",
   "name": "Media Player",
   "version": "1.0.0",
-  "description": "Full-featured media player for audio and video playback",
+  "description": "Full-featured media player for audio and video playback with GStreamer backend",
   "author": "OpenCarDev Team",
   "type": "ui",
   "dependencies": [],
@@ -16,18 +16,44 @@
       "filesystem",
       "network",
       "event"
-    ]
+    ],
+    "system_packages": {
+      "debian": [
+        "libgstreamer1.0-dev",
+        "libgstreamer-plugins-base1.0-dev",
+        "libgstreamer-plugins-good1.0-dev",
+        "gstreamer1.0-plugins-ugly",
+        "gstreamer1.0-libav",
+        "gstreamer1.0-alsa",
+        "gstreamer1.0-pulseaudio",
+        "gstreamer1.0-pipewire",
+        "gstreamer1.0-v4l2"
+      ]
+    }
   },
   "metadata": {
     "category": "multimedia",
     "icon": "mdi:music",
-    "supported_formats": ["mp3", "flac", "wav", "ogg", "aac", "mp4", "mkv", "avi"],
+    "supported_formats": [
+      "mp3", "flac", "wav", "ogg", "opus", "aac", "m4a", "wma",
+      "mp4", "mkv", "avi", "webm", "mov", "flv"
+    ],
     "features": [
+      "audio_playback",
+      "video_playback",
+      "hardware_decode",
+      "gapless_playback",
+      "metadata_extraction",
       "playlist_management",
-      "equaliser",
       "bluetooth_audio",
-      "radio",
-      "streaming"
-    ]
+      "radio_dab",
+      "streaming_services"
+    ],
+    "engine": {
+      "name": "GStreamer",
+      "version": "1.0+",
+      "swappable": true,
+      "interface": "IMediaEngine"
+    }
   }
 }

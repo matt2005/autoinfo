@@ -155,6 +155,21 @@ QT6_PACKAGES=(
     "qt6-location-plugins"
     "qt6-tools-dev"
     "qt6-tools-dev-tools"
+    "linguist-qt6"
+)
+
+# GStreamer packages for media player extension
+GSTREAMER_PACKAGES=(
+    "libgstreamer1.0-dev"
+    "libgstreamer-plugins-base1.0-dev"
+    "gstreamer1.0-plugins-base"
+    "gstreamer1.0-plugins-good"
+    "gstreamer1.0-plugins-bad"
+    "gstreamer1.0-plugins-ugly"
+    "gstreamer1.0-libav"
+    "gstreamer1.0-alsa"
+    "gstreamer1.0-pulseaudio"
+    "gstreamer1.0-tools"
 )
 
 for package in "${QT6_PACKAGES[@]}"; do
@@ -169,6 +184,44 @@ done
 
 print_success "Qt6 development packages installed"
 print_status "Note: qml6-module-qtlocation and qt6-location-plugins provide full map functionality for navigation"
+
+echo ""
+
+# Attempt to install Qt Linguist tools (lupdate/lrelease) for translations
+print_status "Checking for Qt Linguist tools (lupdate/lrelease)..."
+if command_exists lupdate && command_exists lrelease; then
+    print_success "Qt Linguist tools already available"
+else
+    # Try Qt6 tools first; fall back to Qt5 where Qt6 package not available on distro
+    if apt-cache policy qt6-tools-dev-tools 2>/dev/null | grep -q Candidate; then
+        print_status "Installing qt6-tools-dev-tools (Qt6 Linguist)..."
+        sudo apt install -y qt6-tools-dev-tools && print_success "qt6-tools-dev-tools installed" || print_warning "Failed to install qt6-tools-dev-tools"
+    fi
+    #if ! command_exists lupdate || ! command_exists lrelease; then
+    #    print_status "Installing qttools5-dev-tools (Qt5 Linguist) as fallback..."
+    #    sudo apt install -y qttools5-dev-tools && print_success "qttools5-dev-tools installed" || print_warning "Failed to install qttools5-dev-tools"
+    #fi
+    if command_exists lupdate && command_exists lrelease; then
+        print_success "Qt Linguist tools available"
+    else
+        print_warning "Qt Linguist tools still not found. Translation targets will run in stub mode."
+    fi
+fi
+
+# Install GStreamer packages
+print_status "Installing GStreamer packages for media player..."
+
+for package in "${GSTREAMER_PACKAGES[@]}"; do
+    if package_installed "$package"; then
+        print_success "$package already installed"
+    else
+        print_status "Installing $package..."
+        sudo apt install -y "$package"
+        print_success "$package installed"
+    fi
+done
+
+print_success "GStreamer packages installed"
 
 echo ""
 

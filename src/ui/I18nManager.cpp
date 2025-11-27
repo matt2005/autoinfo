@@ -85,9 +85,14 @@ bool I18nManager::setLocale(const QString& locale) {
     current_locale_ = locale;
 
     // Load core first
-    loadCoreTranslations(locale);
+    if (!loadCoreTranslations(locale) && locale != QLatin1String("en_GB")) {
+        // Fallback to British English if requested locale missing
+        qWarning() << "I18n: falling back to en_GB for core translations";
+        current_locale_ = "en_GB";
+        loadCoreTranslations(current_locale_);
+    }
     // Load extension translations if any
-    reloadExtensionTranslations(locale);
+    reloadExtensionTranslations(current_locale_);
 
     // Retranslate QML
     if (engine_)
@@ -124,46 +129,23 @@ void I18nManager::reloadExtensionTranslations(const QString& locale) {
         delete t;
     }
     extension_translators_.clear();
+    extensionLoadedLocale_.clear();
+    extensionFallbackUsed_.clear();
 
     if (!ext_manager_)
         return;
     const QStringList ids = ext_manager_->getLoadedExtensions();
     for (const QString& id : ids) {
-        const auto manifest = ext_manager_->getManifest(id);
-        QString basePath = manifest.isValid() ? manifest.id : id;
-
-        // Look next to extension on disk
-        QStringList candidates;
-        const QString disk = manifest.isValid() ? manifest.id : id;
-        Q_UNUSED(disk);
-        // We don't have direct path here; rely on appDir extensions/<id>/i18n convention
-        candidates << (QCoreApplication::applicationDirPath() + "/extensions/" + id + "/i18n/" +
-                       id + "_" + locale + ".qm");
-        candidates << (QDir::currentPath() + "/extensions/" + id + "/i18n/" + id + "_" + locale +
-                       ".qm");
-        candidates << QString::fromUtf8("/usr/share/CrankshaftReborn/extensions/") + id + "/i18n/" +
-                          id + "_" + locale + ".qm";
-        candidates << QString::fromUtf8("/usr/share/crankshaft_reborn/extensions/") + id +
-                          "/i18n/" + id + "_" + locale + ".qm";
-
-        bool loaded = false;
-        for (const QString& p : candidates) {
-            if (QFileInfo::exists(p)) {
-                auto* tr = new QTranslator();
-                if (tr->load(p)) {
-                    QCoreApplication::installTranslator(tr);
-                    extension_translators_.append(tr);
-                    qInfo() << "I18n: loaded extension translations for" << id << "from" << p;
-                    loaded = true;
-                    break;
-                }
-                delete tr;
+        bool primaryLoaded = loadExtensionTranslationFor(id, locale, /*allowFallback*/ true);
+        if (!primaryLoaded && locale != QLatin1String("en_GB")) {
+            // If fallback loaded, record
+            if (extensionLoadedLocale_.value(id) == QLatin1String("en_GB")) {
+                extensionFallbackUsed_.insert(id);
+                emit translationFallbackOccurred(id);
             }
         }
-        if (!loaded) {
-            qDebug() << "I18n: no translation for extension" << id << "(" << locale << ")";
-        }
     }
+    emit extensionTranslationsChanged();
 }
 
 void I18nManager::unloadTranslations() {
@@ -175,6 +157,96 @@ void I18nManager::unloadTranslations() {
         delete t;
     }
     extension_translators_.clear();
+}
+
+void I18nManager::refreshTranslations() {
+    // Re-apply current locale without unloading core translator if unchanged
+    const QString loc = current_locale_.isEmpty() ? QStringLiteral("en_GB") : current_locale_;
+    unloadTranslations();
+    current_locale_ = loc;
+    if (!loadCoreTranslations(loc) && loc != QLatin1String("en_GB")) {
+        qWarning() << "I18n: refresh fallback to en_GB for core translations";
+        current_locale_ = "en_GB";
+        loadCoreTranslations(current_locale_);
+    }
+    reloadExtensionTranslations(current_locale_);
+    if (engine_) {
+        engine_->retranslate();
+    }
+    emit languageChanged(current_locale_);
+    emit extensionTranslationsChanged();
+}
+
+bool I18nManager::loadExtensionTranslationFor(const QString& extensionId, const QString& locale,
+                                              bool allowFallback) {
+    const auto manifest = ext_manager_ ? ext_manager_->getManifest(extensionId) : decltype(ext_manager_->getManifest(extensionId))();
+    Q_UNUSED(manifest); // Not yet used for path indirection
+
+    QStringList candidates;
+    const QString baseId = extensionId;
+    // Development / build tree locations
+    candidates << (QCoreApplication::applicationDirPath() + "/extensions/" + baseId + "/i18n/" + baseId + "_" + locale + ".qm");
+    candidates << (QDir::currentPath() + "/extensions/" + baseId + "/i18n/" + baseId + "_" + locale + ".qm");
+    // Installed system locations
+    candidates << QString::fromUtf8("/usr/share/CrankshaftReborn/extensions/") + baseId + "/i18n/" + baseId + "_" + locale + ".qm";
+    candidates << QString::fromUtf8("/usr/share/crankshaft_reborn/extensions/") + baseId + "/i18n/" + baseId + "_" + locale + ".qm";
+
+    // Attempt primary locale
+    for (const QString& p : candidates) {
+        if (QFileInfo::exists(p)) {
+            auto* tr = new QTranslator();
+            if (tr->load(p)) {
+                QCoreApplication::installTranslator(tr);
+                extension_translators_.append(tr);
+                qInfo() << "I18n: loaded extension translations for" << baseId << "locale" << locale << "from" << p;
+                extensionLoadedLocale_.insert(baseId, locale);
+                return true;
+            }
+            delete tr;
+        }
+    }
+
+    if (allowFallback && locale != QLatin1String("en_GB")) {
+        // Try fallback British English if specific locale missing
+        const QString fallback = QStringLiteral("en_GB");
+        for (QString p : candidates) {
+            p.replace(locale + ".qm", fallback + ".qm");
+            if (QFileInfo::exists(p)) {
+                auto* tr = new QTranslator();
+                if (tr->load(p)) {
+                    QCoreApplication::installTranslator(tr);
+                    extension_translators_.append(tr);
+                    qInfo() << "I18n: fallback en_GB translation loaded for extension" << baseId << "from" << p;
+                    extensionLoadedLocale_.insert(baseId, QStringLiteral("en_GB"));
+                    return true;
+                }
+                delete tr;
+            }
+        }
+    }
+    qDebug() << "I18n: no translation for extension" << baseId << "(" << locale << ")";
+    // If no translation loaded at all record empty
+    if (!extensionLoadedLocale_.contains(baseId)) {
+        extensionLoadedLocale_.insert(baseId, QString());
+    }
+    return false;
+}
+
+QStringList I18nManager::loadedExtensionIds() const {
+    return extensionLoadedLocale_.keys();
+}
+
+QVariantList I18nManager::extensionTranslationStatus() const {
+    QVariantList list;
+    for (auto it = extensionLoadedLocale_.cbegin(); it != extensionLoadedLocale_.cend(); ++it) {
+        const QString id = it.key();
+        QVariantMap m;
+        m[QStringLiteral("id")] = id;
+        m[QStringLiteral("loadedLocale")] = it.value().isEmpty() ? QStringLiteral("(none)") : it.value();
+        m[QStringLiteral("fallbackUsed")] = extensionFallbackUsed_.contains(id);
+        list.append(m);
+    }
+    return list;
 }
 
 }  // namespace ui

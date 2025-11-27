@@ -43,6 +43,16 @@ RUN apt-get update \
     qt6-connectivity-dev \
     qt6-tools-dev \
     qt6-tools-dev-tools \
+   qttools6-dev-tools \
+    libgstreamer1.0-dev \
+    libgstreamer-plugins-base1.0-dev \
+    gstreamer1.0-plugins-base \
+    gstreamer1.0-plugins-good \
+    gstreamer1.0-plugins-bad \
+    gstreamer1.0-plugins-ugly \
+    gstreamer1.0-libav \
+    gstreamer1.0-alsa \
+    gstreamer1.0-v4l2 \
     ca-certificates \
     file \
     dpkg-dev \
@@ -77,6 +87,14 @@ RUN apt-get update \
     qml6-module-qtquick-window \
     libqt6bluetooth6 \
     bluez \
+    gstreamer1.0-plugins-base \
+    gstreamer1.0-plugins-good \
+    gstreamer1.0-plugins-bad \
+    gstreamer1.0-plugins-ugly \
+    gstreamer1.0-libav \
+    gstreamer1.0-alsa \
+    gstreamer1.0-v4l2 \
+    gstreamer1.0-tools \
  && rm -rf /var/lib/apt/lists/*
 
 # Copy installed artefacts

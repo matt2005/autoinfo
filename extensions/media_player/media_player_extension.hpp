@@ -20,8 +20,10 @@
 #pragma once
 
 #include <memory>
+#include <QQueue>
 #include "../../src/core/capabilities/EventCapability.hpp"
 #include "../../src/extensions/extension.hpp"
+#include "IMediaEngine.hpp"
 
 namespace opencardev::crankshaft {
 namespace extensions {
@@ -49,13 +51,39 @@ class MediaPlayerExtension : public Extension {
 
   private:
     void setupEventHandlers();
+    void setupEngineCallbacks();
+    
+    // Command handlers
     void handlePlayCommand(const QVariantMap& data);
     void handlePauseCommand(const QVariantMap& data);
     void handleStopCommand(const QVariantMap& data);
     void handleNextCommand(const QVariantMap& data);
     void handlePreviousCommand(const QVariantMap& data);
+    void handleSeekCommand(const QVariantMap& data);
+    void handleSetVolumeCommand(const QVariantMap& data);
+    void handleSetMutedCommand(const QVariantMap& data);
+    void handleEnqueueCommand(const QVariantMap& data);
+    void handleDequeueCommand(const QVariantMap& data);
+    void handleClearQueueCommand(const QVariantMap& data);
+    
+    // Queue management
+    void playNext();
+    void playFromQueue();
+    
+    // Event publishing helpers
+    void publishStateChanged();
+    void publishPositionChanged(qint64 position);
+    void publishMetadataChanged();
+    void publishQueueChanged();
+    void publishError(const QString& message);
 
     std::shared_ptr<core::capabilities::EventCapability> eventCap_;
+    std::unique_ptr<IMediaEngine> mediaEngine_;
+    
+    // Playback queue
+    QQueue<QString> playbackQueue_;
+    QString currentTrackUri_;
+    bool isQueueMode_{false};
 };
 
 }  // namespace media

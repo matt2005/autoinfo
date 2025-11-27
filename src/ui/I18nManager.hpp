@@ -22,6 +22,10 @@
 #include <QObject>
 #include <QStringList>
 #include <QTranslator>
+#include <QList>
+#include <QHash>
+#include <QSet>
+#include <QVariant>
 
 class QQmlEngine;
 
@@ -40,6 +44,7 @@ namespace ui {
 class I18nManager : public QObject {
     Q_OBJECT
     Q_PROPERTY(QString currentLocale READ currentLocale NOTIFY languageChanged)
+  Q_PROPERTY(QVariantList extensionTranslationStatus READ extensionTranslationStatus NOTIFY extensionTranslationsChanged)
 
   public:
     static void registerQmlType();
@@ -49,6 +54,9 @@ class I18nManager : public QObject {
 
     Q_INVOKABLE QStringList availableLocales() const;
     Q_INVOKABLE bool setLocale(const QString& locale);
+    Q_INVOKABLE void refreshTranslations();  // Reload current locale (e.g. after extensions added)
+    Q_INVOKABLE QStringList loadedExtensionIds() const;
+    Q_INVOKABLE QVariantList extensionTranslationStatus() const; // list of { id, loadedLocale, fallbackUsed }
 
     // Wiring helpers
     static void initialise(QQmlEngine* engine,
@@ -56,12 +64,16 @@ class I18nManager : public QObject {
 
   signals:
     void languageChanged(const QString& newLocale);
+    void extensionTranslationsChanged();
+    void translationFallbackOccurred(const QString& extensionId);
 
   private:
     explicit I18nManager(QObject* parent = nullptr);
     bool loadCoreTranslations(const QString& locale);
     void unloadTranslations();
     void reloadExtensionTranslations(const QString& locale);
+    bool loadExtensionTranslationFor(const QString& extensionId, const QString& locale,
+                     bool allowFallback);
 
     static I18nManager* self_;
     QQmlEngine* engine_;
@@ -69,6 +81,9 @@ class I18nManager : public QObject {
     QString current_locale_;
     QTranslator core_translator_;
     QList<QTranslator*> extension_translators_;
+    // Diagnostics tracking
+    QHash<QString, QString> extensionLoadedLocale_; // extensionId -> locale actually loaded
+    QSet<QString> extensionFallbackUsed_;            // extensionIds that used fallback
 };
 
 }  // namespace ui
