@@ -16,4 +16,5 @@ import QtQuick.Controls 2.15
 // such as `text`, `width`, `height`, `enabled`, `background` resolve for qmllint.
 Button {
   id: control
+  Accessible.name: ""
 }
