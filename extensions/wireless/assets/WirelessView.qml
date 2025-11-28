@@ -2,6 +2,8 @@ import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
 
+pragma ComponentBehavior: Bound
+
 Item {
     id: root
     
@@ -81,17 +83,20 @@ Item {
             
             Button {
                 text: "Scan"
+                Accessible.name: "Scan networks"
                 onClicked: root.requestScan()
             }
             
             Button {
                 text: "Create Hotspot"
+                Accessible.name: "Create hotspot"
                 onClicked: root.showApDialog = true
             }
             
             Button {
                 text: root.isConnected ? "Disconnect" : "Disconnected"
                 enabled: root.isConnected
+                Accessible.name: "Disconnect"
                 onClicked: root.disconnect()
             }
         }
@@ -122,6 +127,7 @@ Item {
                 
                 Button {
                     text: "×"
+                    Accessible.name: "Close status"
                     onClicked: disconnect()
                 }
             }
@@ -203,6 +209,7 @@ Item {
                             
                             Button {
                                 text: modelData.isConnected ? "Connected" : "Connect"
+                                Accessible.name: modelData.isConnected ? ("Connected " + modelData.ssid) : ("Connect " + modelData.ssid)
                                 enabled: !modelData.isConnected
                                 onClicked: {
                                     if (modelData.isSecure) {
@@ -216,6 +223,7 @@ Item {
                             
                             Button {
                                 text: "Forget"
+                                Accessible.name: "Forget " + modelData.ssid
                                 visible: modelData.isConnected
                                 onClicked: root.forgetNetwork(modelData.ssid)
                             }
@@ -264,6 +272,7 @@ Item {
                     root.showPasswordDialog = false
                     passwordField.text = ""
                 }
+                Accessible.name: "Network password"
             }
             
             RowLayout {
@@ -272,6 +281,7 @@ Item {
                 
                 Button {
                     text: "Cancel"
+                    Accessible.name: "Cancel password dialog"
                     onClicked: {
                         root.showPasswordDialog = false
                         passwordField.text = ""
@@ -280,6 +290,7 @@ Item {
                 
                 Button {
                     text: "Connect"
+                    Accessible.name: "Connect to network"
                     onClicked: {
                         root.connectToNetwork(root.selectedSsid, passwordField.text)
                         root.showPasswordDialog = false
@@ -313,6 +324,7 @@ Item {
                 Layout.fillWidth: true
                 placeholderText: "Crankshaft-Hotspot"
                 text: "Crankshaft-Hotspot"
+                Accessible.name: "Hotspot SSID"
             }
             
             Label {
@@ -325,6 +337,7 @@ Item {
                 Layout.fillWidth: true
                 placeholderText: "Password"
                 echoMode: TextInput.Password
+                Accessible.name: "Hotspot password"
             }
             
             Label {
@@ -341,6 +354,7 @@ Item {
                 
                 Button {
                     text: "Cancel"
+                    Accessible.name: "Cancel hotspot dialog"
                     onClicked: {
                         root.showApDialog = false
                         apPasswordField.text = ""
@@ -349,6 +363,7 @@ Item {
                 
                 Button {
                     text: "Create Hotspot"
+                    Accessible.name: "Create hotspot confirm"
                     enabled: apSsidField.text !== "" && apPasswordField.text.length >= 8
                     onClicked: {
                         root.configureAccessPoint(apSsidField.text, apPasswordField.text)
