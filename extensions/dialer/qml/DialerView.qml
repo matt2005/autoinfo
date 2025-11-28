@@ -22,6 +22,8 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import CrankshaftReborn.Events 1.0
 
+pragma ComponentBehavior: Bound
+
 Item {
   id: root
   anchors.fill: parent
@@ -63,10 +65,12 @@ Item {
           Layout.fillWidth: true
           placeholderText: "Enter number"
           text: ""
+          Accessible.name: "Dialler number field"
         }
 
         Button {
           text: "⌫"
+          Accessible.name: "Backspace"
           onClicked: numberField.text = numberField.text.slice(0, -1)
         }
       }
@@ -86,6 +90,7 @@ Item {
         model: ["1","2","3","4","5","6","7","8","9","*","0","#"]
         Button {
           text: modelData
+          Accessible.name: "Key " + modelData
           onClicked: numberField.text += text
           Layout.fillWidth: true
           Layout.preferredHeight: 48
@@ -98,15 +103,17 @@ Item {
       spacing: ThemeManager.spacing
       Button {
         text: "Call"
+        Accessible.name: "Call"
         Layout.fillWidth: true
         onClicked: {
-          console.log("Dialler: Call requested", numberField.text)
+          console.log("Dialler: Call requested", numberField.text);
           // Emit a public dial event; Bluetooth listens on "*.phone.dial"
           EventBridge.publish("dialer.phone.dial", { number: numberField.text })
         }
       }
       Button {
         text: "Clear"
+        Accessible.name: "Clear"
         Layout.fillWidth: true
         onClicked: numberField.text = ""
       }
