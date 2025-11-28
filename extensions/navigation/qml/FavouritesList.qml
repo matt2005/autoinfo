@@ -20,7 +20,9 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
+import CrankshaftReborn.UI 1.0
 
+pragma ComponentBehavior: Bound
 /**
  * Favourites list component
  */
@@ -65,15 +67,16 @@ Item {
                 height: 90
                 color: root.surfaceColor
                 radius: 6
-                border.color: root.outlineColor
-                border.width: 1
-                
-                    RowLayout {
-                        anchors.fill: parent
-                        anchors.margins: root.paddingSize
-                        spacing: root.spacingSize
-                    
-                    // Star icon
+                // Theme convenience properties to reduce unqualified-access warnings in nested items
+                readonly property color surfaceColor: ThemeManager.surfaceColor
+                readonly property color surfaceVariant: ThemeManager.cardColor
+                readonly property color accentColor: ThemeManager.accentColor
+                readonly property color errorColor: ThemeManager.errorColor
+                readonly property color textColor: ThemeManager.textColor
+                readonly property color textSecondary: ThemeManager.textSecondaryColor
+                readonly property color outlineColor: ThemeManager.borderColor
+                readonly property int paddingSize: ThemeManager.padding
+                readonly property int spacingSize: ThemeManager.spacing
                     Text {
                         text: "⭐"
                         font.pixelSize: 32
