@@ -15,9 +15,10 @@ echo "Searching for QML files..."
 # Ensure qmllint can resolve our local module (use absolute path)
 REPO_ROOT="$(pwd)"
 IMPORT_PATHS="${REPO_ROOT}/assets/qml"
-if [ -d "${REPO_ROOT}/build/assets/qml" ]; then
-  IMPORT_PATHS="${IMPORT_PATHS}:${REPO_ROOT}/build/assets/qml"
-fi
+# Do NOT include build/assets/qml in QML2_IMPORT_PATH by default.
+# The build folder may contain generated or copied QML used for analysis,
+# but we intentionally avoid importing from build/ during lint runs to
+# prevent the linter from inspecting generated artifacts.
 export QML2_IMPORT_PATH="${IMPORT_PATHS}:${QML2_IMPORT_PATH:-}"
 echo "Using QML2_IMPORT_PATH=${QML2_IMPORT_PATH}"
 # Find QML files in the source folders, explicitly excluding anything under build/
