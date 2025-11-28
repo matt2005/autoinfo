@@ -111,17 +111,6 @@ Item {
 
                     onClicked: {
                         root.showAdvanced = false
-    
-                            // Theme convenience properties to reduce unqualified-access warnings in nested items
-                            readonly property color surfaceColor: ThemeManager.surfaceColor
-                            readonly property color surfaceVariant: ThemeManager.cardColor
-                            readonly property color accentColor: ThemeManager.accentColor
-                            readonly property color errorColor: ThemeManager.errorColor
-                            readonly property color textColor: ThemeManager.textColor
-                            readonly property color textSecondary: ThemeManager.textSecondaryColor
-                            readonly property color outlineColor: ThemeManager.borderColor
-                            readonly property int paddingSize: ThemeManager.padding
-                            readonly property int spacingSize: ThemeManager.spacing
                         searchTab.active = false
                         favouritesTab.active = true
                     }

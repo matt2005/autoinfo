@@ -67,16 +67,6 @@ Item {
                 height: 90
                 color: root.surfaceColor
                 radius: 6
-                // Theme convenience properties to reduce unqualified-access warnings in nested items
-                readonly property color surfaceColor: ThemeManager.surfaceColor
-                readonly property color surfaceVariant: ThemeManager.cardColor
-                readonly property color accentColor: ThemeManager.accentColor
-                readonly property color errorColor: ThemeManager.errorColor
-                readonly property color textColor: ThemeManager.textColor
-                readonly property color textSecondary: ThemeManager.textSecondaryColor
-                readonly property color outlineColor: ThemeManager.borderColor
-                readonly property int paddingSize: ThemeManager.padding
-                readonly property int spacingSize: ThemeManager.spacing
                     Text {
                         text: "⭐"
                         font.pixelSize: 32
@@ -104,7 +94,6 @@ Item {
                             elide: Text.ElideRight
                             width: parent.width
                             wrapMode: Text.WordWrap
-                            maximumLineCount: 2
                         }
                         
                         Text {
@@ -154,10 +143,9 @@ Item {
                             deleteDialog.open()
                         }
                     }
-                }
+                    }
             }
-        }
-        
+
         // Empty state
             Column {
             anchors.centerIn: parent
