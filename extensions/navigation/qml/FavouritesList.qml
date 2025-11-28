@@ -67,6 +67,7 @@ Item {
                 height: 90
                 color: root.surfaceColor
                 radius: 6
+                property var fav: modelData
                     Text {
                         text: "⭐"
                         font.pixelSize: 32
@@ -79,7 +80,7 @@ Item {
                         spacing: 4
                         
                         Text {
-                            text: modelData.name || "Unnamed"
+                            text: fav.name || "Unnamed"
                             font.pixelSize: 18
                             font.bold: true
                             color: root.textColor
@@ -88,7 +89,7 @@ Item {
                         }
                         
                         Text {
-                            text: modelData.address || ""
+                            text: fav.address || ""
                             font.pixelSize: 12
                             color: root.textSecondary
                             elide: Text.ElideRight
@@ -97,7 +98,7 @@ Item {
                         }
                         
                         Text {
-                            text: "📍 " + modelData.latitude.toFixed(6) + ", " + modelData.longitude.toFixed(6)
+                            text: "📍 " + fav.latitude.toFixed(6) + ", " + fav.longitude.toFixed(6)
                             font.pixelSize: 11
                             color: root.textSecondary
                             opacity: 0.7
@@ -119,7 +120,7 @@ Item {
                         }
 
                         onClicked: {
-                            root.favouriteSelected(modelData)
+                            root.favouriteSelected(fav)
                         }
                     }
                     
@@ -139,7 +140,7 @@ Item {
 
                         onClicked: {
                             deleteDialog.favouriteIndex = index
-                            deleteDialog.favouriteName = modelData.name
+                            deleteDialog.favouriteName = fav.name
                             deleteDialog.open()
                         }
                     }
