@@ -21,6 +21,8 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 
+pragma ComponentBehavior: Bound
+
 /**
  * Direct coordinate input component for advanced users
  */
@@ -42,9 +44,9 @@ Item {
     readonly property int spacingSize: ThemeManager.spacing
     
     Rectangle {
-        anchors.fill: parent
-        color: surfaceVariant
-        radius: 8
+    anchors.fill: parent
+    color: root.surfaceVariant
+    radius: 8
         
         Column {
             anchors.centerIn: parent
@@ -54,7 +56,7 @@ Item {
             // Header
             Column {
                 width: parent.width
-                spacing: spacingSize
+                spacing: root.spacingSize
                 
                 Text {
                     text: "⚙️ Advanced Coordinate Input"
@@ -81,7 +83,7 @@ Item {
                     text: "Latitude"
                     font.pixelSize: 14
                     font.bold: true
-                    color: textColor
+                    color: root.textColor
                 }
                 
                 Rectangle {
@@ -140,7 +142,7 @@ Item {
                     text: "Longitude"
                     font.pixelSize: 14
                     font.bold: true
-                    color: textColor
+                    color: root.textColor
                 }
                 
                 Rectangle {
@@ -160,7 +162,7 @@ Item {
                             id: longitudeField
                             Layout.fillWidth: true
                             placeholderText: "e.g., -0.1278"
-                            color: textColor
+                            color: root.textColor
                             font.pixelSize: 16
                             validator: DoubleValidator {
                                 bottom: -180.0
@@ -213,9 +215,9 @@ Item {
                     TextField {
                         id: labelField
                         anchors.fill: parent
-                        anchors.margins: paddingSize
+                        anchors.margins: root.paddingSize
                         placeholderText: "e.g., Home, Office, etc."
-                        color: textColor
+                        color: root.textColor
                         font.pixelSize: 16
                         
                         background: Rectangle {
@@ -264,7 +266,7 @@ Item {
                 }
             
             // Examples
-                Rectangle {
+                    Rectangle {
                     width: parent.width
                     height: examplesColumn.height + root.paddingSize * 2
                     color: root.surfaceColor
@@ -274,34 +276,34 @@ Item {
                 Column {
                     id: examplesColumn
                     anchors.centerIn: parent
-                    width: parent.width - paddingSize * 2
+                    width: parent.width - root.paddingSize * 2
                     spacing: 4
                     
                     Text {
                         text: "Examples:"
                         font.pixelSize: 12
                         font.bold: true
-                        color: textColor
+                        color: root.textColor
                     }
                     
                     Text {
                         text: "• London: 51.5074, -0.1278"
                         font.pixelSize: 11
-                        color: textSecondary
+                        color: root.textSecondary
                         font.family: "monospace"
                     }
                     
                     Text {
                         text: "• New York: 40.7128, -74.0060"
                         font.pixelSize: 11
-                        color: textSecondary
+                        color: root.textSecondary
                         font.family: "monospace"
                     }
                     
                     Text {
                         text: "• Tokyo: 35.6762, 139.6503"
                         font.pixelSize: 11
-                        color: textSecondary
+                        color: root.textSecondary
                         font.family: "monospace"
                     }
                 }
