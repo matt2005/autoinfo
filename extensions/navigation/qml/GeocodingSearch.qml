@@ -61,7 +61,7 @@ Item {
             
             Rectangle {
                 Layout.fillWidth: true
-                Layout.preferredHeight: parent.height
+                Layout.preferredHeight: root.parent.height
                 color: root.surfaceVariant
                 radius: 8
                 border.color: searchField.activeFocus ? root.accentColor : root.outlineColor

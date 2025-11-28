@@ -126,12 +126,12 @@ Item {
                 anchors.fill: parent
                 anchors.margins: 8
                 spacing: 12
-                Label { text: callIncoming ? "Incoming call" : (callActive ? "Active call" : "Call") }
-                Label { text: callContact !== "" ? callContact : callNumber }
+                Label { text: root.callIncoming ? "Incoming call" : (root.callActive ? "Active call" : "Call") }
+                                 Label { text: root.callContact !== "" ? root.callContact : root.callNumber }
                 Item { Layout.fillWidth: true }
-                Button { text: "Answer"; visible: callIncoming; onClicked: BluetoothBridge.answerCall() }
-                Button { text: "Reject"; visible: callIncoming; onClicked: BluetoothBridge.rejectCall() }
-                Button { text: "End"; visible: callActive; onClicked: BluetoothBridge.endCall() }
+                Button { text: "Answer"; visible: root.callIncoming; onClicked: root.BluetoothBridge.answerCall() }
+                Button { text: "Reject"; visible: root.callIncoming; onClicked: root.BluetoothBridge.rejectCall() }
+                Button { text: "End"; visible: root.callActive; onClicked: root.BluetoothBridge.endCall() }
             }
         }
 
@@ -142,7 +142,7 @@ Item {
                 anchors.margins: 8
                 spacing: 8
                 TextField { id: dialNumber; placeholderText: "Dial number"; Layout.preferredWidth: 200 }
-                Button { text: "Dial"; onClicked: if (dialNumber.text.length>0) BluetoothBridge.dial(dialNumber.text) }
+                Button { text: "Dial"; onClicked: if (dialNumber.text.length>0) root.BluetoothBridge.dial(dialNumber.text) }
             }
         }
     }

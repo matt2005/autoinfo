@@ -17,7 +17,7 @@ Item {
     Component.onCompleted: {
         // Subscribe to events
         if (typeof WirelessBridge !== 'undefined') {
-            WirelessBridge.networksUpdated.connect(onNetworksUpdated)
+            root.WirelessBridge.networksUpdated.connect(onNetworksUpdated)
             WirelessBridge.connectionStateChanged.connect(onConnectionStateChanged)
         }
         
@@ -27,31 +27,31 @@ Item {
     
     function requestScan() {
         if (typeof WirelessBridge !== 'undefined') {
-            WirelessBridge.scan()
+                                                                                                root.WirelessBridge.scan()
         }
     }
     
     function connectToNetwork(ssid, password) {
         if (typeof WirelessBridge !== 'undefined') {
-            WirelessBridge.connect(ssid, password)
+                                                                                                root.WirelessBridge.connect(ssid, password)
         }
     }
     
     function disconnect() {
         if (typeof WirelessBridge !== 'undefined') {
-            WirelessBridge.disconnect()
+                                                                                                root.WirelessBridge.disconnect()
         }
     }
     
     function configureAccessPoint(ssid, password) {
         if (typeof WirelessBridge !== 'undefined') {
-            WirelessBridge.configureAP(ssid, password)
+                                                                                                root.WirelessBridge.configureAP(ssid, password)
         }
     }
     
     function forgetNetwork(ssid) {
         if (typeof WirelessBridge !== 'undefined') {
-            WirelessBridge.forget(ssid)
+                                                                                                root.WirelessBridge.forget(ssid)
         }
     }
     
