@@ -14,7 +14,9 @@ EXIT_CODE=0
 echo "Searching for QML files..."
 # Ensure qmllint can resolve our local module (use absolute path)
 REPO_ROOT="$(pwd)"
-IMPORT_PATHS="${REPO_ROOT}/assets/qml"
+# Include assets qml and the lint-only stubs module so qmllint can resolve
+# project UI types without importing from the build/ tree.
+IMPORT_PATHS="${REPO_ROOT}/assets/qml:${REPO_ROOT}/tools/qml-stubs"
 # Do NOT include build/assets/qml in QML2_IMPORT_PATH by default.
 # The build folder may contain generated or copied QML used for analysis,
 # but we intentionally avoid importing from build/ during lint runs to
