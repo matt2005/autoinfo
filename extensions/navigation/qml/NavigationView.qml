@@ -273,8 +273,8 @@ Item {
 
                     StyledButton {
                         id: closeBtn
-                        width: 50
-                        height: 50
+                        Layout.preferredWidth: 50
+                        Layout.preferredHeight: 50
                         text: "✕"
                         Accessible.name: "Close search overlay"
 
