@@ -28,21 +28,30 @@ Item {
   id: root
   anchors.fill: parent
 
+  // Theme convenience properties to avoid unqualified-access warnings in nested components
+  readonly property color backgroundColor: ThemeManager.backgroundColor
+  readonly property int spacingSize: ThemeManager.spacing
+  readonly property int paddingSize: ThemeManager.padding
+  readonly property color textColor: ThemeManager.textColor
+  readonly property color surfaceColor: ThemeManager.surfaceColor
+  readonly property int cornerRadius: ThemeManager.cornerRadius
+  readonly property color borderColor: ThemeManager.borderColor
+
   Rectangle {
     anchors.fill: parent
-    color: ThemeManager.backgroundColor
+    color: root.backgroundColor
   }
 
   ColumnLayout {
     anchors.centerIn: parent
-    spacing: ThemeManager.spacing * 2
+    spacing: root.spacingSize * 2
     width: 360
 
-    Text {
+      Text {
       text: "Dialler"
       font.pixelSize: 24
       font.bold: true
-      color: ThemeManager.textColor
+      color: root.textColor
       horizontalAlignment: Text.AlignHCenter
       Layout.alignment: Qt.AlignHCenter
     }
@@ -50,15 +59,15 @@ Item {
     Rectangle {
       Layout.fillWidth: true
       height: 56
-      radius: ThemeManager.cornerRadius
-      color: ThemeManager.surfaceColor
-      border.color: ThemeManager.borderColor
+      radius: root.cornerRadius
+      color: root.surfaceColor
+      border.color: root.borderColor
       border.width: 1
 
       RowLayout {
         anchors.fill: parent
-        anchors.margins: ThemeManager.padding
-        spacing: ThemeManager.spacing
+        anchors.margins: root.paddingSize
+        spacing: root.spacingSize
 
         TextField {
           id: numberField
@@ -78,8 +87,8 @@ Item {
 
     GridLayout {
       columns: 3
-      columnSpacing: ThemeManager.spacing
-      rowSpacing: ThemeManager.spacing
+      columnSpacing: root.spacingSize
+      rowSpacing: root.spacingSize
       Layout.fillWidth: true
 
       function key(label) {
@@ -100,7 +109,7 @@ Item {
 
     RowLayout {
       Layout.fillWidth: true
-      spacing: ThemeManager.spacing
+      spacing: root.spacingSize
       Button {
         text: "Call"
         Accessible.name: "Call"
