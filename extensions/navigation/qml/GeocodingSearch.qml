@@ -20,7 +20,9 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
+import CrankshaftReborn.UI 1.0
 
+pragma ComponentBehavior: Bound
 /**
  * Geocoding search component using Nominatim/OpenStreetMap
  */
@@ -84,13 +86,13 @@ Item {
                         
                         onAccepted: {
                             if (text.trim().length > 0) {
-                                performSearch()
+                                root.performSearch()
                             }
                         }
                         
                         Keys.onReturnPressed: {
                             if (text.trim().length > 0) {
-                                performSearch()
+                                root.performSearch()
                             }
                         }
                     }
@@ -129,7 +131,7 @@ Item {
                     opacity: parent.pressed ? 0.8 : 1.0
                 }
 
-                onClicked: performSearch()
+                onClicked: root.performSearch()
             }
         }
         
@@ -215,14 +217,14 @@ Item {
                 visible: !root.isSearching && root.searchResults.length === 0
                 
                 Text {
-                    text: searchQuery.length > 0 ? "🔍" : "📍"
+                    text: root.searchQuery.length > 0 ? "🔍" : "📍"
                     font.pixelSize: 48
                     anchors.horizontalCenter: parent.horizontalCenter
                     opacity: 0.3
                 }
                 
                 Text {
-                    text: searchQuery.length > 0 ? "No results found" : "Enter an address or place to search"
+                    text: root.searchQuery.length > 0 ? "No results found" : "Enter an address or place to search"
                     font.pixelSize: 16
                     color: root.textSecondary
                     anchors.horizontalCenter: parent.horizontalCenter
