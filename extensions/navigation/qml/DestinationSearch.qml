@@ -20,7 +20,9 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
+import CrankshaftReborn.UI 1.0
 
+pragma ComponentBehavior: Bound
 /**
  * Destination search component with geocoding, direct coordinates, and favourites
  */
@@ -70,8 +72,8 @@ Item {
                 // Search tab
                 StyledButton {
                     id: searchTab
-                    Layout.preferredWidth: (parent.width - 12) / 3
-                    Layout.preferredHeight: parent.height
+                    Layout.preferredWidth: (root.width - 12) / 3
+                    Layout.preferredHeight: root.height
                     text: "🔍 Search"
                     Accessible.name: "Search tab"
                     font.pixelSize: 14
@@ -95,8 +97,8 @@ Item {
                 // Favourites tab
                 StyledButton {
                     id: favouritesTab
-                    Layout.preferredWidth: (parent.width - 12) / 3
-                    Layout.preferredHeight: parent.height
+                    Layout.preferredWidth: (root.width - 12) / 3
+                    Layout.preferredHeight: root.height
                     text: "⭐ Favourites"
                     Accessible.name: "Favourites tab"
                     font.pixelSize: 14
@@ -119,8 +121,8 @@ Item {
                 // Advanced tab
                 StyledButton {
                     id: advancedTab
-                    Layout.preferredWidth: (parent.width - 12) / 3
-                    Layout.preferredHeight: parent.height
+                    Layout.preferredWidth: (root.width - 12) / 3
+                    Layout.preferredHeight: root.height
                     text: "⚙️ Advanced"
                     Accessible.name: "Advanced tab"
                     font.pixelSize: 14
@@ -215,8 +217,8 @@ Item {
     }
     
     function saveFavourites() {
-        if (NavigationBridge) {
-            NavigationBridge.saveFavourites(root.favourites)
+        if (root.NavigationBridge) {
+            root.NavigationBridge.saveFavourites(root.favourites)
         }
     }
     
