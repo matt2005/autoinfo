@@ -64,7 +64,7 @@ Item {
     property real distanceToNextTurn: 0
     // Navigation state provided by the host; provide conservative stubs for linting
     property bool isNavigating: false
-    property var NavigationBridge: null
+    property var navigationBridge: null
     
     // Settings (now managed via ConfigManager)
     property bool showSpeedLimit: true
@@ -305,7 +305,7 @@ Item {
                             console.log("Destination selected:", address, lat, lng);
                             
                             // Send navigation command
-                            if (root.NavigationBridge) {
+                            if (root.navigationBridge) {
                                 // This would trigger the backend navigation
                                 console.log("Triggering navigation to:", lat, lng);
                             }
@@ -324,9 +324,9 @@ Item {
             }
         }
         
-        // Connect NavigationBridge search results
+        // Connect navigation bridge search results (runtime-provided)
         Connections {
-            target: NavigationBridge
+            target: root.navigationBridge
             function onSearchResultsReady(results) {
                 if (destinationSearchLoader.item) {
                     destinationSearchLoader.item.setSearchResults(results)
@@ -527,8 +527,8 @@ Item {
 
                 onClicked: {
                     // Open the Settings tab and navigate to navigation config page
-                    if (root.NavigationBridge) {
-                        root.NavigationBridge.requestOpenSettings()
+                    if (root.navigationBridge) {
+                        root.navigationBridge.requestOpenSettings()
                     }
                 }
             }

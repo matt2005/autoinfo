@@ -87,8 +87,8 @@ Item {
                     }
 
                     onClicked: {
-                        root.showAdvanced = false
-                        searchTab.active = true
+                        // NavigationBridge is provided at runtime by the host; provide a stub for linting
+                        property var navigationBridge: null
                         favouritesTab.active = false
                     }
 
@@ -210,8 +210,8 @@ Item {
     }
     
     function loadFavourites() {
-        if (root.NavigationBridge) {
-            var loaded = root.NavigationBridge.loadFavourites();
+        if (root.navigationBridge) {
+            var loaded = root.navigationBridge.loadFavourites();
             if (loaded && loaded.length > 0) {
                 root.favourites = loaded;
             }
@@ -219,8 +219,8 @@ Item {
     }
     
     function saveFavourites() {
-        if (root.NavigationBridge) {
-            root.NavigationBridge.saveFavourites(root.favourites)
+        if (root.navigationBridge) {
+            root.navigationBridge.saveFavourites(root.favourites)
         }
     }
     
