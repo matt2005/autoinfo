@@ -39,14 +39,14 @@ Item {
     property bool callActive: false
 
     Connections {
-        target: BluetoothBridge
-        function onDevicesUpdated(devList, scanFlag) { devices = devList; scanning = scanFlag }
-        function onScanStarted(timeoutMs) { scanning = true }
+        target: root.BluetoothBridge
+        function onDevicesUpdated(devList, scanFlag) { root.devices = devList; root.scanning = scanFlag }
+        function onScanStarted(timeoutMs) { root.scanning = true }
         function onPaired(address, paired) {}
         function onConnected(address, connected) {}
         function onDisconnected(address) {}
         function onCallStatus(has, number, contact, incoming, active) {
-            hasActiveCall = has; callNumber = number; callContact = contact; callIncoming = incoming; callActive = active;
+            root.hasActiveCall = has; root.callNumber = number; root.callContact = contact; root.callIncoming = incoming; root.callActive = active;
         }
     }
 
@@ -62,20 +62,20 @@ Item {
             ComboBox {
                 id: adapterCombo
                 Layout.preferredWidth: 200
-                model: adapters
-                currentIndex: Math.max(0, adapters.indexOf(currentAdapter))
-                onActivated: root.currentAdapter = adapters[currentIndex]
+                model: root.adapters
+                currentIndex: Math.max(0, root.adapters.indexOf(root.currentAdapter))
+                onActivated: root.currentAdapter = root.adapters[currentIndex]
             }
             SpinBox {
                 id: timeoutBox
-                from: 2; to: 60; value: discoveryTimeoutMs/1000
+                from: 2; to: 60; value: root.discoveryTimeoutMs/1000
                 suffix: " s"
-                onValueChanged: discoveryTimeoutMs = value * 1000
+                onValueChanged: root.discoveryTimeoutMs = value * 1000
             }
             Button {
-                text: scanning ? "Scanning..." : "Scan"
-                enabled: !scanning
-                onClicked: BluetoothBridge.scan(discoveryTimeoutMs)
+                text: root.scanning ? "Scanning..." : "Scan"
+                enabled: !root.scanning
+                onClicked: root.BluetoothBridge.scan(root.discoveryTimeoutMs)
             }
         }
 
@@ -85,11 +85,11 @@ Item {
             ColumnLayout {
                 anchors.fill: parent
                 spacing: 6
-                ListView {
+                    ListView {
                     id: deviceList
                     Layout.fillWidth: true
                     Layout.fillHeight: true
-                    model: devices
+                    model: root.devices
                     clip: true
                     delegate: Rectangle {
                         id: deviceRow
@@ -116,14 +116,14 @@ Item {
                             }
                         }
                     }
-                    property string devicesPlaceholder: devices.length === 0 ? (scanning ? "Scanning for devices..." : "No devices found") : ""
+                    property string devicesPlaceholder: root.devices.length === 0 ? (root.scanning ? "Scanning for devices..." : "No devices found") : ""
                 }
             }
         }
 
         Frame {
             Layout.fillWidth: true
-            visible: hasActiveCall || callIncoming
+            visible: root.hasActiveCall || root.callIncoming
             RowLayout {
                 anchors.fill: parent
                 anchors.margins: 8
