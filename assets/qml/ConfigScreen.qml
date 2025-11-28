@@ -295,6 +295,7 @@ Rectangle {
                 }
             }
         }
+        }
         
         // Bottom action bar
         RowLayout {

@@ -58,7 +58,7 @@ Item {
         RowLayout {
             anchors.left: parent.left
             anchors.right: parent.right
-            height: 50
+            Layout.preferredHeight: 50
             spacing: root.spacingSize
             
             Rectangle {
@@ -141,7 +141,7 @@ Item {
             Rectangle {
             anchors.left: parent.left
             anchors.right: parent.right
-            height: parent.height - 58
+            Layout.preferredHeight: parent.height - 58
             color: root.surfaceVariant
             radius: 8
             

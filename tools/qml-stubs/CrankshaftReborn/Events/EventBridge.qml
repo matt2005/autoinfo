@@ -1,3 +1,8 @@
+import QtQuick 2.12
+
+QtObject {
+  function publish(topic, payload) { }
+}
 /*
  * Project: Crankshaft (lint stub)
  * Minimal EventBridge stub for qmllint: exposes a `publish` method used by QML.

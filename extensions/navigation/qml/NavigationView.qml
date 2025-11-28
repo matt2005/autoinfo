@@ -815,5 +815,7 @@ Item {
     Component.onCompleted: {
         console.log("Navigation view loaded");
     }
+
 }
 }
+
