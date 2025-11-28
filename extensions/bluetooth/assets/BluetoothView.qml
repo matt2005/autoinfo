@@ -53,7 +53,7 @@ Item {
     ColumnLayout {
         anchors.fill: parent
         spacing: 12
-        padding: 12
+        anchors.margins: 12
 
         RowLayout {
             Layout.fillWidth: true
@@ -74,6 +74,7 @@ Item {
             }
             Button {
                 text: root.scanning ? "Scanning..." : "Scan"
+                Accessible.name: "Scan Bluetooth"
                 enabled: !root.scanning
                 onClicked: root.BluetoothBridge.scan(root.discoveryTimeoutMs)
             }
@@ -101,17 +102,17 @@ Item {
                             anchors.fill: parent
                             anchors.margins: 8
                             spacing: 12
-                            Label { text: deviceRow.d.name || deviceRow.d.address; Layout.fillWidth: true }
-                            Label { text: deviceRow.d.paired ? "Paired" : ""; color: deviceRow.d.paired ? "#2b8" : "#888" }
-                            Label { text: deviceRow.d.connected ? "Connected" : ""; color: deviceRow.d.connected ? "#28a" : "#888" }
-                            Label { text: deviceRow.d.rssi !== undefined ? deviceRow.d.rssi + " dBm" : "" }
+                            Label { text: d.name || d.address; Layout.fillWidth: true }
+                            Label { text: d.paired ? "Paired" : ""; color: d.paired ? "#2b8" : "#888" }
+                            Label { text: d.connected ? "Connected" : ""; color: d.connected ? "#28a" : "#888" }
+                            Label { text: d.rssi !== undefined ? d.rssi + " dBm" : "" }
                             Button {
-                                text: deviceRow.d.paired ? (deviceRow.d.connected ? "Disconnect" : "Connect") : "Pair"
-                                Accessible.name: deviceRow.d.paired ? (deviceRow.d.connected ? "Disconnect" : "Connect") : "Pair"
+                                text: d.paired ? (d.connected ? "Disconnect" : "Connect") : "Pair"
+                                Accessible.name: d.paired ? (d.connected ? "Disconnect" : "Connect") : "Pair"
                                 onClicked: {
-                                    if (!deviceRow.d.paired) root.BluetoothBridge.pair(deviceRow.d.address);
-                                    else if (!deviceRow.d.connected) root.BluetoothBridge.connectDevice(deviceRow.d.address);
-                                    else root.BluetoothBridge.disconnectDevice(deviceRow.d.address);
+                                    if (!d.paired) root.BluetoothBridge.pair(d.address);
+                                    else if (!d.connected) root.BluetoothBridge.connectDevice(d.address);
+                                    else root.BluetoothBridge.disconnectDevice(d.address);
                                 }
                             }
                         }
