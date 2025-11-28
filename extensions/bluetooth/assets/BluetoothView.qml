@@ -92,29 +92,31 @@ Item {
                     model: devices
                     clip: true
                     delegate: Rectangle {
+                        id: deviceRow
                         height: 56
                         width: parent.width
                         color: index % 2 ? Qt.rgba(0,0,0,0.04) : Qt.rgba(0,0,0,0.08)
-                        property var d: modelData
+                        property var d: modelData;
                         RowLayout {
                             anchors.fill: parent
                             anchors.margins: 8
                             spacing: 12
-                            Label { text: d.name || d.address; Layout.fillWidth: true }
-                            Label { text: d.paired ? "Paired" : ""; color: d.paired ? "#2b8" : "#888" }
-                            Label { text: d.connected ? "Connected" : ""; color: d.connected ? "#28a" : "#888" }
-                            Label { text: d.rssi !== undefined ? d.rssi + " dBm" : "" }
+                            Label { text: deviceRow.d.name || deviceRow.d.address; Layout.fillWidth: true }
+                            Label { text: deviceRow.d.paired ? "Paired" : ""; color: deviceRow.d.paired ? "#2b8" : "#888" }
+                            Label { text: deviceRow.d.connected ? "Connected" : ""; color: deviceRow.d.connected ? "#28a" : "#888" }
+                            Label { text: deviceRow.d.rssi !== undefined ? deviceRow.d.rssi + " dBm" : "" }
                             Button {
-                                text: d.paired ? (d.connected ? "Disconnect" : "Connect") : "Pair"
+                                text: deviceRow.d.paired ? (deviceRow.d.connected ? "Disconnect" : "Connect") : "Pair"
+                                Accessible.name: deviceRow.d.paired ? (deviceRow.d.connected ? "Disconnect" : "Connect") : "Pair"
                                 onClicked: {
-                                    if (!d.paired) BluetoothBridge.pair(d.address)
-                                    else if (!d.connected) BluetoothBridge.connectDevice(d.address)
-                                    else BluetoothBridge.disconnectDevice(d.address)
+                                    if (!deviceRow.d.paired) root.BluetoothBridge.pair(deviceRow.d.address);
+                                    else if (!deviceRow.d.connected) root.BluetoothBridge.connectDevice(deviceRow.d.address);
+                                    else root.BluetoothBridge.disconnectDevice(deviceRow.d.address);
                                 }
                             }
                         }
                     }
-                    placeholderText: devices.length === 0 ? (scanning ? "Scanning for devices..." : "No devices found") : ""
+                    property string devicesPlaceholder: devices.length === 0 ? (scanning ? "Scanning for devices..." : "No devices found") : ""
                 }
             }
         }
@@ -129,9 +131,9 @@ Item {
                 Label { text: root.callIncoming ? "Incoming call" : (root.callActive ? "Active call" : "Call") }
                                  Label { text: root.callContact !== "" ? root.callContact : root.callNumber }
                 Item { Layout.fillWidth: true }
-                Button { text: "Answer"; visible: root.callIncoming; onClicked: root.BluetoothBridge.answerCall() }
-                Button { text: "Reject"; visible: root.callIncoming; onClicked: root.BluetoothBridge.rejectCall() }
-                Button { text: "End"; visible: root.callActive; onClicked: root.BluetoothBridge.endCall() }
+                Button { text: "Answer"; Accessible.name: "Answer call"; visible: root.callIncoming; onClicked: root.BluetoothBridge.answerCall() }
+                Button { text: "Reject"; Accessible.name: "Reject call"; visible: root.callIncoming; onClicked: root.BluetoothBridge.rejectCall() }
+                Button { text: "End"; Accessible.name: "End call"; visible: root.callActive; onClicked: root.BluetoothBridge.endCall() }
             }
         }
 
@@ -142,7 +144,7 @@ Item {
                 anchors.margins: 8
                 spacing: 8
                 TextField { id: dialNumber; placeholderText: "Dial number"; Layout.preferredWidth: 200 }
-                Button { text: "Dial"; onClicked: if (dialNumber.text.length>0) root.BluetoothBridge.dial(dialNumber.text) }
+                Button { text: "Dial"; Accessible.name: "Dial number"; onClicked: if (dialNumber.text.length>0) root.BluetoothBridge.dial(dialNumber.text) }
             }
         }
     }
