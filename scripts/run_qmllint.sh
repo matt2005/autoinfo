@@ -12,7 +12,17 @@ fi
 EXIT_CODE=0
 
 echo "Searching for QML files..."
-FILES=$(find assets extensions -type f -name '*.qml' | sort)
+# Ensure qmllint can resolve our local module (use absolute path)
+REPO_ROOT="$(pwd)"
+IMPORT_PATHS="${REPO_ROOT}/assets/qml"
+if [ -d "${REPO_ROOT}/build/assets/qml" ]; then
+  IMPORT_PATHS="${IMPORT_PATHS}:${REPO_ROOT}/build/assets/qml"
+fi
+export QML2_IMPORT_PATH="${IMPORT_PATHS}:${QML2_IMPORT_PATH:-}"
+echo "Using QML2_IMPORT_PATH=${QML2_IMPORT_PATH}"
+# Find QML files in the source folders, explicitly excluding anything under build/
+# (some workflows or tools may copy generated QML into build/ — we don't lint those.)
+FILES=$(find assets extensions -type f -name '*.qml' -not -path '*/build/*' | sort)
 if [ -z "${FILES}" ]; then
   echo "No QML files found."
   exit 0
