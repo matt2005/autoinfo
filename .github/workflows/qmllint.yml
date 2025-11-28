@@ -3,7 +3,7 @@ name: QML Lint
 permissions:
   contents: read
   pull-requests: write
-  
+
 on:
   push: {}
   pull_request: {}
@@ -19,10 +19,7 @@ jobs:
       - name: Install qmllint (qttools)
         run: |
           sudo apt-get update
-          # Try Qt6 tools first, fall back to Qt5 tools when Qt6 package not available
-          if ! sudo apt-get install -y qttools6-dev-tools; then
-            sudo apt-get install -y qttools5-dev-tools
-          fi
+          sudo apt-get install -y qt6-tools-dev-tools
 
       - name: Run qmllint script
         run: |
