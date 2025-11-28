@@ -18,7 +18,7 @@ Item {
         // Subscribe to events
         if (typeof WirelessBridge !== 'undefined') {
             root.WirelessBridge.networksUpdated.connect(onNetworksUpdated)
-            WirelessBridge.connectionStateChanged.connect(onConnectionStateChanged)
+            root.WirelessBridge.connectionStateChanged.connect(onConnectionStateChanged)
         }
         
         // Request initial scan
@@ -27,31 +27,31 @@ Item {
     
     function requestScan() {
         if (typeof WirelessBridge !== 'undefined') {
-                                                                                                root.WirelessBridge.scan()
+            root.WirelessBridge.scan()
         }
     }
     
     function connectToNetwork(ssid, password) {
         if (typeof WirelessBridge !== 'undefined') {
-                                                                                                root.WirelessBridge.connect(ssid, password)
+            root.WirelessBridge.connect(ssid, password)
         }
     }
     
     function disconnect() {
         if (typeof WirelessBridge !== 'undefined') {
-                                                                                                root.WirelessBridge.disconnect()
+            root.WirelessBridge.disconnect()
         }
     }
     
     function configureAccessPoint(ssid, password) {
         if (typeof WirelessBridge !== 'undefined') {
-                                                                                                root.WirelessBridge.configureAP(ssid, password)
+            root.WirelessBridge.configureAP(ssid, password)
         }
     }
     
     function forgetNetwork(ssid) {
         if (typeof WirelessBridge !== 'undefined') {
-                                                                                                root.WirelessBridge.forget(ssid)
+            root.WirelessBridge.forget(ssid)
         }
     }
     
@@ -147,7 +147,7 @@ Item {
                 delegate: Rectangle {
                     width: networkListView.width
                     height: 80
-                    color: modelData.isConnected ? "#E3F2FD" : "#FFFFFF"
+                    color: net.isConnected ? "#E3F2FD" : "#FFFFFF"
                     border.color: "#CCCCCC"
                     border.width: 1
                     radius: 8
@@ -160,13 +160,13 @@ Item {
                         // Signal strength indicator
                         Label {
                             text: {
-                                if (modelData.signalStrength > 75) return "📶"
-                                if (modelData.signalStrength > 50) return "📶"
-                                if (modelData.signalStrength > 25) return "📶"
+                                if (net.signalStrength > 75) return "📶"
+                                if (net.signalStrength > 50) return "📶"
+                                if (net.signalStrength > 25) return "📶"
                                 return "📶"
                             }
                             font.pixelSize: 24
-                            opacity: modelData.signalStrength / 100
+                            opacity: net.signalStrength / 100
                         }
                         
                         // Network info
@@ -175,28 +175,28 @@ Item {
                             spacing: 4
                             
                             Label {
-                                text: modelData.ssid
+                                text: net.ssid
                                 font.pixelSize: 18
-                                font.bold: modelData.isConnected
+                                font.bold: net.isConnected
                             }
                             
                             RowLayout {
                                 spacing: 10
                                 
                                 Label {
-                                    text: modelData.securityType
+                                    text: net.securityType
                                     font.pixelSize: 12
                                     color: "#666666"
                                 }
                                 
                                 Label {
-                                    text: modelData.signalStrength + "%"
+                                    text: net.signalStrength + "%"
                                     font.pixelSize: 12
                                     color: "#666666"
                                 }
                                 
                                 Label {
-                                    text: (modelData.frequency / 1000).toFixed(1) + " GHz"
+                                    text: (net.frequency / 1000).toFixed(1) + " GHz"
                                     font.pixelSize: 12
                                     color: "#666666"
                                 }
@@ -208,27 +208,30 @@ Item {
                             spacing: 8
                             
                             Button {
-                                text: modelData.isConnected ? "Connected" : "Connect"
-                                Accessible.name: modelData.isConnected ? ("Connected " + modelData.ssid) : ("Connect " + modelData.ssid)
-                                enabled: !modelData.isConnected
+                                text: net.isConnected ? "Connected" : "Connect"
+                                Accessible.name: net.isConnected ? ("Connected " + net.ssid) : ("Connect " + net.ssid)
+                                enabled: !net.isConnected
                                 onClicked: {
-                                    if (modelData.isSecure) {
-                                        root.selectedSsid = modelData.ssid
+                                    if (net.isSecure) {
+                                        root.selectedSsid = net.ssid
                                         root.showPasswordDialog = true
                                     } else {
-                                        root.connectToNetwork(modelData.ssid, "")
+                                        root.connectToNetwork(net.ssid, "")
                                     }
                                 }
                             }
                             
                             Button {
                                 text: "Forget"
-                                Accessible.name: "Forget " + modelData.ssid
-                                visible: modelData.isConnected
-                                onClicked: root.forgetNetwork(modelData.ssid)
+                                Accessible.name: "Forget " + net.ssid
+                                visible: net.isConnected
+                                onClicked: root.forgetNetwork(net.ssid)
                             }
                         }
                     }
+                    
+                    // local alias to avoid unqualified modelData access warnings
+                    property var net: modelData;
                 }
             }
         }
