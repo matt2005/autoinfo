@@ -162,14 +162,15 @@ Item {
                     radius: 6
                     border.color: root.outlineColor
                     border.width: 1
+                    property var res: modelData
                     
                     MouseArea {
                         anchors.fill: parent
                         onClicked: {
                             root.locationSelected(
-                                modelData.latitude,
-                                modelData.longitude,
-                                modelData.display_name
+                                res.latitude,
+                                res.longitude,
+                                res.display_name
                             )
                         }
                     }
@@ -184,7 +185,7 @@ Item {
                             spacing: 4
                             
                             Text {
-                                text: modelData.name || "Unknown"
+                                text: res.name || "Unknown"
                                 font.pixelSize: 16
                                 font.bold: true
                                 color: root.textColor
@@ -193,7 +194,7 @@ Item {
                             }
                             
                             Text {
-                                text: modelData.display_name || ""
+                                text: res.display_name || ""
                                 font.pixelSize: 12
                                 color: root.textSecondary
                                 elide: Text.ElideRight
