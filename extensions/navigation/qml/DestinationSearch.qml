@@ -39,6 +39,8 @@ Item {
     property var searchResults: []
     property var favourites: []
     property bool isSearching: false
+    // NavigationBridge is provided at runtime by the host; provide a stub for linting
+    property var NavigationBridge: null
     
     // Theme properties
     readonly property color surfaceColor: ThemeManager.surfaceColor

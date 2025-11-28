@@ -37,6 +37,8 @@ Item {
     property var searchResults: []
     property bool isSearching: false
     property string searchQuery: ""
+    // NavigationBridge provided by host at runtime; add stub for linting
+    property var NavigationBridge: null
     
     // Theme properties
     readonly property color surfaceColor: ThemeManager.surfaceColor
@@ -261,8 +263,8 @@ Item {
         root.searchRequested(searchQuery)
         
         // Call backend to perform search
-        if (NavigationBridge) {
-            NavigationBridge.searchLocation(searchQuery)
+        if (root.NavigationBridge) {
+            root.NavigationBridge.searchLocation(searchQuery)
         }
     }
 }
