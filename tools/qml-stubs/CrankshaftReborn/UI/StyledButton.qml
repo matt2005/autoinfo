@@ -1,3 +1,9 @@
+import QtQuick 2.15
+import QtQuick.Controls 2.15
+
+Button {
+    // Minimal stub for linting. Behaviour provided at runtime.
+}
 import QtQuick 2.12
 import QtQuick.Controls 2.12
 

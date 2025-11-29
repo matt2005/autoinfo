@@ -1,4 +1,6 @@
-StyledButton 1.0 StyledButton.qml
+StyledButton.qml
+ThemeManager.qml
+IconRegistry.qmlStyledButton 1.0 StyledButton.qml
 Theme 1.0 Theme.qml
 ThemeManager 1.0 ThemeManager.qml
 DelayButton 1.0 DelayButton.qml
