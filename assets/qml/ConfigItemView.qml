@@ -105,7 +105,7 @@ Item {
     
     RowLayout {
         id: itemLayout
-        width: parent.width
+        Layout.fillWidth: true
         spacing: 15
         
         // Label and description
@@ -118,9 +118,9 @@ Item {
                 spacing: 5
                 
                 Text {
-                    text: itemData ? itemData.label : ""
+                    text: root.itemData ? root.itemData.label : ""
                     font.pixelSize: 13
-                    font.bold: itemData && itemData.required
+                    font.bold: root.itemData && root.itemData.required
                     color: ThemeManager.textColor
                 }
                 
@@ -129,7 +129,7 @@ Item {
                     font.pixelSize: 13
                     font.bold: true
                     color: "#F44336"
-                    visible: itemData && itemData.required
+                    visible: root.itemData && root.itemData.required
                 }
                 
                 Text {
@@ -137,18 +137,18 @@ Item {
                     font.pixelSize: 11
                     // Use textSecondaryColor (correct property name) with fallback
                     color: ThemeManager.textSecondaryColor || ThemeManager.textColor
-                    visible: itemData && itemData.readOnly
+                    visible: root.itemData && root.itemData.readOnly
                 }
             }
             
             Text {
-                text: itemData ? itemData.description : ""
+                text: root.itemData ? root.itemData.description : ""
                 font.pixelSize: 11
                 // Use textSecondaryColor (correct property name) with fallback
                 color: ThemeManager.textSecondaryColor || ThemeManager.textColor
                 wrapMode: Text.WordWrap
                 Layout.fillWidth: true
-                visible: itemData && itemData.description !== ""
+                visible: root.itemData && root.itemData.description !== ""
             }
         }
         
@@ -161,8 +161,8 @@ Item {
             Switch {
                 id: booleanSwitch
                 anchors.verticalCenter: parent.verticalCenter
-                visible: itemData && itemData.type === "boolean"
-                enabled: itemData && !itemData.readOnly
+                visible: root.itemData && root.itemData.type === "boolean"
+                enabled: root.itemData && !root.itemData.readOnly
                 onToggled: saveValue(checked)
             }
             
@@ -170,9 +170,9 @@ Item {
             SpinBox {
                 id: integerSpinBox
                 anchors.verticalCenter: parent.verticalCenter
-                width: 150
-                visible: itemData && itemData.type === "integer"
-                enabled: itemData && !itemData.readOnly
+                Layout.preferredWidth: 150
+                visible: root.itemData && root.itemData.type === "integer"
+                enabled: root.itemData && !root.itemData.readOnly
                 from: itemData ? ((itemData.properties && itemData.properties.minValue !== undefined) ? itemData.properties.minValue : -2147483648) : -2147483648
                 to: itemData ? ((itemData.properties && itemData.properties.maxValue !== undefined) ? itemData.properties.maxValue : 2147483647) : 2147483647
                 stepSize: itemData ? ((itemData.properties && itemData.properties.step !== undefined) ? itemData.properties.step : 1) : 1
@@ -202,9 +202,9 @@ Item {
             SpinBox {
                 id: doubleSpinBox
                 anchors.verticalCenter: parent.verticalCenter
-                width: 150
-                visible: itemData && itemData.type === "double"
-                enabled: itemData && !itemData.readOnly
+                Layout.preferredWidth: 150
+                visible: root.itemData && root.itemData.type === "double"
+                enabled: root.itemData && !root.itemData.readOnly
                 from: itemData ? ((itemData.properties && itemData.properties.minValue !== undefined) ? itemData.properties.minValue * 100 : -214748364) : -214748364
                 to: itemData ? ((itemData.properties && itemData.properties.maxValue !== undefined) ? itemData.properties.maxValue * 100 : 214748364) : 214748364
                 stepSize: itemData ? ((itemData.properties && itemData.properties.step !== undefined) ? itemData.properties.step * 100 : 10) : 10
@@ -252,10 +252,10 @@ Item {
             TextField {
                 id: stringTextField
                 anchors.verticalCenter: parent.verticalCenter
-                width: parent.width
-                visible: itemData && itemData.type === "string"
-                enabled: itemData && !itemData.readOnly
-                placeholderText: (itemData && itemData.properties && itemData.properties.placeholder) ? itemData.properties.placeholder : ""
+                Layout.fillWidth: true
+                visible: root.itemData && root.itemData.type === "string"
+                enabled: root.itemData && !root.itemData.readOnly
+                placeholderText: (root.itemData && root.itemData.properties && root.itemData.properties.placeholder) ? root.itemData.properties.placeholder : ""
                 font.pixelSize: 13
                 color: ThemeManager.textColor
                 echoMode: itemData && itemData.isSecret ? TextInput.Password : TextInput.Normal
@@ -274,10 +274,10 @@ Item {
             ComboBox {
                 id: selectionComboBox
                 anchors.verticalCenter: parent.verticalCenter
-                width: parent.width
-                visible: itemData && itemData.type === "selection"
-                enabled: itemData && !itemData.readOnly
-                model: itemData && itemData.properties ? itemData.properties.options : []
+                Layout.fillWidth: true
+                visible: root.itemData && root.itemData.type === "selection"
+                enabled: root.itemData && !root.itemData.readOnly
+                model: root.itemData && root.itemData.properties ? root.itemData.properties.options : []
                 font.pixelSize: 13
                 
                 onActivated: saveValue(currentText)
@@ -304,8 +304,8 @@ Item {
             // MultiSelection (type 5)
             ColumnLayout {
                 anchors.verticalCenter: parent.verticalCenter
-                width: parent.width
-                visible: itemData && itemData.type === "multiselection"
+                Layout.fillWidth: true
+                visible: root.itemData && root.itemData.type === "multiselection"
                 spacing: 5
                 
                 Repeater {
@@ -314,7 +314,7 @@ Item {
                     delegate: CheckBox {
                         text: modelData.label
                         checked: modelData.checked
-                        enabled: itemData && !itemData.readOnly
+                        enabled: root.itemData && !root.itemData.readOnly
                         font.pixelSize: 12
                         
                         onToggled: {
@@ -347,8 +347,8 @@ Item {
                 
                 Rectangle {
                     id: colorPreview
-                    width: 36
-                    height: 36
+                    Layout.preferredWidth: 36
+                    Layout.preferredHeight: 36
                     color: colorButton.selectedColor
                     border.color: ThemeManager.borderColor
                     border.width: 1
@@ -390,10 +390,10 @@ Item {
             }
             
             // File/Directory (type 7/8)
-            RowLayout {
+                RowLayout {
                 anchors.verticalCenter: parent.verticalCenter
-                width: parent.width
-                visible: itemData && (itemData.type === "file" || itemData.type === "directory")
+                Layout.fillWidth: true
+                visible: root.itemData && (root.itemData.type === "file" || root.itemData.type === "directory")
                 spacing: 5
                 
                 TextField {
@@ -416,7 +416,8 @@ Item {
                 
                 Button {
                     text: "Browse"
-                    enabled: itemData && !itemData.readOnly
+                    Accessible.name: "Browse file/directory"
+                    enabled: root.itemData && !root.itemData.readOnly
                     
                     onClicked: {
                         if (itemData.type === "file") {
@@ -446,7 +447,7 @@ Item {
                     title: itemData && itemData.type === "file" ? "Select File" : "Select Directory"
                     currentFolder: fileTextField.text || ""
                     onAccepted: {
-                        var path = selectedFile.toString().replace("file:///", "")
+                        var path = selectedFile.toString().replace("file:///", "");
                         fileTextField.text = path
                         saveValue(path)
                     }
