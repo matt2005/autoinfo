@@ -50,14 +50,14 @@ Item {
 
     // Wiring to BluetoothBridge singleton
     Connections {
-        target: BluetoothBridge
-        function onDevicesUpdated(devList, scanFlag) { devices = devList; scanning = scanFlag }
-        function onScanStarted(timeoutMs) { scanning = true }
+        target: root.BluetoothBridge
+        function onDevicesUpdated(devList, scanFlag) { root.devices = devList; root.scanning = scanFlag }
+        function onScanStarted(timeoutMs) { root.scanning = true }
         function onPaired(address, paired) { /* feedback hook */ }
         function onConnected(address, connected) { /* highlight hook */ }
         function onDisconnected(address) { /* disconnect hook */ }
         function onCallStatus(has, number, contact, incoming, active) {
-            hasActiveCall = has; callNumber = number; callContact = contact; callIncoming = incoming; callActive = active;
+            root.hasActiveCall = has; root.callNumber = number; root.callContact = contact; root.callIncoming = incoming; root.callActive = active;
         }
     }
 
@@ -75,23 +75,24 @@ Item {
             ComboBox {
                 id: adapterCombo
                 Layout.preferredWidth: 200
-                model: adapters
-                currentIndex: Math.max(0, adapters.indexOf(currentAdapter))
+                model: root.adapters
+                currentIndex: Math.max(0, root.adapters.indexOf(root.currentAdapter))
                 onActivated: {
-                    root.currentAdapter = adapters[currentIndex]
+                    root.currentAdapter = root.adapters[currentIndex]
                     // Adapter selection currently not implemented in bridge
                 }
             }
             SpinBox {
                 id: timeoutBox
-                from: 2; to: 60; value: discoveryTimeoutMs/1000
+                from: 2; to: 60; value: root.discoveryTimeoutMs/1000
                 suffix: " s"
-                onValueChanged: discoveryTimeoutMs = value * 1000
+                onValueChanged: root.discoveryTimeoutMs = value * 1000
             }
             Button {
-                text: scanning ? "Scanning..." : "Scan"
-                enabled: !scanning
-                onClicked: BluetoothBridge.scan(discoveryTimeoutMs)
+                text: root.scanning ? "Scanning..." : "Scan"
+                enabled: !root.scanning
+                Accessible.name: "Scan"
+                onClicked: root.BluetoothBridge.scan(root.discoveryTimeoutMs)
             }
         }
 
@@ -106,51 +107,52 @@ Item {
                     id: deviceList
                     Layout.fillWidth: true
                     Layout.fillHeight: true
-                    model: devices
+                    model: root.devices
                     clip: true
                     delegate: Rectangle {
                         id: rowRect
                         height: 56
-                        width: parent.width
+                        Layout.fillWidth: true
                         color: index % 2 ? Qt.rgba(0,0,0,0.04) : Qt.rgba(0,0,0,0.08)
-                        property var d: modelData
+                        property var d: modelData;
                         RowLayout {
                             anchors.fill: parent
                             anchors.margins: 8
                             spacing: 12
-                            Label { text: d.name || d.address; Layout.fillWidth: true }
-                            Label { text: d.paired ? "Paired" : ""; color: d.paired ? "#2b8" : "#888" }
-                            Label { text: d.connected ? "Connected" : ""; color: d.connected ? "#28a" : "#888" }
-                            Label { text: d.rssi !== undefined ? d.rssi + " dBm" : "" }
+                            Label { text: rowRect.d.name || rowRect.d.address; Layout.fillWidth: true }
+                            Label { text: rowRect.d.paired ? "Paired" : ""; color: rowRect.d.paired ? "#2b8" : "#888" }
+                            Label { text: rowRect.d.connected ? "Connected" : ""; color: rowRect.d.connected ? "#28a" : "#888" }
+                            Label { text: rowRect.d.rssi !== undefined ? rowRect.d.rssi + " dBm" : "" }
                             Button {
-                                text: d.paired ? (d.connected ? "Disconnect" : "Connect") : "Pair"
+                                text: rowRect.d.paired ? (rowRect.d.connected ? "Disconnect" : "Connect") : "Pair"
+                                Accessible.name: rowRect.d.paired ? (rowRect.d.connected ? "Disconnect device" : "Connect device") : "Pair device"
                                 onClicked: {
-                                    if (!d.paired) BluetoothBridge.pair(d.address)
-                                    else if (!d.connected) BluetoothBridge.connectDevice(d.address)
-                                    else BluetoothBridge.disconnectDevice(d.address)
+                                    if (!rowRect.d.paired) root.BluetoothBridge.pair(rowRect.d.address)
+                                    else if (!rowRect.d.connected) root.BluetoothBridge.connectDevice(rowRect.d.address)
+                                    else root.BluetoothBridge.disconnectDevice(rowRect.d.address)
                                 }
                             }
                         }
                     }
-                    placeholderText: devices.length === 0 ? (scanning ? "Scanning for devices..." : "No devices found") : ""
+                    placeholderText: root.devices.length === 0 ? (root.scanning ? "Scanning for devices..." : "No devices found") : ""
                 }
             }
         }
 
         // Call controls
-        Frame {
+            Frame {
             Layout.fillWidth: true
-            visible: hasActiveCall || callIncoming
+            visible: root.hasActiveCall || root.callIncoming
             RowLayout {
                 anchors.fill: parent
                 anchors.margins: 8
                 spacing: 12
-                Label { text: callIncoming ? "Incoming call" : (callActive ? "Active call" : "Call") }
-                Label { text: callContact !== "" ? callContact : callNumber }
+                Label { text: root.callIncoming ? "Incoming call" : (root.callActive ? "Active call" : "Call") }
+                Label { text: root.callContact !== "" ? root.callContact : root.callNumber }
                 Item { Layout.fillWidth: true }
-                Button { text: "Answer"; visible: callIncoming; onClicked: BluetoothBridge.answerCall() }
-                Button { text: "Reject"; visible: callIncoming; onClicked: BluetoothBridge.rejectCall() }
-                Button { text: "End"; visible: callActive; onClicked: BluetoothBridge.endCall() }
+                Button { text: "Answer"; Accessible.name: "Answer call"; visible: root.callIncoming; onClicked: root.BluetoothBridge.answerCall() }
+                Button { text: "Reject"; Accessible.name: "Reject call"; visible: root.callIncoming; onClicked: root.BluetoothBridge.rejectCall() }
+                Button { text: "End"; Accessible.name: "End call"; visible: root.callActive; onClicked: root.BluetoothBridge.endCall() }
             }
         }
 
@@ -162,7 +164,7 @@ Item {
                 anchors.margins: 8
                 spacing: 8
                 TextField { id: dialNumber; placeholderText: "Dial number"; Layout.preferredWidth: 200 }
-                Button { text: "Dial"; onClicked: if (dialNumber.text.length>0) BluetoothBridge.dial(dialNumber.text) }
+                Button { text: "Dial"; Accessible.name: "Dial number"; onClicked: if (dialNumber.text.length>0) root.BluetoothBridge.dial(dialNumber.text) }
             }
         }
     }
