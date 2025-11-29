@@ -173,9 +173,9 @@ Item {
                 Layout.preferredWidth: 150
                 visible: root.itemData && root.itemData.type === "integer"
                 enabled: root.itemData && !root.itemData.readOnly
-                from: itemData ? ((itemData.properties && itemData.properties.minValue !== undefined) ? itemData.properties.minValue : -2147483648) : -2147483648
-                to: itemData ? ((itemData.properties && itemData.properties.maxValue !== undefined) ? itemData.properties.maxValue : 2147483647) : 2147483647
-                stepSize: itemData ? ((itemData.properties && itemData.properties.step !== undefined) ? itemData.properties.step : 1) : 1
+                from: root.itemData ? ((root.itemData.properties && root.itemData.properties.minValue !== undefined) ? root.itemData.properties.minValue : -2147483648) : -2147483648
+                to: root.itemData ? ((root.itemData.properties && root.itemData.properties.maxValue !== undefined) ? root.itemData.properties.maxValue : 2147483647) : 2147483647
+                stepSize: root.itemData ? ((root.itemData.properties && root.itemData.properties.step !== undefined) ? root.itemData.properties.step : 1) : 1
                 editable: true
                 onValueModified: saveValue(value)
                 
@@ -205,9 +205,9 @@ Item {
                 Layout.preferredWidth: 150
                 visible: root.itemData && root.itemData.type === "double"
                 enabled: root.itemData && !root.itemData.readOnly
-                from: itemData ? ((itemData.properties && itemData.properties.minValue !== undefined) ? itemData.properties.minValue * 100 : -214748364) : -214748364
-                to: itemData ? ((itemData.properties && itemData.properties.maxValue !== undefined) ? itemData.properties.maxValue * 100 : 214748364) : 214748364
-                stepSize: itemData ? ((itemData.properties && itemData.properties.step !== undefined) ? itemData.properties.step * 100 : 10) : 10
+                from: root.itemData ? ((root.itemData.properties && root.itemData.properties.minValue !== undefined) ? root.itemData.properties.minValue * 100 : -214748364) : -214748364
+                to: root.itemData ? ((root.itemData.properties && root.itemData.properties.maxValue !== undefined) ? root.itemData.properties.maxValue * 100 : 214748364) : 214748364
+                stepSize: root.itemData ? ((root.itemData.properties && root.itemData.properties.step !== undefined) ? root.itemData.properties.step * 100 : 10) : 10
                 editable: true
                 
                 property int decimals: 2
@@ -258,7 +258,7 @@ Item {
                 placeholderText: (root.itemData && root.itemData.properties && root.itemData.properties.placeholder) ? root.itemData.properties.placeholder : ""
                 font.pixelSize: 13
                 color: ThemeManager.textColor
-                echoMode: itemData && itemData.isSecret ? TextInput.Password : TextInput.Normal
+                echoMode: root.itemData && root.itemData.isSecret ? TextInput.Password : TextInput.Normal
                 
                 onEditingFinished: saveValue(text)
                 
