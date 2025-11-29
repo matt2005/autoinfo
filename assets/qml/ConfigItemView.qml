@@ -34,7 +34,7 @@ Item {
     property int complexityLevel: 0
     
     height: itemLayout.height
-    visible: itemData && (complexityIndex(itemData.complexity) <= complexityLevel)
+    visible: root.itemData && (complexityIndex(root.itemData.complexity) <= complexityLevel)
 
     function complexityIndex(c) {
         var v = (c || "basic").toString().toLowerCase()
@@ -45,15 +45,15 @@ Item {
     }
     
     function getConfigKey() {
-        return domain + "." + extension + "." + sectionKey + "." + (itemData ? itemData.key : "")
+        return domain + "." + extension + "." + sectionKey + "." + (root.itemData ? root.itemData.key : "")
     }
     
     function loadValue() {
-        if (!itemData) return
+        if (!root.itemData) return
         
         var value = ConfigManagerBridge.getValue(getConfigKey())
         
-        switch(itemData.type) {
+        switch(root.itemData.type) {
             case "boolean":
                 booleanSwitch.checked = value
                 break
@@ -67,7 +67,7 @@ Item {
                 stringTextField.text = value
                 break
             case "selection":
-                selectionComboBox.currentIndex = (itemData.properties && itemData.properties.options) ? itemData.properties.options.indexOf(value) : -1
+                selectionComboBox.currentIndex = (root.itemData.properties && root.itemData.properties.options) ? root.itemData.properties.options.indexOf(value) : -1
                 break
             case "multiselection":
                 loadMultiSelection(value)
@@ -86,7 +86,7 @@ Item {
         multiSelectionRepeater.model = []
         var selectedValues = Array.isArray(value) ? value : []
         var items = []
-        var opts = (itemData.properties && itemData.properties.options) ? itemData.properties.options : []
+        var opts = (root.itemData.properties && root.itemData.properties.options) ? root.itemData.properties.options : [];
         for (var i = 0; i < opts.length; i++) {
             items.push({
                 label: opts[i],
@@ -97,7 +97,7 @@ Item {
     }
     
     function saveValue(value) {
-        if (!itemData || itemData.readOnly) return
+        if (!root.itemData || root.itemData.readOnly) return
         ConfigManagerBridge.setValue(getConfigKey(), value)
     }
     
