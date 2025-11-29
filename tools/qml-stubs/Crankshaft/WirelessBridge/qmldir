@@ -1,1 +1,2 @@
-WirelessBridge.qml
+WirelessBridge 1.0 WirelessBridge.qml
+singleton WirelessBridge 1.0 WirelessBridge.qml

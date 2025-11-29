@@ -1,1 +1,2 @@
-ConfigManagerBridge.qml
+ConfigManagerBridge 1.0 ConfigManagerBridge.qml
+singleton ConfigManagerBridge 1.0 ConfigManagerBridge.qml

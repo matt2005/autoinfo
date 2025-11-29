@@ -118,7 +118,7 @@ Item {
             }
             
             ColumnLayout {
-                width: parent.width
+                Layout.fillWidth: true
                 spacing: 20
                 
                 Repeater {
@@ -136,8 +136,8 @@ Item {
                             
                             Image {
                                 source: section && section.icon || ""
-                                width: 24
-                                height: 24
+                                Layout.preferredWidth: 24
+                                Layout.preferredHeight: 24
                                 visible: section && section.icon !== ""
                             }
                             
@@ -151,8 +151,8 @@ Item {
                             
                             // Complexity badge
                             Rectangle {
-                                width: complexityText.width + 16
-                                height: 20
+                                Layout.preferredWidth: complexityText.width + 16
+                                Layout.preferredHeight: 20
                                 color: {
                                     var c = section && (section.complexity || "basic").toString().toLowerCase()
                                     if (c === "basic") return "#4CAF50"
@@ -213,7 +213,7 @@ Item {
                         // Section separator
                         Rectangle {
                             Layout.fillWidth: true
-                            height: 1
+                            Layout.preferredHeight: 1
                             color: ThemeManager.borderColor
                             opacity: 0.3
                         }

@@ -1,3 +1,15 @@
+import QtQuick 2.15
+
+Item {
+    // Minimal styled button stub for linting
+    property alias text: _text
+    property bool enabled: true
+    signal clicked()
+
+    property string _text: ""
+
+    function click() { clicked(); }
+}
 /*
  * Project: Crankshaft
  * This file is part of Crankshaft project.

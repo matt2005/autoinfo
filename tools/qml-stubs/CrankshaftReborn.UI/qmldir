@@ -1,0 +1,3 @@
+StyledButton 1.0 StyledButton.qml
+singleton ThemeManager 1.0 ThemeManager.qml
+singleton IconRegistry 1.0 IconRegistry.qml

@@ -24,6 +24,8 @@ import QtQuick.Dialogs
 import CrankshaftReborn.UI 1.0
 import Crankshaft.ConfigManagerBridge 1.0
 
+pragma ComponentBehavior: Bound
+
 Item {
     id: root
     
@@ -51,7 +53,7 @@ Item {
     function loadValue() {
         if (!root.itemData) return
         
-        var value = ConfigManagerBridge.getValue(getConfigKey())
+        var value = root.ConfigManagerBridge.getValue(getConfigKey());
         
         switch(root.itemData.type) {
             case "boolean":
@@ -98,7 +100,7 @@ Item {
     
     function saveValue(value) {
         if (!root.itemData || root.itemData.readOnly) return
-        ConfigManagerBridge.setValue(getConfigKey(), value)
+        root.ConfigManagerBridge.setValue(getConfigKey(), value);
     }
     
     Component.onCompleted: loadValue()
@@ -121,7 +123,7 @@ Item {
                     text: root.itemData ? root.itemData.label : ""
                     font.pixelSize: 13
                     font.bold: root.itemData && root.itemData.required
-                    color: ThemeManager.textColor
+                    color: root.ThemeManager.textColor
                 }
                 
                 Text {
@@ -136,7 +138,7 @@ Item {
                     text: "(read-only)"
                     font.pixelSize: 11
                     // Use textSecondaryColor (correct property name) with fallback
-                    color: ThemeManager.textSecondaryColor || ThemeManager.textColor
+                    color: root.ThemeManager.textSecondaryColor || root.ThemeManager.textColor
                     visible: root.itemData && root.itemData.readOnly
                 }
             }
@@ -145,7 +147,7 @@ Item {
                 text: root.itemData ? root.itemData.description : ""
                 font.pixelSize: 11
                 // Use textSecondaryColor (correct property name) with fallback
-                color: ThemeManager.textSecondaryColor || ThemeManager.textColor
+                color: root.ThemeManager.textSecondaryColor || root.ThemeManager.textColor
                 wrapMode: Text.WordWrap
                 Layout.fillWidth: true
                 visible: root.itemData && root.itemData.description !== ""
@@ -163,7 +165,7 @@ Item {
                 anchors.verticalCenter: parent.verticalCenter
                 visible: root.itemData && root.itemData.type === "boolean"
                 enabled: root.itemData && !root.itemData.readOnly
-                onToggled: saveValue(checked)
+                onToggled: root.saveValue(checked)
             }
             
             // Integer (type 1)
@@ -177,11 +179,11 @@ Item {
                 to: root.itemData ? ((root.itemData.properties && root.itemData.properties.maxValue !== undefined) ? root.itemData.properties.maxValue : 2147483647) : 2147483647
                 stepSize: root.itemData ? ((root.itemData.properties && root.itemData.properties.step !== undefined) ? root.itemData.properties.step : 1) : 1
                 editable: true
-                onValueModified: saveValue(value)
+                onValueModified: root.saveValue(value)
                 
                 background: Rectangle {
-                    color: ThemeManager.surfaceColor
-                    border.color: ThemeManager.borderColor
+                    color: root.ThemeManager.surfaceColor
+                    border.color: root.ThemeManager.borderColor
                     border.width: 1
                     radius: 4
                 }
@@ -189,7 +191,7 @@ Item {
                 contentItem: TextInput {
                     text: integerSpinBox.textFromValue(integerSpinBox.value, integerSpinBox.locale)
                     font.pixelSize: 13
-                    color: ThemeManager.textColor
+                    color: root.ThemeManager.textColor
                     horizontalAlignment: Qt.AlignHCenter
                     verticalAlignment: Qt.AlignVCenter
                     readOnly: !integerSpinBox.editable
@@ -227,11 +229,11 @@ Item {
                     return Number.fromLocaleString(locale, text) * 100
                 }
                 
-                onValueModified: saveValue(realValue)
+                onValueModified: root.saveValue(realValue)
                 
                 background: Rectangle {
-                    color: ThemeManager.surfaceColor
-                    border.color: ThemeManager.borderColor
+                    color: root.ThemeManager.surfaceColor
+                    border.color: root.ThemeManager.borderColor
                     border.width: 1
                     radius: 4
                 }
@@ -239,7 +241,7 @@ Item {
                 contentItem: TextInput {
                     text: doubleSpinBox.textFromValue(doubleSpinBox.value, doubleSpinBox.locale)
                     font.pixelSize: 13
-                    color: ThemeManager.textColor
+                    color: root.ThemeManager.textColor
                     horizontalAlignment: Qt.AlignHCenter
                     verticalAlignment: Qt.AlignVCenter
                     readOnly: !doubleSpinBox.editable
@@ -257,14 +259,14 @@ Item {
                 enabled: root.itemData && !root.itemData.readOnly
                 placeholderText: (root.itemData && root.itemData.properties && root.itemData.properties.placeholder) ? root.itemData.properties.placeholder : ""
                 font.pixelSize: 13
-                color: ThemeManager.textColor
+                color: root.ThemeManager.textColor
                 echoMode: root.itemData && root.itemData.isSecret ? TextInput.Password : TextInput.Normal
                 
-                onEditingFinished: saveValue(text)
+                onEditingFinished: root.saveValue(text)
                 
                 background: Rectangle {
-                    color: ThemeManager.surfaceColor
-                    border.color: stringTextField.activeFocus ? ThemeManager.primaryColor : ThemeManager.borderColor
+                    color: root.ThemeManager.surfaceColor
+                    border.color: stringTextField.activeFocus ? root.ThemeManager.primaryColor : root.ThemeManager.borderColor
                     border.width: 1
                     radius: 4
                 }
@@ -280,11 +282,11 @@ Item {
                 model: root.itemData && root.itemData.properties ? root.itemData.properties.options : []
                 font.pixelSize: 13
                 
-                onActivated: saveValue(currentText)
+                onActivated: root.saveValue(currentText)
                 
                 background: Rectangle {
-                    color: ThemeManager.surfaceColor
-                    border.color: ThemeManager.borderColor
+                    color: root.ThemeManager.surfaceColor
+                    border.color: root.ThemeManager.borderColor
                     border.width: 1
                     radius: 4
                 }
@@ -295,7 +297,7 @@ Item {
                         // Guard against undefined displayText causing assignment warnings
                         text: selectionComboBox.displayText !== undefined ? selectionComboBox.displayText : ""
                     font: selectionComboBox.font
-                    color: ThemeManager.textColor
+                    color: root.ThemeManager.textColor
                     verticalAlignment: Text.AlignVCenter
                     elide: Text.ElideRight
                 }
@@ -325,13 +327,13 @@ Item {
                                     selectedValues.push(item.text)
                                 }
                             }
-                            saveValue(selectedValues)
+                            root.saveValue(selectedValues)
                         }
                         
                         contentItem: Text {
                             text: parent.text
                             font: parent.font
-                            color: ThemeManager.textColor
+                            color: root.ThemeManager.textColor
                             leftPadding: parent.indicator.width + 8
                             verticalAlignment: Text.AlignVCenter
                         }
@@ -340,9 +342,9 @@ Item {
             }
             
             // Color (type 6)
-            RowLayout {
+                RowLayout {
                 anchors.verticalCenter: parent.verticalCenter
-                visible: itemData && itemData.type === "color"
+                visible: root.itemData && root.itemData.type === "color"
                 spacing: 10
                 
                 Rectangle {
@@ -350,7 +352,7 @@ Item {
                     Layout.preferredWidth: 36
                     Layout.preferredHeight: 36
                     color: colorButton.selectedColor
-                    border.color: ThemeManager.borderColor
+                    border.color: root.ThemeManager.borderColor
                     border.width: 1
                     radius: 4
                 }
@@ -358,14 +360,14 @@ Item {
                 Button {
                     id: colorButton
                     text: "Choose Color"
-                    enabled: itemData && !itemData.readOnly
+                    enabled: root.itemData && !root.itemData.readOnly
                     
                     property color selectedColor: "#FFFFFF"
                     
                     onClicked: colorDialog.open()
                     
                     background: Rectangle {
-                        color: colorButton.pressed ? Qt.darker(ThemeManager.primaryColor, 1.2) : ThemeManager.primaryColor
+                        color: colorButton.pressed ? Qt.darker(root.ThemeManager.primaryColor, 1.2) : root.ThemeManager.primaryColor
                         radius: 4
                     }
                     
@@ -384,7 +386,7 @@ Item {
                     selectedColor: colorButton.selectedColor
                     onAccepted: {
                         colorButton.selectedColor = selectedColor
-                        saveValue(selectedColor.toString())
+                        root.saveValue(selectedColor.toString())
                     }
                 }
             }
@@ -399,16 +401,16 @@ Item {
                 TextField {
                     id: fileTextField
                     Layout.fillWidth: true
-                    enabled: itemData && !itemData.readOnly
-                    placeholderText: itemData && itemData.type === "file" ? "Select file..." : "Select directory..."
+                    enabled: root.itemData && !root.itemData.readOnly
+                    placeholderText: root.itemData && root.itemData.type === "file" ? "Select file..." : "Select directory..."
                     font.pixelSize: 13
-                    color: ThemeManager.textColor
+                    color: root.ThemeManager.textColor
                     
-                    onEditingFinished: saveValue(text)
+                    onEditingFinished: root.saveValue(text)
                     
                     background: Rectangle {
-                        color: ThemeManager.surfaceColor
-                        border.color: fileTextField.activeFocus ? ThemeManager.primaryColor : ThemeManager.borderColor
+                        color: root.ThemeManager.surfaceColor
+                        border.color: fileTextField.activeFocus ? root.ThemeManager.primaryColor : root.ThemeManager.borderColor
                         border.width: 1
                         radius: 4
                     }
@@ -420,7 +422,7 @@ Item {
                     enabled: root.itemData && !root.itemData.readOnly
                     
                     onClicked: {
-                        if (itemData.type === "file") {
+                        if (root.itemData.type === "file") {
                             fileDialog.selectFolder = false
                         } else {
                             fileDialog.selectFolder = true
@@ -429,7 +431,7 @@ Item {
                     }
                     
                     background: Rectangle {
-                        color: parent.pressed ? Qt.darker(ThemeManager.primaryColor, 1.2) : ThemeManager.primaryColor
+                        color: parent.pressed ? Qt.darker(root.ThemeManager.primaryColor, 1.2) : root.ThemeManager.primaryColor
                         radius: 4
                     }
                     
@@ -444,12 +446,12 @@ Item {
                 
                 FileDialog {
                     id: fileDialog
-                    title: itemData && itemData.type === "file" ? "Select File" : "Select Directory"
+                    title: root.itemData && root.itemData.type === "file" ? "Select File" : "Select Directory"
                     currentFolder: fileTextField.text || ""
                     onAccepted: {
                         var path = selectedFile.toString().replace("file:///", "");
                         fileTextField.text = path
-                        saveValue(path)
+                        root.saveValue(path)
                     }
                 }
             }
@@ -457,22 +459,22 @@ Item {
             // Custom (type 9) - Placeholder
             Text {
                 anchors.verticalCenter: parent.verticalCenter
-                visible: itemData && itemData.type === "custom"
+                visible: root.itemData && root.itemData.type === "custom"
                 text: "Custom widget not implemented"
                 font.pixelSize: 12
                 // Use textSecondaryColor (correct property name) with fallback
-                color: ThemeManager.textSecondaryColor || ThemeManager.textColor
+                color: root.ThemeManager.textSecondaryColor || root.ThemeManager.textColor
                 font.italic: true
             }
         }
         
         // Unit label (if provided)
         Text {
-            text: itemData ? itemData.unit : ""
+            text: root.itemData ? root.itemData.unit : ""
             font.pixelSize: 12
             // Use textSecondaryColor (correct property name) with fallback
-            color: ThemeManager.textSecondaryColor || ThemeManager.textColor
-            visible: itemData && itemData.unit !== ""
+            color: root.ThemeManager.textSecondaryColor || root.ThemeManager.textColor
+            visible: root.itemData && root.itemData.unit !== ""
             Layout.alignment: Qt.AlignVCenter
         }
     }
