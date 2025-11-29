@@ -50,9 +50,12 @@ REPO_ROOT="$(pwd)"
 # build/ tree and skip the lint-only stubs directory (they become unnecessary).
 if [ "${USE_BUILD}" -eq 1 ]; then
   BUILD_IMPORTS="${REPO_ROOT}/build/assets/qml:${REPO_ROOT}/build"
-  IMPORT_PATHS="${BUILD_IMPORTS}:${REPO_ROOT}/assets/qml"
+  # Prefer build/ imports, but keep tools/qml-stubs as a fallback so runtime-only
+  # singletons (bridges, managers) that are not present in the build/ tree
+  # are still resolvable by qmllint.
+  IMPORT_PATHS="${BUILD_IMPORTS}:${REPO_ROOT}/assets/qml:${REPO_ROOT}/tools/qml-stubs"
   echo "Including build/ imports for qmllint (use-build enabled)."
-  echo "Skipping lint stubs (tools/qml-stubs) because build/ imports are used."
+  echo "Including lint stubs as fallback in case build/ lacks runtime-only modules."
 else
   IMPORT_PATHS="${REPO_ROOT}/assets/qml:${REPO_ROOT}/tools/qml-stubs"
 fi
